@@ -8,7 +8,10 @@ import Component.unit.Configure;
 import javax.swing.*;
 import java.awt.event.*;
 import java.io.File;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 class Config extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;

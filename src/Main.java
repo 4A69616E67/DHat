@@ -17,6 +17,11 @@ import Component.unit.*;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
+
 public class Main {
 
     //===================================================================
@@ -129,6 +134,12 @@ public class Main {
         Init();
     }
 
+    /**
+     *
+     * @param args
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public static void main(String[] args) throws IOException, InterruptedException {
         //==============================================测试区==========================================================
         MemoryUsage memoryUsage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();

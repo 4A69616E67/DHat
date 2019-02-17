@@ -4,6 +4,11 @@ import Component.unit.InterAction;
 
 import java.util.ArrayList;
 
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
+
 public class BedPeFilter {
     private ArrayList<InterAction> FilterList;
 

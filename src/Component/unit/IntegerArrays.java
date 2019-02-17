@@ -1,5 +1,8 @@
 package Component.unit;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class IntegerArrays implements Comparable {
     private int[] item;
     private int length;

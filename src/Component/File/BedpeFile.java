@@ -6,7 +6,10 @@ import Component.unit.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class BedpeFile extends AbstractFile<InterAction> {
     private Opts.FileFormat Format = Opts.FileFormat.BedpeRegionFormat;
     public boolean SortByName = false;

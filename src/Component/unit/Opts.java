@@ -5,7 +5,10 @@ import org.apache.commons.cli.CommandLine;
 
 import java.io.File;
 import java.util.Hashtable;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class Opts {
     /**
      * 文件类型枚举类

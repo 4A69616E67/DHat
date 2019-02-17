@@ -4,7 +4,10 @@ import Component.unit.SortItem;
 
 import java.io.File;
 import java.io.IOException;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class CommonFile extends AbstractFile<String> {
     public String Regex = "\\s+";
 

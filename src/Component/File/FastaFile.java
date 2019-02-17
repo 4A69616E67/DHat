@@ -4,7 +4,10 @@ import Component.unit.FastaItem;
 import Component.unit.SortItem;
 
 import java.io.IOException;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class FastaFile extends AbstractFile<FastaItem> {
     public FastaFile(String pathname) {
         super(pathname);

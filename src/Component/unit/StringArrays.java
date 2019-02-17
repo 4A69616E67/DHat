@@ -2,6 +2,10 @@ package Component.unit;
 
 import java.io.File;
 
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class StringArrays implements Comparable<StringArrays> {
     private String[] item;
     private int length;

@@ -1,8 +1,8 @@
 package Component.unit;
 
 /**
- * @author snowf
- * @version 1.0
+ * Created by snowf on 2019/2/17.
+ *
  */
 
 public class Chromosome implements Comparable<Chromosome> {

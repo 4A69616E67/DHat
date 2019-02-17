@@ -6,7 +6,10 @@ import Component.unit.Configure;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class FindRestrictionSite {
     private File FastFile;
     private File OutPath;

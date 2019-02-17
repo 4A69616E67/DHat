@@ -17,7 +17,10 @@ import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import sun.misc.BASE64Encoder;
 
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class Report {
     private File ReportOutPath;
     public CommonInfor ComInfor = new CommonInfor();

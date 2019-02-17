@@ -4,7 +4,10 @@ import Component.unit.*;
 
 import java.io.*;
 import java.util.ArrayList;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class FileTool {
 
     public static String[] Read4Line(BufferedReader file) {

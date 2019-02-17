@@ -4,7 +4,10 @@ import Component.unit.SortItem;
 
 import java.io.*;
 import java.util.*;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public abstract class AbstractFile<E extends Comparable<E>> extends File {
     protected E Item;
     public long ItemNum;

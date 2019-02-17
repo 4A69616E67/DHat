@@ -1,5 +1,8 @@
 package Component.unit;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class SortItem<E extends Comparable<E>> implements Comparable<SortItem<E>> {
     private E Item;
     private char[] Lines;

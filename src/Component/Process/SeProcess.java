@@ -13,8 +13,8 @@ import org.apache.commons.io.FileUtils;
 import Archive.SamFilter;
 
 /**
- * @author snowf
- * @version 1.2
+ * Created by snowf on 2019/2/17.
+ *
  */
 
 public class SeProcess {

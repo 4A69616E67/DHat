@@ -9,7 +9,10 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.*;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class Guide {
     private JButton Button_Configure;
     private JPanel Panel1;

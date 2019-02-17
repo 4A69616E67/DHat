@@ -7,7 +7,10 @@ import Component.unit.Opts;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class PlotMatrix {
     private File MatrixFile;
     private File OutFile;

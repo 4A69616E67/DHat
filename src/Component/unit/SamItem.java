@@ -1,5 +1,8 @@
 package Component.unit;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class SamItem implements Comparable<SamItem> {
     public String Title;
     public int Stat;

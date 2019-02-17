@@ -9,7 +9,10 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class HeatMap {
     private Chromosome Chr1;
     private Chromosome Chr2;

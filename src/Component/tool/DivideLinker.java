@@ -7,7 +7,10 @@ import org.apache.commons.cli.*;
 
 import java.io.*;
 import java.util.Date;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class DivideLinker {
     public enum Format {
         First, Second, All

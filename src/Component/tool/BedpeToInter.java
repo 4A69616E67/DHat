@@ -3,6 +3,10 @@ package Component.tool;
 import java.io.*;
 import java.util.Date;
 
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class BedpeToInter {
     public BedpeToInter(String BedpeFile, String OutFile) throws IOException {
         BufferedReader infile = new BufferedReader(new FileReader(BedpeFile));

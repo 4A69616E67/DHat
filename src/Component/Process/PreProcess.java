@@ -10,7 +10,10 @@ import org.apache.commons.cli.*;
 
 import java.io.*;
 import java.util.Date;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class PreProcess extends AbstractProcess {
 
     private File OutPath = new File("./");//输出目录

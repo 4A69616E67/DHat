@@ -11,7 +11,10 @@ import Component.unit.*;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import Archive.CreateMatrix;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class MakeMatrix {
     //===============================================================
     private File OutPath;//输出路径

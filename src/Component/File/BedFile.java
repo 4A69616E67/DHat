@@ -7,7 +7,10 @@ import Component.unit.SortItem;
 
 import java.io.IOException;
 import java.util.ArrayList;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class BedFile extends AbstractFile<ChrRegion> {
     public boolean SortByName = true;
 

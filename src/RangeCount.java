@@ -4,7 +4,10 @@ import Component.File.BedpeFile;
 import Component.tool.Statistic;
 import Component.unit.Opts;
 import org.apache.commons.cli.*;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class RangeCount {
     public static void main(String[] args) throws IOException, ParseException {
         Options Argument = new Options();

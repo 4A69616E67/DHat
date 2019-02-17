@@ -9,7 +9,10 @@ import java.util.Hashtable;
 import Component.File.BedpeFile;
 import Component.unit.LinkerSequence;
 import org.apache.commons.math3.distribution.*;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class Statistic {
 
     public static double[] ReadsLengthDis(File FastqFile, File OutFile) throws IOException {

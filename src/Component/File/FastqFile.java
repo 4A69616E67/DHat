@@ -5,7 +5,10 @@ import Component.unit.*;
 
 import java.io.*;
 import java.util.ArrayList;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class FastqFile extends AbstractFile<FastqItem> {
 
     public FastqFile(File file) {

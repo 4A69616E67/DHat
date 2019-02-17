@@ -30,9 +30,6 @@ import java.util.ArrayList;
 import java.util.Date;
 
 
-/**
- * @author snowf
- */
 public class LinkerFiltering {
 
     private File FastqFile;

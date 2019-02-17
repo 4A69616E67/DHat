@@ -12,7 +12,10 @@ import Component.tool.Tools;
 import Component.unit.*;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class BedpeProcess {
     private File OutPath = new File("./");
     private String Prefix = Configure.Prefix;

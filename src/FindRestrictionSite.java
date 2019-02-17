@@ -1,6 +1,9 @@
 import java.io.IOException;
 import Component.tool.Statistic;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class FindRestrictionSite {
     public static void main(String[] args) throws IOException {
         if (args.length < 3) {

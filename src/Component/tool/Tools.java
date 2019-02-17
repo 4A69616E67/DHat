@@ -9,8 +9,8 @@ import java.io.*;
 import java.util.*;
 
 /**
- * @author snowf
- * @version 1.0
+ * Created by snowf on 2019/2/17.
+ *
  */
 
 public class Tools {
