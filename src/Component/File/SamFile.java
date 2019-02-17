@@ -6,14 +6,14 @@ import Component.unit.SortItem;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
+
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 
 public class SamFile extends AbstractFile<SamItem> {
     private ArrayList<String> Header = new ArrayList<>();
-    public boolean SortByName = true;
+    private boolean SortByName = true;
 
     public SamFile(String pathname) {
         super(pathname);
@@ -96,7 +96,8 @@ public class SamFile extends AbstractFile<SamItem> {
 
     public void ToBedFile(BedFile bedFile) throws IOException {
         System.out.println(new Date() + "\tBegin\t" + getName() + " to " + bedFile.getName());
-        BufferedReader reader = ReadOpen();
+        ReadOpen();
+        BufferedReader reader = getReader();
         BufferedWriter writer = bedFile.WriteOpen();
         String Line;
         String[] Str;

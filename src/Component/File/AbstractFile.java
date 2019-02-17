@@ -1,12 +1,13 @@
 package Component.File;
 
 import Component.unit.SortItem;
+import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 import java.util.*;
+
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 public abstract class AbstractFile<E extends Comparable<E>> extends File {
     protected E Item;
@@ -14,15 +15,15 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
     protected BufferedReader reader;
     protected BufferedWriter writer;
 
-    public AbstractFile(String pathname) {
+    AbstractFile(String pathname) {
         super(pathname);
     }
 
-    public AbstractFile(File file) {
+    AbstractFile(File file) {
         super(file.getPath());
     }
 
-    public AbstractFile(AbstractFile file) {
+    AbstractFile(AbstractFile file) {
         super(file.getPath());
         ItemNum = file.ItemNum;
     }
@@ -41,25 +42,24 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
         return ItemNum;
     }
 
-    public BufferedReader ReadOpen() throws IOException {
+    void ReadOpen() throws IOException {
         reader = new BufferedReader(new FileReader(this));
-        return reader;
     }
 
-    public void ReadClose() throws IOException {
+    void ReadClose() throws IOException {
         reader.close();
     }
 
-    public BufferedWriter WriteOpen() throws IOException {
+    BufferedWriter WriteOpen() throws IOException {
         return WriteOpen(false);
     }
 
-    public BufferedWriter WriteOpen(boolean append) throws IOException {
+    private BufferedWriter WriteOpen(boolean append) throws IOException {
         writer = new BufferedWriter(new FileWriter(this, append));
         return writer;
     }
 
-    public void WriteClose() throws IOException {
+    void WriteClose() throws IOException {
         writer.close();
     }
 
@@ -131,7 +131,7 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
         System.out.println(new Date() + "\tEnd sort file " + getName());
     }
 
-    public void MergeSortFile(AbstractFile<E>[] InFile) throws IOException {
+    public synchronized void MergeSortFile(AbstractFile<E>[] InFile) throws IOException {
         ItemNum = 0;
         System.out.print(new Date() + "\tMerge ");
         for (File s : InFile) {
@@ -140,7 +140,7 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
         System.out.print("to " + getName() + "\n");
         //=========================================================================================
         LinkedList<SortItem<E>> SortList = new LinkedList<>();
-        WriteOpen();
+        BufferedWriter writer = WriteOpen();
         if (InFile.length == 0) {
             return;
         }
@@ -158,8 +158,8 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
         while (SortList.size() > 0) {
             SortItem<E> item = SortList.removeFirst();
             int serial = item.serial;
-            this.getWriter().write(item.getLines());
-            this.getWriter().write("\n");
+            writer.write(item.getLines());
+            writer.write("\n");
             ItemNum++;
             item = InFile[serial].ReadSortItem();
             if (item == null) {
@@ -191,20 +191,24 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
         System.out.print("to " + getName() + "\n");
     }
 
-    public void Merge(AbstractFile[] File) throws IOException {
-        this.WriteOpen();
-        ItemNum = 0;
+    public synchronized void Merge(AbstractFile[] files) throws IOException {
+        Merge(this, files);
+    }
+
+    public static void Merge(AbstractFile file, AbstractFile[] merge_files) throws IOException {
+        BufferedWriter writer = file.WriteOpen();
+        file.ItemNum = 0;
         String line;
-        for (AbstractFile x : File) {
-            System.out.println(new Date() + "\tMerge " + x.getName() + " to " + getName());
+        for (AbstractFile x : merge_files) {
+            System.out.println(new Date() + "\tMerge " + x.getName() + " to " + file.getName());
             x.ReadOpen();
             while ((line = x.ReadItemLine()) != null) {
-                this.getWriter().write(line + "\n");
-                ItemNum++;
+                writer.write(line + "\n");
+                file.ItemNum++;
             }
             x.ReadClose();
         }
-        WriteClose();
+        file.WriteClose();
         System.out.println(new Date() + "\tDone merge");
     }
 
@@ -239,9 +243,25 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
         return Item;
     }
 
-    public void clean() throws IOException {
-        writer = new BufferedWriter(new FileWriter(this));
-        writer.close();
+    public boolean clean() {
+        return clean(this);
+    }
+
+    public static boolean clean(File f) {
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(f));
+            writer.close();
+        } catch (IOException e) {
+            System.err.println("Warning! can't clean " + f.getPath());
+            return false;
+        }
+        return true;
+    }
+
+    public static void delete(File f) {
+        if (f.exists() && !f.delete()) {
+            System.err.println("Warning! can't delete " + f.getPath());
+        }
     }
 
     public abstract SortItem<E> ReadSortItem() throws IOException;

@@ -9,7 +9,6 @@ bwa                 need add in "PATH"
 python              2.XX recommend 2.7
 python module:
 matplotlib          install by "pip install matplotlib"
-opencv              install by "pip install opencv-python"
 scipy               install by "pip install scipy"
 
 recommend install "AnaConda" and then you can install all of above tools by "conda install XXXX" (exclude python)
@@ -30,7 +29,6 @@ Chromosomes =
 AdapterSeq =
 Resolutions = 1000000
 DrawResolution = 1000000
-DetectRes = 100000
 Threads = 4
 Step = -
 #------------------------------advance parameters---------------------------
@@ -40,7 +38,7 @@ InDelScore = -1
 MinLinkerLen =
 MinReadsLength = 16
 MaxReadsLength = 20
-AlignThread = 2
+AlignThread = 1
 AlignType = Short
 AlignMisMatch = 0
 MinUniqueScore =
@@ -62,7 +60,6 @@ AdapterSeq          String[]    Adapter sequence, null means don't remove adapte
                                 If you want to remove adapter but you don't know the adapter seq, you can set "Auto"
 Resolutions         Int[]       Bin size when create interaction matrix  (default    "1000000" byte)
 DrawResolution      Int[]       Resolution for you draw heat-map    (default    "100000")
-DetectRes           Int         Resolution when do translocation detection  (default "100000")
 Threads             Int         Number of threads    (default    "4")
 Step                String[]    assign  where start and end (default    "-")
 #===============================================================================
@@ -82,13 +79,12 @@ DeBugLevel          Int         0 means remain base output, 1 means more output,
 
 //if we set ReadsType "Short", we will align with "bwa aln",and if set "Long",we will align with "bwa mem"
 
-//Step include "LinkerFilter" "DivideLinker" "SeProcess" "Bed2BedPe" "BedPeProcess" "BedPe2Inter" "MakeMatrix" "TransLocationDetection"
+//Step include "PreProcess" "SeProcess" "Bed2BedPe" "BedPeProcess" "BedPe2Inter" "MakeMatrix"
 //If we want to run from "Bed2BedPe" to "MakeMatrix", we can set "Bed2BedPe - MakeMatrix"
 //If we only want to run from "SeProcess" to end, we can set "SeProcess -"
 //If we want to run all, we can set "-"
 
 #=========================Other Script=================
-java -cp DLO-HIC-AnalysisTools.jar Bin.TranslocationDetection
 java -cp DLO-HIC-AnalysisTools.jar Archive.PetCluster
 java -cp DLO-HIC-AnalysisTools.jar Archive.CreateMatrix
 java -cp DLO-HIC-AnalysisTools.jar Bin.Guide    (need visual interface)
