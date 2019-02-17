@@ -1,0 +1,489 @@
+<!DOCTYPE HTML>
+<!--<html xmlns="http://www.w3.org/1999/xhtml">-->
+<html lang="en-Us" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+</html>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="generator" content="pandoc" />
+  <title>DLO-HiC Analyse Tool</title>
+  <link rel="stylesheet" type="text/css" href="style.css" media="all" />
+  <script src="./jquery.min.js" type="text/javascript"></script>
+  <script src="./script.js" type="text/javascript"></script>
+</head>
+
+<body link="#1C25C7" vlink="#D211DD">
+  <!-- Begin Wrapper -->
+  <div id="wrapper">
+    <!-- Begin Sidebar -->
+    <div id="sidebar">
+      <div id="logo">
+		  <a style="color: white; font-size: 40px;">DLO-HiC</a>
+<!--        <img src="aa" alt="DLO-HiC" />-->
+      </div>
+      <!-- Begin Menu -->
+      <div id="menu" class="menu-v">
+        <ul>
+          <li><a href="#Running_info" class="active">Running information</a>
+            <ul>
+              <li><a href="#RI_ConfigureInformation">Configure information</a></li>
+              <li><a href="#RI_LinkerFilter">Linker filtering</a></li>
+              <li><a href="#RI_Mapping">Mapping</a></li>
+              <li><a href="#RI_LigationFilter">Ligation filtering</a></li>
+              <li><a href="#RI_InterAction">Inter Action</a></li>
+            </ul>
+          </li>
+          <li><a href="#Running_statistics" class="active">Running statistics</a>
+            <ul>
+              <li><a href="#RS_Base">Basic statistics</a></li>
+              <li><a href="#RS_SequenceFilter">Sequence filtering statistics</a></li>
+              <li><a href="#RS_MappingFilter">Mapping and filtering statistics</a></li>
+              <li><a href="#RS_LigationFilter">Ligation filtering statistics</a></li>
+              <li><a href="#RS_MakeMatrix">Make Matrix statistics</a></li>
+              <li><a href="#RS_Running_Time">Running time</a></li>
+            </ul>
+          </li>
+          <li><a href="#Linker_filtering_report">Linker filtering report</a>
+            <ul>
+              <li><a href="#LFR_LinkerAlignScoreDis">Linker alignment score distribution</a></li>
+              <li><a href="#LFR_Tag_Len_Dis">Tag length distribution</a></li>
+              <li><a href="#SFR_Adapter">Adapter</a></li>
+              <li><a href="#SFR_Linker">Linker</a></li>
+            </ul>
+          </li>
+          <li><a href="#Mapping_report">Mapping report</a>
+            <ul>
+              <li><a href="#MR_Basic">Basic</a></li>
+              <li><a href="#MR_Distance">Distance distribution</a></li>
+            </ul>
+          </li>
+          <li><a href="#Ligation_report">Ligation report</a>
+            <ul>
+              <li><a href="#LR_Basic">Basic</a></li>
+            </ul>
+          </li>
+          <li><a href="#Matrix_report">Matrix report</a>
+            <ul>
+              <li><a href="#MR_Basic">Basic</a></li>
+            </ul>
+          </li>
+          <li><a href="#Cluster_visual">Interactions visualization</a>
+            <ul>
+              <li><a href="#IV_InteractionDistanceDistribution">Interaction distance distribution</a></li>
+              <li><a href="#IV_InteractionHeatMap">Interaction heatmap</a></li>
+              <li><a href="#Rplot14">Intra-chromosomal inetractions visualization</a></li>
+              <li><a href="#Rplot15">Circular visualization</a></li>
+            </ul>
+          </li>
+
+        </ul>
+      </div>
+      <!-- End Menu -->
+
+
+
+    </div>
+    <!-- End Sidebar -->
+    <div id="content_head">
+      <p align="right" th:text="${Date}">2018-09-09</p>
+    </div>
+    <!-- Begin Content -->
+    <div id="content">
+
+      <h1 class="title" id="Running_info">Running information</h1>
+      <div class="line"></div>
+      <h2 id="RI_ConfigureInformation"><strong>Configure information</strong></h2>
+      <h2>
+        <!--        <iframe width=8 00 height=1 90 src="images/Rplot25.html"></iframe>-->
+        <table align="center" width="200" border="1" style="table-layout: fixed">
+          <tbody>
+            <tr>
+              <td width="133" nowrap="nowrap">Input file:</td>
+              <td width="264" th:text="${ComInformation.InputFile}">&nbsp;</td>
+              <td width="112" nowrap="nowrap">Min reads length:</td>
+              <td width="163" th:text="${ComInformation.MinReadsLen}">&nbsp;</td>
+            </tr>
+            <tr>
+              <td nowrap="nowrap">Output folder:</td>
+              <td th:text="${ComInformation.OutPutDir}">&nbsp;</td>
+              <td nowrap="nowrap">Max reads length:</td>
+              <td th:text="${ComInformation.MaxReadsLen}">&nbsp;</td>
+            </tr>
+            <tr>
+              <td nowrap="nowrap">Output prefix:</td>
+              <td th:text="${ComInformation.OutPutPrefix}">&nbsp;</td>
+              <td nowrap="nowrap">Match score:</td>
+              <td th:text="${ComInformation.MatchScore}">&nbsp;</td>
+            </tr>
+            <tr>
+              <td height="28" nowrap="nowrap">Genome file:</td>
+              <td th:text="${ComInformation.GenomeFile}">&nbsp;</td>
+              <td nowrap="nowrap">MisMatch score:</td>
+              <td th:text="${ComInformation.MisMatchScore}">&nbsp;</td>
+            </tr>
+            <tr>
+              <td height="28" nowrap="nowrap">Genome index prefix:</td>
+              <td th:text="${ComInformation.IndexPrefix}">&nbsp;</td>
+              <td nowrap="nowrap">InDel score:</td>
+              <td th:text="${ComInformation.InDelScore}">&nbsp;</td>
+            </tr>
+            <tr>
+              <td width="133" nowrap="nowrap">HalfLinkerA:</td>
+              <td th:text="${ComInformation.HalfLinkerA}">&nbsp;</td>
+              <td nowrap="nowrap">Resolution:</td>
+              <td th:text="${#strings.arrayJoin(ComInformation.Resolution,' ')}">&nbsp;</td>
+            </tr>
+            <tr>
+              <td nowrap="nowrap">HalfLinkerB:</td>
+              <td th:text="${ComInformation.HalfLinkerB}">&nbsp;</td>
+              <td nowrap="nowrap">Thread:</td>
+              <td th:text="${ComInformation.Thread}">&nbsp;</td>
+            </tr>
+            <tr>
+              <td nowrap="nowrap">Restriction:</td>
+              <td th:text="${ComInformation.Restriction}">&nbsp;</td>
+              <td nowrap="nowrap">&nbsp;</td>
+              <td>&nbsp;</td>
+            </tr>
+          </tbody>
+        </table>
+      </h2>
+      <hr>
+      <h2 id="RI_LinkerFilter"><strong>Linker filtering</strong></h2>
+      <h2>
+        <!--        <iframe width=8 00 height=4 40 src="images/Rplot1.html"></iframe>-->
+        <table align="center" width="200" border="1" style="table-layout: fixed;">
+          <tbody>
+            <tr>
+              <td width="122" nowrap="nowrap">Adapter Sequence:</td>
+              <td colspan="2" style="word-break: break-all; word-wrap: break-word; line-height: 100%;" th:utext="${AdapterSeq}">&nbsp;</td>
+            </tr>
+            <tr>
+              <td nowrap="nowrap">Total reads:</td>
+              <td th:text="${#numbers.formatInteger(TotalReads,1,'COMMA')}">&nbsp;</td>
+              <td th:text="${#numbers.formatDecimal(TotalReads*100/TotalReads,1,2)}+'%'">&nbsp;</td>
+            </tr>
+            <tr th:each="Linker : ${Linkers}" >
+              <td nowrap="nowrap" th:text="${Linker.Name}+':'">AA:</td>
+              <td width="271" th:text="${#numbers.formatInteger(Linker.Num,1,'COMMA')}">&nbsp;</td>
+              <td width="285" th:text="${#numbers.formatDecimal(Linker.Num*100/TotalReads,1,2)}+'%'">&nbsp;</td>
+            </tr>
+<!--
+            <tr>
+              <td nowrap="nowrap">BB:</td>
+              <td th:text="${BBLinkerNum}">&nbsp;</td>
+              <td th:text="${BBLinkerPercent}">&nbsp;</td>
+            </tr>
+            <tr>
+              <td nowrap="nowrap">AB:</td>
+              <td th:text="${ABLinkerNum}">&nbsp;</td>
+              <td th:text="${ABLinkerPercent}">&nbsp;</td>
+            </tr>
+            <tr>
+              <td nowrap="nowrap">BA:</td>
+              <td th:text="${BALinkerNum}">&nbsp;</td>
+              <td th:text="${BALinkerPercent}">&nbsp;</td>
+            </tr>
+-->
+            <tr>
+              <td nowrap="nowrap">Ambiguous:</td>
+              <td th:text="${AmbiguousLinkerNum}">&nbsp;</td>
+              <td th:text="${AmbiguousLinkerPercent}">&nbsp;</td>
+            </tr>
+            <tr>
+              <td nowrap="nowrap">Output folder:</td>
+              <td colspan="2" th:text="${PreDir}">&nbsp;</td>
+            </tr>
+          </tbody>
+        </table>
+      </h2>
+      <hr>
+      <h2 id="RI_Mapping"><strong>Mapping</strong></h2>
+      <li style="list-style: none" th:each="Linker : ${LinkerClass}">
+        <h3 th:text="${Linker.LinkerType}">AA</h3>
+        <h2>
+          <table align="center" width="200" border="1">
+            <tbody>
+              <tr>
+                <td align="center" nowrap="nowrap">Item</td>
+                <td align="center">File path</td>
+                <td align="center" nowrap="nowrap">Number</td>
+                <td align="center" nowrap="nowrap">Percentage</td>
+              </tr>
+              <tr>
+                <td width="101" nowrap="nowrap">Fastq file R1:</td>
+                <td width="418" th:text="${Linker.FastqFileR1}">&nbsp;</td>
+                <td width="80" nowrap="nowrap" th:text="${#numbers.formatInteger(Linker.FastqNumR1,1,'COMMA')}">&nbsp;</td>
+                <td width="73" nowrap="nowrap" th:text="${#numbers.formatDecimal(Linker.FastqNumR1*100/Linker.FastqNumR1,1,2)}+'%'">&nbsp;</td>
+              </tr>
+              <tr>
+                <td nowrap="nowrap">Fastq file R2:</td>
+                <td th:text="${Linker.FastqFileR2}">&nbsp;</td>
+                <td nowrap="nowrap" th:text="${#numbers.formatInteger(Linker.FastqNumR2,1,'COMMA')}">&nbsp;</td>
+                <td nowrap="nowrap" th:text="${#numbers.formatDecimal(Linker.FastqNumR2*100/Linker.FastqNumR2,1,2)}+'%'">&nbsp;</td>
+              </tr>
+              <tr>
+                <td nowrap="nowrap">Unique map R1:</td>
+                <td th:text="${Linker.UniqMapFileR1}">&nbsp;</td>
+                <td nowrap="nowrap" th:text="${#numbers.formatInteger(Linker.UniqMapNumR1,1,'COMMA')}">&nbsp;</td>
+                <td nowrap="nowrap" th:text="${#numbers.formatDecimal(Linker.UniqMapNumR1*100/Linker.FastqNumR1,1,2)}+'%'">&nbsp;</td>
+              </tr>
+              <tr>
+                <td nowrap="nowrap">Unique map R2:</td>
+                <td th:text="${Linker.UniqMapFileR2}">&nbsp;</td>
+                <td nowrap="nowrap" th:text="${#numbers.formatInteger(Linker.UniqMapNumR2,1,'COMMA')}">&nbsp;</td>
+                <td nowrap="nowrap" th:text="${#numbers.formatDecimal(Linker.UniqMapNumR2*100/Linker.FastqNumR2,1,2)}+'%'">&nbsp;</td>
+              </tr>
+              <tr>
+                <td nowrap="nowrap">Merge:</td>
+                <td th:text="${Linker.RawBedpeFile}">&nbsp;</td>
+                <td nowrap="nowrap" th:text="${#numbers.formatInteger(Linker.RawBedpeNum,1,'COMMA')}">&nbsp;</td>
+                <td nowrap="nowrap" th:text="${#numbers.formatDecimal(Linker.RawBedpeNum*100/Linker.FastqNumR1,1,2)}+'%'">&nbsp;</td>
+              </tr>
+              <tr>
+                <td nowrap="nowrap">Output folder:</td>
+                <td colspan="3" th:text="${Linker.SeProcessOutDir}">&nbsp;</td>
+              </tr>
+            </tbody>
+          </table>
+        </h2>
+      </li>
+      <h2>
+        <hr>
+      </h2>
+      <h2 id="RI_LigationFilter"><strong>Ligation filtering</strong></h2>
+      <li style="list-style: none" th:each="Ligation : ${LinkerClass}">
+        <h3 th:text="${Ligation.LinkerType}">AA</h3>
+        <h2>
+          <table align="center" width="200" border="1" style="table-layout: fixed">
+            <tbody>
+              <tr>
+                <td width="87" align="center" nowrap="nowrap">Item</td>
+                <td width="432" align="center">File path</td>
+                <td width="80" align="center" nowrap="nowrap">Number</td>
+                <td width="73" align="center" nowrap="nowrap">Percentage</td>
+              </tr>
+              <tr>
+                <td nowrap="nowrap">SelfLigation:</td>
+                <td th:text="${Ligation.SelfLigationFile}">&nbsp;</td>
+                <td nowrap="nowrap" th:text="${#numbers.formatInteger(Ligation.SelfLigationNum,1,'COMMA')}">&nbsp;</td>
+                <td nowrap="nowrap" th:text="${#numbers.formatDecimal(Ligation.SelfLigationNum*100/Ligation.RawBedpeNum,1,2)}+'%'">&nbsp;</td>
+              </tr>
+              <tr>
+                <td nowrap="nowrap">RelLigation:</td>
+                <td th:text="${Ligation.RelLigationFile}">&nbsp;</td>
+                <td nowrap="nowrap" th:text="${#numbers.formatInteger(Ligation.RelLigationNum,1,'COMMA')}">&nbsp;</td>
+                <td nowrap="nowrap" th:text="${#numbers.formatDecimal(Ligation.RelLigationNum*100/Ligation.RawBedpeNum,1,2)}+'%'">&nbsp;</td>
+              </tr>
+              <tr>
+                <td nowrap="nowrap">Valid data:</td>
+                <td th:text="${AA}">&nbsp;</td>
+                <td nowrap="nowrap" th:text="${#numbers.formatInteger(Ligation.SameValidNum+Ligation.RawDiffBedpeNum,1,'COMMA')}">&nbsp;</td>
+                <td nowrap="nowrap" th:text="${#numbers.formatDecimal((Ligation.SameValidNum+Ligation.RawDiffBedpeNum)*100/Ligation.RawBedpeNum,1,2)}+'%'">&nbsp;</td>
+              </tr>
+              <tr>
+                <td nowrap="nowrap">No-dump:</td>
+                <td th:text="${Ligation.MergeCleanFile}">&nbsp;</td>
+                <td nowrap="nowrap" th:text="${#numbers.formatInteger(Ligation.SameCleanNum+Ligation.DiffCleanNum,1,'COMMA')}">&nbsp;</td>
+                <td nowrap="nowrap" th:text="${#numbers.formatDecimal((Ligation.SameCleanNum+Ligation.DiffCleanNum)*100/Ligation.RawBedpeNum,1,2)}+'%'">&nbsp;</td>
+              </tr>
+              <tr>
+                <td nowrap="nowrap">Output folder:</td>
+                <td colspan="3" th:text="${Ligation.BedpeProcessOutDir}">&nbsp;</td>
+              </tr>
+            </tbody>
+          </table>
+        </h2>
+      </li>
+      <hr>
+      <h2 id="RI_InterAction"> <strong>InterAction</strong> </h2>
+      <h2>
+        <table align="center" width="200" border="1" style="table-layout: fixed">
+          <tr>
+            <td width="78" align="center" nowrap="nowrap">Item</td>
+            <td width="403" align="center" nowrap="nowrap">Number</td>
+            <td width="197" align="center" nowrap="nowrap">Percentage</td>
+          </tr>
+          <tbody>
+            <tr>
+              <td nowrap="nowrap">Total action:</td>
+              <td th:text="${#numbers.formatInteger(Inter.FinalBedpeNum,1,'COMMA')}">&nbsp;</td>
+              <td th:text="${#numbers.formatDecimal(Inter.FinalBedpeNum/TotalReads*100,1,2)}+'%'">&nbsp;</td>
+            </tr>
+            <tr>
+              <td nowrap="nowrap">Inter action:</td>
+              <td th:text="${#numbers.formatInteger(Inter.InterActionNum,1,'COMMA')}">&nbsp;</td>
+              <td th:text="${#numbers.formatDecimal(Inter.InterActionNum/Inter.FinalBedpeNum*100,1,2)}+'%'">&nbsp;</td>
+            </tr>
+            <tr>
+              <td nowrap="nowrap">Intra action:</td>
+              <td th:text="${#numbers.formatInteger(Inter.IntraActionNum,1,'COMMA')}">&nbsp;</td>
+              <td th:text="${#numbers.formatDecimal(Inter.IntraActionNum/Inter.FinalBedpeNum*100,1,2)}+'%'">&nbsp;</td>
+            </tr>
+            <tr>
+              <td nowrap="nowrap">Short region:</td>
+              <td th:text="${#numbers.formatInteger(Inter.ShortRegionNum,1,'COMMA')}">&nbsp;</td>
+              <td th:text="${#numbers.formatDecimal(Inter.ShortRegionNum/Inter.IntraActionNum*100,1,2)}+'%'">&nbsp;</td>
+            </tr>
+            <tr>
+              <td nowrap="nowrap">Long region:</td>
+              <td th:text="${#numbers.formatInteger(Inter.LongRegionNum,1,'COMMA')}">&nbsp;</td>
+              <td th:text="${#numbers.formatDecimal(Inter.LongRegionNum/Inter.IntraActionNum*100,1,2)}+'%'">&nbsp;</td>
+            </tr>
+          </tbody>
+        </table>
+      </h2>
+
+      <h1 class="title" id="Running_statistics">Running statistics</h1>
+      <div class="line"></div>
+
+      <h3 id="Rplot2">Basic statistics</h3>
+      <!-- <h3><img src="images/Rplot2.png" alt=""/></h3> -->
+      <h2>
+        <!--        <iframe width=8 00 height=3 50 src="images/Rplot2.html"></iframe>-->
+      </h2>
+
+
+      <h3 id="Rplot3">Mapping statistics of read1 (horizental) and read2 (vertical)</h3>
+      <h4>A_A</h4>
+      <h2>
+        <!--        <iframe width=8 00 height=1 40 src="images/Rplot3_1.html"></iframe>-->
+      </h2>
+      <h4>B_B</h4>
+      <h2>
+        <!--        <iframe width=8 00 height=1 40 src="images/Rplot3_2.html"></iframe>-->
+      </h2>
+      <h4>A_B</h4>
+      <h2>
+        <!--        <iframe width=8 00 height=1 40 src="images/Rplot3_3.html"></iframe>-->
+      </h2>
+      <h4>B_A</h4>
+      <h2>
+        <!--        <iframe width=8 00 height=1 40 src="images/Rplot3_4.html"></iframe>-->
+      </h2>
+
+      <h3 id="RS_Running_Time">Running time</h3>
+      <h2>
+        <table align="center" width="200" border="1">
+          <tbody>
+            <tr>
+              <td align="center" nowrap="nowrap">Item</td>
+              <td align="center">Value(h/m/s)</td>
+            </tr>
+            <tr>
+              <td nowrap="nowrap">Start time:</td>
+              <td th:text="${RunTime.StartTime}">&nbsp;</td>
+            </tr>
+            <tr>
+              <td nowrap="nowrap">Linker filtering:</td>
+              <td th:text="${RunTime.LinkerFilter}">&nbsp;</td>
+            </tr>
+            <tr>
+              <td nowrap="nowrap">Mapping:</td>
+              <td th:text="${RunTime.Mapping}">&nbsp;</td>
+            </tr>
+            <tr>
+              <td height="20" nowrap="nowrap">Ligation filtering:</td>
+              <td th:text="${RunTime.LigationFilter}">&nbsp;</td>
+            </tr>
+            <tr>
+              <td height="20" nowrap="nowrap">Make matrix:</td>
+              <td th:text="${RunTime.MakeMatrix}">&nbsp;</td>
+            </tr>
+            <tr>
+              <td height="20" nowrap="nowrap">Translocation detection:</td>
+              <td th:text="${RunTime.TransLocation}">&nbsp;</td>
+            </tr>
+            <tr>
+              <td height="20" nowrap="nowrap">Total:</td>
+              <td th:text="${RunTime.Total}">&nbsp;</td>
+            </tr>
+          </tbody>
+        </table>
+      </h2>
+
+
+
+      <h1 id="Linker_filtering_report">Linker filtering report</h1>
+      <div class="line"></div>
+
+      <h2 id="LFR_LinkerAlignScoreDis">Linker alignment score distribution</h2>
+      <h2 align="center">
+        <img src="images/test-jh.png" th:src="'data:image/png;base64,'+${LinkerAliScoreDis}" alt="" />
+      </h2>
+      <hr>
+      <h2 id="LFR_Tag_Len_Dis">Tag length distribution</h2>
+      <h2 align="center" th:each="ReadsLenDis : ${ReadsLenDiss}">
+        <img src="images/Test.AA.reads_length_distribution.png" th:src="'data:image/png;base64,'+${ReadsLenDis}" alt="" />
+      </h2>
+
+      <h1 id="Mapping_report">Mapping report</h1>
+      <!--   <h3>After mapping to genome, .sam format files are converted to .bedpe files.</h3> -->
+      <div class="line"></div>
+
+      <h1 id="PET_span">Span distribution</h1>
+      <div class="line"></div>
+
+      
+      <h3 id="Rplot12">PETs span distribution</h3>
+      <h2>
+        <img src="images/Rplot12.png" alt=""  style="height: 420px; width: 680px" />
+      </h2>
+      <h3 id="Rplot16">Difference of PET span distributions between strands combination -+ and average number of (++, +-
+        and --)</h3>
+      <h2>
+        <img src="images/Rplot16.png" alt=""  style="height: 420px; width: 680px"/>
+      </h2>
+      <h3 id="Rplot24">Log-log plot of difference of PET span distribution</h3>
+      <h2>
+        <img src="images/Rplot24.png" alt=""  style="height: 420px; width: 680px"/>
+      </h2>
+
+      <h1 id="Cluster_visual">Cluster visualization</h1>
+      <div class="line"></div>
+
+      <h2 id="IV_InteractionDistanceDistribution">Interaction distance distribution</h2>
+      <h2 align="center">
+        <img src="images/InterActionLengthDistribution.png" th:src="'data:image/png;base64,'+${InteractionDistanceDis}" alt="" />
+      </h2>
+      <hr>
+      <h2 id="IV_InteractionHeatMap">Interaction heatmap</h2>
+      <li style="list-style: none" th:each="HeatMap : ${DrawResolutionHeatMap}">
+        <h3 th:text="'Resolution '+${#numbers.formatInteger(HeatMap.Resolution,1,'COMMA')}">Resolution 1,000,000</h3>
+        <h2 align="center">
+          <img src="images/Test.interaction.1.0M.png" alt="" width="667" height="546" th:src="'data:image/png;base64,'+${HeatMap.Figure}" />
+        </h2>
+      </li>
+
+      <h3 id="Rplot14">Intra-chromosomal interactions visualization</h3>
+      <div class="intro">
+        Blue peaks above chromosomes are transcription factor binding sites<br/>
+        Red curves under chromosomes are intra-chromosomal interactions
+      </div>
+      <h2>
+        <img width="750" height="1000" src="images/Rplot14.png" alt="" />
+      </h2>
+
+      <h3 id="Rplot15">Circular view</h3>
+      <div class="intro">Circular view of inter-chromosomal interactions</div>
+      <h2>
+        <!--        <img width=7 50 height=7 50 src="images/Rplot15.png" alt="" />-->
+      </h2>
+
+      <div id="footer">
+        <p>1. Please use Chrome, Firefox or Safari for better browsing experience.</p>
+        <p>2. Detailed explanation can be found at
+          <a href="https://github.com/GuoliangLi-HZAU/ChIA-PET_Tool" target="_blank">https://github.com/GuoliangLi-HZAU/ChIA-PET_Tool</a>.</p>
+      </div>
+
+    </div>
+
+
+  </div>
+  <div class="helpNote" style="display:none">
+    <div id="Rplot1_note">dd</div>
+  </div>
+
+</body>
