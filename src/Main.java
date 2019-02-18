@@ -1,6 +1,6 @@
 import java.io.*;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryUsage;
+//import java.lang.management.ManagementFactory;
+//import java.lang.management.MemoryUsage;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.util.*;
@@ -551,14 +551,12 @@ public class Main {
         Stat.RunTime.Mapping = Tools.DateFormat((bedpeTime.getTime() - seTime.getTime()) / 1000);
         Stat.RunTime.LigationFilter = Tools.DateFormat((matrixTime.getTime() - bedpeTime.getTime()) / 1000);
         Stat.RunTime.MakeMatrix = Tools.DateFormat((endTime.getTime() - matrixTime.getTime()) / 1000);
-//        Stat.RunTime.TransLocation = Tools.DateFormat((EndTime.getTime() - TransTime.getTime()) / 1000);
         Stat.RunTime.Total = Tools.DateFormat((endTime.getTime() - preTime.getTime()) / 1000);
         System.out.println("\n-------------------------------Time----------------------------------------");
         System.out.println("PreProcess:\t" + Stat.RunTime.LinkerFilter);
         System.out.println("SeProcess:\t" + Stat.RunTime.Mapping);
         System.out.println("BedpeProcess:\t" + Stat.RunTime.LigationFilter);
         System.out.println("MakeMatrix:\t" + Stat.RunTime.MakeMatrix);
-        System.out.println("Translocation:\t" + Stat.RunTime.TransLocation);
         System.out.println("Total:\t" + Stat.RunTime.Total);
         //===================================Report=====================================================================
 
@@ -567,6 +565,7 @@ public class Main {
         }
         Stat.Show();
         Stat.ReportHtml(new File(ReportDir + "/Test.index.html"));
+        Tools.RemoveEmptyFile(OutPath);
     }
 
     /**

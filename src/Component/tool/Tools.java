@@ -1,6 +1,6 @@
 package Component.tool;
 
-import Component.File.CommonFile;
+import Component.File.AbstractFile;
 import Component.unit.Chromosome;
 import Component.unit.Opts;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -10,7 +10,6 @@ import java.util.*;
 
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 
 public class Tools {
@@ -30,43 +29,27 @@ public class Tools {
     }
 
     public static String ArraysToString(Object[] o) {
-        String s = "";
+        StringBuilder s = new StringBuilder();
         if (o != null) {
             for (Object i : o) {
-                s += i + " ";
+                s.append(i).append(" ");
             }
-            s = s.trim();
         }
-        return s;
+        return s.deleteCharAt(s.length() - 1).toString();
     }
 
     public static String ArraysToString(int[] o) {
-        String s = "";
+        StringBuilder s = new StringBuilder();
         if (o != null) {
-            for (int i : o) {
-                s += i + " ";
+            for (Object i : o) {
+                s.append(i).append(" ");
             }
-            s = s.trim();
         }
-
-        return s;
-    }
-
-    public static Hashtable<String, Integer> ExtractChrSize(File ChrSizeFile) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(ChrSizeFile));
-        String Line;
-        String[] Str;
-        Hashtable<String, Integer> ChrSize = new Hashtable<>();
-        while ((Line = reader.readLine()) != null) {
-            Str = Line.split("\\s+");
-            ChrSize.put(Str[0], Integer.parseInt(Str[1]));
-        }
-        reader.close();
-        return ChrSize;
+        return s.deleteCharAt(s.length() - 1).toString();
     }
 
     public static Chromosome[] CheckChromosome(Chromosome[] Chrs, File GenomeFile) throws IOException {
-        ArrayList<Chromosome> TempChrSize = null;
+        ArrayList<Chromosome> TempChrSize;
         if (Chrs == null || Chrs.length == 0) {
             TempChrSize = CalculateChrSize(GenomeFile);
             Chrs = new Chromosome[TempChrSize.size()];
@@ -88,9 +71,9 @@ public class Tools {
                             }
                         }
                     }
-                    for (int i = 0; i < Chrs.length; i++) {
-                        if (Chrs[i].Size == 0) {
-                            System.err.println(new Date() + "\tWarning! No " + Chrs[i].Name + " in genomic file");
+                    for (Chromosome Chr1 : Chrs) {
+                        if (Chr1.Size == 0) {
+                            System.err.println(new Date() + "\tWarning! No " + Chr1.Name + " in genomic file");
                         }
                     }
                     return Chrs;
@@ -100,7 +83,11 @@ public class Tools {
         }
     }
 
-    public static ArrayList<Chromosome> CalculateChrSize(File GenomeFile) throws IOException {
+    /**
+     * @param GenomeFile 基因组文件
+     * @return return null if file is empty or no complete item
+     */
+    private static ArrayList<Chromosome> CalculateChrSize(File GenomeFile) throws IOException {
         ArrayList<Chromosome> ChrList = new ArrayList<>();
         BufferedReader reader = new BufferedReader(new FileReader(GenomeFile));
         String Line, Chr;
@@ -108,6 +95,9 @@ public class Tools {
         Line = reader.readLine();
         while (Line != null && !Line.matches("^>.+")) {
             Line = reader.readLine();
+        }
+        if (Line == null) {
+            return ChrList;
         }
         Chr = Line.split("\\s+")[0].replace(">", "");
         Line = reader.readLine();
@@ -173,48 +163,44 @@ public class Tools {
         int ExitValue;
         System.out.println(new Date() + "\t" + CommandStr);
         Process P = Runtime.getRuntime().exec(CommandStr);
-        Thread OutThread = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    String line;
-                    BufferedReader bufferedReaderIn = new BufferedReader(new InputStreamReader(P.getInputStream()));
-                    if (Out != null) {
-                        while ((line = bufferedReaderIn.readLine()) != null) {
-                            Out.print(line + "\n");
-                            Out.flush();
-                        }
-                        bufferedReaderIn.close();
-                    } else {
-                        while (bufferedReaderIn.readLine() != null) ;
-                        bufferedReaderIn.close();
+        Thread OutThread = new Thread(() -> {
+            try {
+                String line;
+                BufferedReader bufferedReaderIn = new BufferedReader(new InputStreamReader(P.getInputStream()));
+                if (Out != null) {
+                    while ((line = bufferedReaderIn.readLine()) != null) {
+                        Out.print(line + "\n");
+                        Out.flush();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    bufferedReaderIn.close();
+                } else {
+                    while (true) {
+                        if (bufferedReaderIn.readLine() == null) break;
+                    }
+                    bufferedReaderIn.close();
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         });
-        Thread ErrThread = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    String line;
-                    BufferedReader bufferedReaderIn = new BufferedReader(new InputStreamReader(P.getErrorStream()));
-                    if (Error != null) {
-                        while ((line = bufferedReaderIn.readLine()) != null) {
-                            Error.write(line + "\n");
-                            Error.flush();
-                        }
-                        bufferedReaderIn.close();
-                    } else {
-                        while (bufferedReaderIn.readLine() != null) ;
-                        bufferedReaderIn.close();
+        Thread ErrThread = new Thread(() -> {
+            try {
+                String line;
+                BufferedReader bufferedReaderIn = new BufferedReader(new InputStreamReader(P.getErrorStream()));
+                if (Error != null) {
+                    while ((line = bufferedReaderIn.readLine()) != null) {
+                        Error.write(line + "\n");
+                        Error.flush();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    bufferedReaderIn.close();
+                } else {
+                    while (true) {
+                        if (bufferedReaderIn.readLine() == null) break;
+                    }
+                    bufferedReaderIn.close();
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         });
         OutThread.start();
@@ -233,9 +219,9 @@ public class Tools {
         }
         for (File file : FileList) {
             if (file.isFile() && file.length() == 0) {
-                file.delete();
+                AbstractFile.delete(file);
                 Count++;
-            } else {
+            } else if (file.isDirectory()) {
                 Count += RemoveEmptyFile(file);
             }
         }
@@ -276,33 +262,6 @@ public class Tools {
             }
         }
         return new String(RevComStr);
-    }
-
-    public static File[] CheckEnzyFragFile(Chromosome[] s) {
-        File[] EnzyFragBedFile = new File[s.length];
-        if (new File(Opts.OutDir.EnzyFragDir.toString()).isDirectory()) {
-            File[] list_files = new File(Opts.OutDir.EnzyFragDir.toString()).listFiles();
-            if (list_files != null) {
-                for (int i = 0; i < s.length; i++) {
-                    boolean flag = false;
-                    for (File file : list_files) {
-                        if (file.getName().matches(".*\\." + s[i].Name + "\\..*")) {
-                            EnzyFragBedFile[i] = new CommonFile(file);
-                            flag = true;
-                            break;
-                        }
-                    }
-                    if (!flag) {
-                        return null;
-                    }
-                }
-            } else {
-                return null;
-            }
-        } else {
-            return null;
-        }
-        return EnzyFragBedFile;
     }
 
 }

@@ -14,14 +14,14 @@ public class Opts {
      * 文件类型枚举类
      */
     public enum FileFormat {
-        ErrorFormat, EmptyFile, BedpePointFormat, BedpeRegionFormat, TwoDMatrixFormat, SpareMatrixFormat, Phred33, Phred64, ShortReads, LongReads, Undefine
+        ErrorFormat, EmptyFile, BedpePointFormat, BedpeRegionFormat, DenseMatrixFormat, SpareMatrixFormat, Phred33, Phred64, ShortReads, LongReads, Undefine
     }
 
     /**
      * 断点枚举类
      */
     public enum Step {
-        PreProcess("PreProcess"), SeProcess("SeProcess"), Bed2BedPe("Bed2BedPe"), BedPeProcess("BedPeProcess"), BedPe2Inter("BedPe2Inter"), MakeMatrix("MakeMatrix"), TransLocationDetection("Trans");
+        PreProcess("PreProcess"), SeProcess("SeProcess"), Bed2BedPe("Bed2BedPe"), BedPeProcess("BedPeProcess"), BedPe2Inter("BedPe2Inter"), MakeMatrix("MakeMatrix");
 
         private String Str;
 
@@ -36,7 +36,7 @@ public class Opts {
     }
 
     public enum OutDir {
-        PreDir("PreProcess"), SeDir("SeProcess"), BedpeDir("BedpeProcess"), MatrixDir("MakeMatrix"), EnzyFragDir("EnzymeFragment"), IndexDir("Index"), TransDir("TransDetection"), ReportDir("Report");
+        PreDir("PreProcess"), SeDir("SeProcess"), BedpeDir("BedpeProcess"), MatrixDir("MakeMatrix"), EnzyFragDir("EnzymeFragment"), IndexDir("Index"), ReportDir("Report");
 
         private String Str;
 
@@ -92,7 +92,7 @@ public class Opts {
     public static final File ResourceDir = new File(JarFile.getParent() + "/Resource");//资源文件存放的位置
     public static final CommonFile CommandOutFile = new CommonFile("./command.log");
     public static final String[] ResourceFile = new String[]{"default.conf", "default_adv.conf"};
-    public static final String[] ScriptFile = new String[]{"PlotHeatMap.py", "StatisticPlot.py", "LongCornerDetect.py", "ShortCornerDetect.py", "util.py", "RegionPlot.py"};
+    public static final String[] ScriptFile = new String[]{"PlotHeatMap.py", "StatisticPlot.py", "RegionPlot.py"};
     public static final CommonFile ConfigFile = new CommonFile(ResourceDir + "/" + ResourceFile[0]);
     public static final CommonFile AdvConfigFile = new CommonFile(ResourceDir + "/" + ResourceFile[1]);
     public static final File PlotHeatMapScriptFile = new File(ScriptDir + "/" + ScriptFile[0]);

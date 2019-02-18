@@ -114,5 +114,8 @@ public class SamFile extends AbstractFile<SamItem> {
         reader.close();
     }
 
+    public ArrayList<String> getHeader() {
+        return Header;
+    }
 }
 
