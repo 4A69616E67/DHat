@@ -4,7 +4,6 @@ package Component.unit;
  * and open the template in the editor.
  */
 
-import java.io.*;
 import java.util.*;
 
 public class LocalAlignment {
@@ -44,13 +43,17 @@ public class LocalAlignment {
         ScoreMatrix = new int[MatrixSzie[0]][MatrixSzie[1]];
         MaxIndex = new int[]{Seq1.length, Seq2.length};
         MinIndex = MaxIndex.clone();
-        InitMatrix(0);
+        InitMatrix();
     }
 
     private void InitMatrix(int score) {
-        for (int i = 0; i < ScoreMatrix.length; i++) {
-            Arrays.fill(ScoreMatrix[i], score);
+        for (int[] aScoreMatrix : ScoreMatrix) {
+            Arrays.fill(aScoreMatrix, score);
         }
+    }
+
+    private void InitMatrix() {
+        InitMatrix(0);
     }
 
     public void FindMaxIndex() {
@@ -233,7 +236,7 @@ public class LocalAlignment {
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         if (args.length < 2) {
             System.out.println("Usage: java Component.unit.LocalAlignment <sequence 1> <sequence 2> [option]");
             System.exit(0);
