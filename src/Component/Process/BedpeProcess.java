@@ -5,16 +5,16 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
 
+import Component.File.AbstractFile;
 import Component.File.BedpeFile;
 import Component.File.CommonFile;
 import Component.tool.FindRestrictionSite;
 import Component.tool.Tools;
 import Component.unit.*;
 import org.apache.commons.cli.*;
-import org.apache.commons.io.FileUtils;
+
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 public class BedpeProcess {
     private File OutPath = new File("./");
@@ -54,7 +54,7 @@ public class BedpeProcess {
     private BedpeFile FinalFile;//最终文件=SameNoDumpFile+DiffNoDumpFile
     //============================================================
 
-    public static void main(String[] args) throws IOException, InterruptedException, ParseException {
+    public static void main(String[] args) throws IOException, ParseException {
         BedpeProcess bedpe = new BedpeProcess(args);
         bedpe.Run();
     }
@@ -124,25 +124,22 @@ public class BedpeProcess {
         Thread[] Process = new Thread[Chromosomes.length];
         for (int i = 0; i < Chromosomes.length; i++) {
             int finalI = i;
-            Process[i] = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        //定位交互发生在哪个酶切片段
-                        FragmentLocation(ChrSameFile[finalI], EnzyFile[finalI], ChrFragLocationFile[finalI]);
-                        //区分不同的连接类型（自连接，再连接，有效数据）
-                        SeparateLigationType(ChrFragLocationFile[finalI], ChrLigationFile[finalI][0], ChrLigationFile[finalI][1], ChrLigationFile[finalI][2]);
-                        BedpeFile SortChrLigationFile = new BedpeFile(ChrLigationFile[finalI][2] + ".sort");
-                        //按交互位置排序
-                        ChrLigationFile[finalI][2].SortFile(SortChrLigationFile);
-                        //去除duplication
-                        RemoveRepeat(SortChrLigationFile, ChrSameNoDumpFile[finalI], ChrSameRepetaFile[finalI]);
-                        if (Configure.DeBugLevel < 1) {
-                            SortChrLigationFile.delete();
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
+            Process[i] = new Thread(() -> {
+                try {
+                    //定位交互发生在哪个酶切片段
+                    FragmentLocation(ChrSameFile[finalI], EnzyFile[finalI], ChrFragLocationFile[finalI]);
+                    //区分不同的连接类型（自连接，再连接，有效数据）
+                    SeparateLigationType(ChrFragLocationFile[finalI], ChrLigationFile[finalI][0], ChrLigationFile[finalI][1], ChrLigationFile[finalI][2]);
+                    BedpeFile SortChrLigationFile = new BedpeFile(ChrLigationFile[finalI][2] + ".sort");
+                    //按交互位置排序
+                    ChrLigationFile[finalI][2].SortFile(SortChrLigationFile);
+                    //去除duplication
+                    RemoveRepeat(SortChrLigationFile, ChrSameNoDumpFile[finalI], ChrSameRepetaFile[finalI]);
+                    if (Configure.DeBugLevel < 1) {
+                        AbstractFile.delete(SortChrLigationFile);
                     }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             });
             Process[i].start();
@@ -161,16 +158,26 @@ public class BedpeProcess {
                 System.err.println(new Date() + "\tWarning! Can't delete " + f.getName());
             }
         }
-        SameNoDumpFile.delete();
-        SelfLigationFile.delete();
-        ReLigationFile.delete();
-        ValidFile.delete();
-        FragmentLocationFile.delete();
-        FileUtils.touch(SameNoDumpFile);
-        FileUtils.touch(SelfLigationFile);
-        FileUtils.touch(ReLigationFile);
-        FileUtils.touch(ValidFile);
-        FileUtils.touch(FragmentLocationFile);
+        if (!SameNoDumpFile.clean()) {
+            SameNoDumpFile = new BedpeFile(SameNoDumpFile + ".temp");
+            System.err.println("Create another file " + SameNoDumpFile);
+        }
+        if (!SelfLigationFile.clean()) {
+            SelfLigationFile = new BedpeFile(SelfLigationFile + ".temp");
+            System.err.println("Create another file " + SelfLigationFile);
+        }
+        if (!ReLigationFile.clean()) {
+            ReLigationFile = new BedpeFile(ReLigationFile + ".temp");
+            System.err.println("Create another file " + ReLigationFile);
+        }
+        if (!ValidFile.clean()) {
+            SameNoDumpFile = new BedpeFile(ValidFile + ".temp");
+            System.err.println("Create another file " + ValidFile);
+        }
+        if (!FragmentLocationFile.clean()) {
+            FragmentLocationFile = new BedpeFile(FragmentLocationFile + ".temp");
+            System.err.println("Create another file " + FragmentLocationFile);
+        }
         for (int j = 0; j < Chromosomes.length; j++) {
             SameNoDumpFile.Append(ChrSameNoDumpFile[j]);//合并染色体内的交互（去除duplication）
             SelfLigationFile.Append(ChrLigationFile[j][0]);//合并自连接
@@ -181,9 +188,9 @@ public class BedpeProcess {
             //删除中间文件
             if (Configure.DeBugLevel < 1) {
                 for (int i = 0; i < 3; i++) {
-                    ChrLigationFile[j][i].delete();//删除（自连接，再连接，有效数据）
+                    AbstractFile.delete(ChrLigationFile[j][i]);//删除（自连接，再连接，有效数据）
                 }
-                ChrFragLocationFile[j].delete();//删除每条染色体的交互片段定位的文件（只保留包含全部染色体的一个文件）
+                AbstractFile.delete(ChrFragLocationFile[j]);//删除每条染色体的交互片段定位的文件（只保留包含全部染色体的一个文件）
             }
 
         }
@@ -286,8 +293,8 @@ public class BedpeProcess {
             }
             //-----------------------------------------------------------------
             OutWrite.write(line);
-            for (int i = 0; i < index.length; i++) {
-                OutWrite.write("\t" + index[i]);
+            for (FragSite anIndex : index) {
+                OutWrite.write("\t" + anIndex);
             }
             OutWrite.write("\n");
         }
@@ -328,15 +335,14 @@ public class BedpeProcess {
     /**
      * 二分法查找
      *
-     * @param list
-     * @param site
-     * @return null 如果没有找到相应的片段返回null
+     * @param list search list
+     * @param site search site
      */
     private FragSite Location(ArrayList<Region> list, Region site) {
         int i = 0, j = list.size();
         int MinDis = Integer.MAX_VALUE, MinIndex = 0, dis, p = 0;
         Region item;
-        FragSite fs = null;
+        FragSite fs;
         while (i < j) {
             p = (i + j) / 2;
             item = list.get(p);
@@ -421,41 +427,38 @@ public class BedpeProcess {
         Thread[] process = new Thread[Threads];
         System.out.println(new Date() + "\tBegin to Seperate bedpe file\t" + BedpeFile.getName());
         for (int i = 0; i < Threads; i++) {
-            process[i] = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    String line;
-                    String[] str;
-                    try {
-                        while ((line = BedpeRead.readLine()) != null) {
-                            str = line.split("\\s+");
-                            if (str[0].equals(str[3])) {
-                                //---------------------------取相同染色体上的交互-----------------------
-                                if (Integer.parseInt(str[1]) < Integer.parseInt(str[4])) {
-                                    synchronized (SameBedpeWrite) {
-                                        SameBedpeWrite.write(line + "\n");
-                                    }
-                                } else {
-                                    synchronized (SameBedpeWrite) {
-                                        SameBedpeWrite.write(str[3] + "\t" + str[4] + "\t" + str[5] + "\t" + str[0] + "\t" + str[1] + "\t" + str[2] + "\t" + str[6] + "\t" + str[8] + "\t" + str[7] + "\t" + str[10] + "\t" + str[9] + "\n");
-                                    }
+            process[i] = new Thread(() -> {
+                String line;
+                String[] str;
+                try {
+                    while ((line = BedpeRead.readLine()) != null) {
+                        str = line.split("\\s+");
+                        if (str[0].equals(str[3])) {
+                            //---------------------------取相同染色体上的交互-----------------------
+                            if (Integer.parseInt(str[1]) < Integer.parseInt(str[4])) {
+                                synchronized (SameBedpeWrite) {
+                                    SameBedpeWrite.write(line + "\n");
                                 }
                             } else {
-                                //--------------------------取不同染色体上的交互----------------------
-                                if (str[0].compareTo(str[3]) < 0) {
-                                    synchronized (DiffBedpeWrite) {
-                                        DiffBedpeWrite.write(line + "\n");
-                                    }
-                                } else {
-                                    synchronized (DiffBedpeWrite) {
-                                        DiffBedpeWrite.write(str[3] + "\t" + str[4] + "\t" + str[5] + "\t" + str[0] + "\t" + str[1] + "\t" + str[2] + "\t" + str[6] + "\t" + str[8] + "\t" + str[7] + "\t" + str[10] + "\t" + str[9] + "\n");
-                                    }
+                                synchronized (SameBedpeWrite) {
+                                    SameBedpeWrite.write(str[3] + "\t" + str[4] + "\t" + str[5] + "\t" + str[0] + "\t" + str[1] + "\t" + str[2] + "\t" + str[6] + "\t" + str[8] + "\t" + str[7] + "\t" + str[10] + "\t" + str[9] + "\n");
+                                }
+                            }
+                        } else {
+                            //--------------------------取不同染色体上的交互----------------------
+                            if (str[0].compareTo(str[3]) < 0) {
+                                synchronized (DiffBedpeWrite) {
+                                    DiffBedpeWrite.write(line + "\n");
+                                }
+                            } else {
+                                synchronized (DiffBedpeWrite) {
+                                    DiffBedpeWrite.write(str[3] + "\t" + str[4] + "\t" + str[5] + "\t" + str[0] + "\t" + str[1] + "\t" + str[2] + "\t" + str[6] + "\t" + str[8] + "\t" + str[7] + "\t" + str[10] + "\t" + str[9] + "\n");
                                 }
                             }
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             });
             process[i].start();
@@ -501,17 +504,12 @@ public class BedpeProcess {
 
 class FragSite {
     private int Site;
-    private char Orientation = 's';
+    private char Orientation;
     private int distance;
 
     FragSite(int i, char s) {
         Site = i;
         Orientation = s;
-    }
-
-    FragSite(int i, char s, int d) {
-        this(i, s);
-        distance = d;
     }
 
     FragSite(String s) {

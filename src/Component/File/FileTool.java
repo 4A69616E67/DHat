@@ -104,9 +104,7 @@ public class FileTool {
         double[][] matrix = new double[List.size()][];
         for (int i = 0; i < List.size(); i++) {
             matrix[i] = new double[List.get(i).length];
-            for (int j = 0; j < List.get(i).length; j++) {
-                matrix[i][j] = List.get(i)[j];
-            }
+            if (List.get(i).length >= 0) System.arraycopy(List.get(i), 0, matrix[i], 0, List.get(i).length);
         }
         return matrix;
     }

@@ -5,9 +5,9 @@ import Component.unit.*;
 
 import java.io.*;
 import java.util.ArrayList;
+
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 public class FastqFile extends AbstractFile<FastqItem> {
 
@@ -72,7 +72,8 @@ public class FastqFile extends AbstractFile<FastqItem> {
     }
 
     @Override
-    public SortItem ReadSortItem() {
+    @Deprecated
+    public SortItem<FastqItem> ReadSortItem() {
         return null;
     }
 
@@ -121,20 +122,11 @@ public class FastqFile extends AbstractFile<FastqItem> {
         }
         msa.close();
         HeadFile.delete();
-//        BufferedReader reader = new BufferedReader(new FileReader(MsaFile));
         MsaFile.ReadOpen();
-//        reader.readLine();
         FastaItem fasta_item;
         while ((fasta_item = MsaFile.ReadItem()) != null) {
-//            if (fasta_item.Title.matches("^>.*")) {
-//                MsaStat.add(Adapter.toString().toCharArray());
-//                Adapter.setLength(0);
-//                continue;
-//            }
-//            Adapter.append(fasta_item.Sequence);
             MsaStat.add(fasta_item.Sequence.toString().toCharArray());
         }
-//        Adapter.setLength(0);
         MsaFile.ReadClose();
         for (int i = 0; i < MsaStat.get(0).length; i++) {
             CountArrays['A'] = 0;
@@ -142,8 +134,8 @@ public class FastqFile extends AbstractFile<FastqItem> {
             CountArrays['C'] = 0;
             CountArrays['G'] = 0;
             CountArrays['-'] = 0;
-            for (int j = 0; j < MsaStat.size(); j++) {
-                CountArrays[Character.toUpperCase(MsaStat.get(j)[i])]++;
+            for (char[] aMsaStat : MsaStat) {
+                CountArrays[Character.toUpperCase(aMsaStat[i])]++;
             }
             int MaxValue = 0;
             char MaxBase = '-';
@@ -161,10 +153,10 @@ public class FastqFile extends AbstractFile<FastqItem> {
         }
         String[] SplitAdapter = Adapter.toString().replace("-", "").split("N+");
         int MaxValue = 0;
-        for (int i = 0; i < SplitAdapter.length; i++) {
-            if (SplitAdapter[i].length() > MaxValue) {
-                MaxValue = SplitAdapter[i].length();
-                Adapter = new StringBuilder(SplitAdapter[i]);
+        for (String aSplitAdapter : SplitAdapter) {
+            if (aSplitAdapter.length() > MaxValue) {
+                MaxValue = aSplitAdapter.length();
+                Adapter = new StringBuilder(aSplitAdapter);
             }
         }
         return Adapter.toString();

@@ -4,16 +4,16 @@ import Component.unit.FastaItem;
 import Component.unit.SortItem;
 
 import java.io.IOException;
+
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 public class FastaFile extends AbstractFile<FastaItem> {
     public FastaFile(String pathname) {
         super(pathname);
     }
 
-    public FastaFile(FastaFile file){
+    public FastaFile(FastaFile file) {
         super(file);
     }
 
@@ -55,40 +55,13 @@ public class FastaFile extends AbstractFile<FastaItem> {
         return s.toString();
     }
 
-//    @Override
-//    public FastaItem ReadItem() throws IOException {
-//        Item = new FastaItem();
-//        String s;
-//        while ((s = reader.readLine()) != null) {
-//            if (s.matches("^>.*")) {
-//                Item.Title = s;
-//                break;
-//            }
-//        }
-//        while (true) {
-//            s = reader.readLine();
-//            if (s == null) {
-//                Item = null;
-//                break;
-//            }
-//            reader.mark(100);
-//            if (s.matches("^>.*")) {
-//                reader.reset();
-//                break;
-//            } else {
-//                Item.Sequence.append(s);
-//            }
-//        }
-//        return Item;
-//    }
-
     @Override
-    public void WriteItem(FastaItem item) throws IOException {
+    public void WriteItem(FastaItem item) {
 
     }
 
     @Override
-    public SortItem<FastaItem> ReadSortItem() throws IOException {
+    public SortItem<FastaItem> ReadSortItem() {
         return null;
     }
 

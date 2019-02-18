@@ -1,7 +1,7 @@
 package Component.unit;
+
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 public class InterAction implements Comparable<InterAction> {
     private ChrRegion Left;
@@ -27,10 +27,6 @@ public class InterAction implements Comparable<InterAction> {
         Right = new ChrRegion(new String[]{s[3], s[4], s[5]});
     }
 
-    public boolean IsOverlap(InterAction action) {
-        return Left.IsOverlap(action.Left) && Right.IsOverlap(action.Right);
-    }
-
     public boolean IsBelong(InterAction action) {
         return Left.IsBelong(action.Left) && Right.IsBelong(action.Right);
     }
@@ -49,7 +45,7 @@ public class InterAction implements Comparable<InterAction> {
     }
 
     @Override
-    public int compareTo( InterAction o) {
+    public int compareTo(InterAction o) {
         if (SortByName) {
             return Name.compareTo(o.Name);
         } else {

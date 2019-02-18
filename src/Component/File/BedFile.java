@@ -7,9 +7,9 @@ import Component.unit.SortItem;
 
 import java.io.IOException;
 import java.util.ArrayList;
+
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 public class BedFile extends AbstractFile<ChrRegion> {
     public boolean SortByName = true;
@@ -18,7 +18,7 @@ public class BedFile extends AbstractFile<ChrRegion> {
         super(pathname);
     }
 
-    public BedFile(BedFile file) {
+    private BedFile(AbstractFile file) {
         super(file);
     }
 
@@ -51,13 +51,13 @@ public class BedFile extends AbstractFile<ChrRegion> {
             BedFile[] TempSplitSortFile = new BedFile[TempSplitFile.size()];
             for (int i = 0; i < TempSplitFile.size(); i++) {
                 TempSplitSortFile[i] = new BedFile(TempSplitFile.get(i).getPath() + ".sort");
-                new BedFile(TempSplitFile.get(i).getPath()).SortFile(TempSplitSortFile[i]);
+                new BedFile(TempSplitFile.get(i)).SortFile(TempSplitSortFile[i]);
             }
             OutFile.MergeSortFile(TempSplitSortFile);
             if (Configure.DeBugLevel < 1) {
                 for (int i = 0; i < TempSplitFile.size(); i++) {
-                    TempSplitFile.get(i).delete();
-                    TempSplitSortFile[i].delete();
+                    AbstractFile.delete(TempSplitFile.get(i));
+                    AbstractFile.delete(TempSplitSortFile[i]);
                 }
             }
         } else {

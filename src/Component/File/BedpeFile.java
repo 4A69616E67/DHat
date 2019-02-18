@@ -46,7 +46,7 @@ public class BedpeFile extends AbstractFile<InterAction> {
                 Item.getLeft().SortByName = SortByName;
                 Item.getRight().SortByName = SortByName;
                 Item.Name = ss[6];
-//                Item.SortByName = SortByName;
+                Item.SortByName = SortByName;
             } catch (IndexOutOfBoundsException e) {
                 return null;
             }
@@ -87,8 +87,8 @@ public class BedpeFile extends AbstractFile<InterAction> {
             OutFile.MergeSortFile(TempSplitSortFile);
             if (Configure.DeBugLevel < 1) {
                 for (int i = 0; i < TempSplitFile.size(); i++) {
-                    TempSplitFile.get(i).delete();
-                    TempSplitSortFile[i].delete();
+                    AbstractFile.delete(TempSplitFile.get(i));
+                    AbstractFile.delete(TempSplitSortFile[i]);
                 }
             }
         } else {
@@ -121,26 +121,23 @@ public class BedpeFile extends AbstractFile<InterAction> {
         }
         Thread[] t = new Thread[Threads];
         for (int i = 0; i < t.length; i++) {
-            t[i] = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    String Line;
-                    String[] Str;
-                    try {
-                        while ((Line = reader.readLine()) != null) {
-                            Str = Line.split("\\s+");
-                            for (int j = 0; j < Chromosome.length; j++) {
-                                if (Str[0].equals(Chromosome[j].Name)) {
-                                    synchronized (Chromosome[j]) {
-                                        ChrSameFile[j].getWriter().write(Line + "\n");
-                                    }
-                                    break;
+            t[i] = new Thread(() -> {
+                String Line;
+                String[] Str;
+                try {
+                    while ((Line = reader.readLine()) != null) {
+                        Str = Line.split("\\s+");
+                        for (int j = 0; j < Chromosome.length; j++) {
+                            if (Str[0].equals(Chromosome[j].Name)) {
+                                synchronized (Chromosome[j]) {
+                                    ChrSameFile[j].getWriter().write(Line + "\n");
                                 }
+                                break;
                             }
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             });
             t[i].start();

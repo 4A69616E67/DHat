@@ -58,7 +58,7 @@ public class MatrixFile extends AbstractFile<MatrixItem> {
 
     @Deprecated
     @Override
-    public SortItem<MatrixItem> ReadSortItem() throws IOException {
+    public SortItem<MatrixItem> ReadSortItem() {
         return null;
     }
 

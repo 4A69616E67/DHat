@@ -19,9 +19,9 @@ public class SamFile extends AbstractFile<SamItem> {
         super(pathname);
     }
 
-    public SamFile(SamFile file) {
-        super(file);
-    }
+//    public SamFile(SamFile file) {
+//        super(file);
+//    }
 
     @Override
     protected SamItem ExtractItem(String s) {
