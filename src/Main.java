@@ -7,7 +7,6 @@ import java.util.*;
 
 import Bin.*;
 import Component.File.*;
-import Component.Image.PlotMatrix;
 import Component.Process.BedpeProcess;
 import Component.Process.PreProcess;
 import Component.Process.SeProcess;
@@ -515,10 +514,17 @@ public class Main {
                 if (!new File(MakeMatrixDir + "/" + aDrawResolution).isDirectory()) {
                     matrix.Run();
                 }
-                new PlotMatrix(matrix.getTwoDMatrixFile(), new File(OutDir + "/" + Prefix + ".interaction." + Tools.UnitTrans(aDrawResolution, "B", "M") + "M.png"), aDrawResolution).Run(matrix.getBinSizeFile());
-                File[] TwoDMatrixFile = matrix.getChrTwoDMatrixFile();
+//                new PlotMatrix(matrix.getDenseMatrixFile(), new File(OutDir + "/" + Prefix + ".interaction." + Tools.UnitTrans(aDrawResolution, "B", "M") + "M.png"), aDrawResolution).Run(matrix.getBinSizeFile());
+                if (matrix.getDenseMatrixFile().PlotHeatMap(matrix.getBinSizeFile(), aDrawResolution, new File(OutDir + "/" + Prefix + ".interaction." + Tools.UnitTrans(aDrawResolution, "B", "M") + "M.png")) != 0) {
+                    System.err.println("There are some worried in plot heatmap : " + matrix.getDenseMatrixFile());
+                }
+
+                MatrixFile[] DenseMatrixFile = matrix.getChrDenseMatrixFile();
                 for (int j = 0; j < Chromosomes.length; j++) {
-                    new PlotMatrix(TwoDMatrixFile[j], new File(OutDir + "/" + Prefix + "." + Chromosomes[j].Name + "." + Tools.UnitTrans(aDrawResolution, "B", "M") + "M.png"), aDrawResolution / 10).Run(new String[]{Chromosomes[j].Name + ":0", Chromosomes[j].Name + ":0"});
+                    if (DenseMatrixFile[j].PlotHeatMap(new String[]{Chromosomes[j].Name + ":0", Chromosomes[j].Name + ":0"}, aDrawResolution, new File(OutDir + "/" + Prefix + "." + Chromosomes[j].Name + "." + Tools.UnitTrans(aDrawResolution, "B", "M") + "M.png")) != 0) {
+                        System.err.println("There are some worried in plot heatmap : " + DenseMatrixFile[j]);
+                    }
+//                    new PlotMatrix(DenseMatrixFile[j], new File(OutDir + "/" + Prefix + "." + Chromosomes[j].Name + "." + Tools.UnitTrans(aDrawResolution, "B", "M") + "M.png"), aDrawResolution / 10).Run(new String[]{Chromosomes[j].Name + ":0", Chromosomes[j].Name + ":0"});
                 }
             }
         }

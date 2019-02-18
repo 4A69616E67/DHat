@@ -84,7 +84,6 @@ public class SeProcess {
      * <p>3. sam转bed</p>
      * <p>4. bed文件排序</p>
      *
-     * @throws IOException
      */
     public void Run() throws IOException, InterruptedException {
         //========================================================================================
@@ -229,12 +228,10 @@ public class SeProcess {
     }
 
     /**
-     * @param ReadsList
-     * @param Prefix
-     * @param Num
+     * @param ReadsList 序列列表
+     * @param Prefix 前缀
+     * @param Num 序号
      * @return <>samfile of unique map and multi map</p>
-     * @throws IOException
-     * @throws InterruptedException
      */
     private SamFile[] IterationAlignment(Hashtable<String, char[]> ReadsList, String Prefix, int Num) throws IOException, InterruptedException {
         System.out.println(new Date() + "\tIteration align start " + Num);

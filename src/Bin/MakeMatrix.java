@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.Properties;
 
 import Component.File.BedpeFile;
+import Component.File.MatrixFile;
 import Component.tool.*;
 import Component.unit.*;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
@@ -29,9 +30,8 @@ public class MakeMatrix {
     private BedpeFile[] ChrBedpeFile;
     //==============================================================
     private String[] ChrMatrixPrefix;
-    private File TwoDMatrixFile, SpareMAtrixFile;
-    private File[] ChrTwoDMatrixFile, ChrSpareMAtrixFile, ChrNormalizeTwoDMatrix, ChrNormalizeSpareMAtrixFile;
-    private File ConfigureFile;
+    private MatrixFile DenseMatrixFile, SpareMatrixFile;
+    private MatrixFile[] ChrDenseMatrixFile, ChrSpareMatrixFile, ChrNormalizeDenseMatrix, ChrNormalizeSpareMatrixFile;
     private File BinSizeFile;
     private Properties Config = new Properties();
 
@@ -48,7 +48,6 @@ public class MakeMatrix {
     }
 
     MakeMatrix(File ConfigFile) throws IOException {
-//        ParameterInit();
         GetOption(ConfigFile);
         Init();
     }
@@ -60,7 +59,7 @@ public class MakeMatrix {
         for (int j = 0; j < Chromosomes.length; j++) {
             cm = new CreateMatrix(ChrBedpeFile[j], new Chromosome[]{Chromosomes[j]}, Resolution / 10, ChrMatrixPrefix[j], Threads);
             Matrix = cm.Run();
-            Tools.PrintMatrix(MatrixNormalize(Matrix), ChrNormalizeTwoDMatrix[j], ChrNormalizeSpareMAtrixFile[j]);
+            Tools.PrintMatrix(MatrixNormalize(Matrix), ChrNormalizeDenseMatrix[j], ChrNormalizeSpareMatrixFile[j]);
         }
     }
 
@@ -75,7 +74,6 @@ public class MakeMatrix {
     }
 
     private void GetOption(File conf_file) throws IOException {
-        ConfigureFile = conf_file;
         Config.load(new FileReader(conf_file));
         OutPath = new File(Config.getProperty("OutPath", "./"));
         Prefix = Config.getProperty("Prefix", "MM_Out");
@@ -107,24 +105,22 @@ public class MakeMatrix {
         }
         CreateMatrix cm;
         InterMatrixPrefix = OutPath + "/" + Prefix + "_" + Tools.UnitTrans(Resolution, "B", "M") + "M";
-//        NormalizeMatrixPrefix = OutPath + "/" + Prefix + ".normalize";
-        ChrTwoDMatrixFile = new File[Chromosomes.length];
-        ChrSpareMAtrixFile = new File[Chromosomes.length];
-        ChrNormalizeTwoDMatrix = new File[Chromosomes.length];
-        ChrNormalizeSpareMAtrixFile = new File[Chromosomes.length];
+        ChrDenseMatrixFile = new MatrixFile[Chromosomes.length];
+        ChrSpareMatrixFile = new MatrixFile[Chromosomes.length];
+        ChrNormalizeDenseMatrix = new MatrixFile[Chromosomes.length];
+        ChrNormalizeSpareMatrixFile = new MatrixFile[Chromosomes.length];
         ChrMatrixPrefix = new String[Chromosomes.length];
         cm = new CreateMatrix(BedpeFile, Chromosomes, Resolution, InterMatrixPrefix, Threads);
         BinSizeFile = cm.getBinSizeFile();
-        TwoDMatrixFile = cm.getTwoDMatrixFile();
-        SpareMAtrixFile = cm.getSpareMatrixFile();
-//        System.out.println(TwoDMatrixFile+"\t"+SpareMAtrixFile);
+        DenseMatrixFile = cm.getDenseMatrixFile();
+        SpareMatrixFile = cm.getSpareMatrixFile();
         for (int i = 0; i < Chromosomes.length; i++) {
             ChrMatrixPrefix[i] = OutPath + "/" + Prefix + "." + Chromosomes[i].Name + "_" + Tools.UnitTrans((double) Resolution / 10, "B", "M") + "M";
             cm = new CreateMatrix(ChrBedpeFile[i], new Chromosome[]{Chromosomes[i]}, Resolution / 10, ChrMatrixPrefix[i], Threads);
-            ChrTwoDMatrixFile[i] = cm.getTwoDMatrixFile();
-            ChrSpareMAtrixFile[i] = cm.getSpareMatrixFile();
-            ChrNormalizeTwoDMatrix[i] = new File(OutPath + "/" + Prefix + "." + Chromosomes[i].Name + "_" + Tools.UnitTrans((double) Resolution / 10, "B", "M") + "M" + ".normalize.2d.matrix");
-            ChrNormalizeSpareMAtrixFile[i] = new File(OutPath + "/" + Prefix + "." + Chromosomes[i].Name + "_" + Tools.UnitTrans((double) Resolution / 10, "B", "M") + "M" + ".normalize.spare.matrix");
+            ChrDenseMatrixFile[i] = cm.getDenseMatrixFile();
+            ChrSpareMatrixFile[i] = cm.getSpareMatrixFile();
+            ChrNormalizeDenseMatrix[i] = new MatrixFile(OutPath + "/" + Prefix + "." + Chromosomes[i].Name + "_" + Tools.UnitTrans((double) Resolution / 10, "B", "M") + "M" + ".normalize.2d.matrix");
+            ChrNormalizeSpareMatrixFile[i] = new MatrixFile(OutPath + "/" + Prefix + "." + Chromosomes[i].Name + "_" + Tools.UnitTrans((double) Resolution / 10, "B", "M") + "M" + ".normalize.spare.matrix");
         }
     }
 
@@ -180,16 +176,20 @@ public class MakeMatrix {
         return NormalizeMatrix;//返回标准化后的矩阵
     }
 
-    public File getTwoDMatrixFile() {
-        return TwoDMatrixFile;
+    public MatrixFile getDenseMatrixFile() {
+        return DenseMatrixFile;
     }
 
-    public File[] getChrSpareMAtrixFile() {
-        return ChrSpareMAtrixFile;
+    public MatrixFile getSpareMatrixFile() {
+        return SpareMatrixFile;
     }
 
-    public File[] getChrTwoDMatrixFile() {
-        return ChrTwoDMatrixFile;
+    public MatrixFile[] getChrSpareMatrixFile() {
+        return ChrSpareMatrixFile;
+    }
+
+    public MatrixFile[] getChrDenseMatrixFile() {
+        return ChrDenseMatrixFile;
     }
 
     public void setChrSizeFile(File chrSizeFile) {

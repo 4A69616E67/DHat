@@ -160,7 +160,7 @@ public class PowerLaw {
         }
         ArrayList<String> templist = new ArrayList<>();
         for (int[] anlist : List) {
-            templist.add(String.join("\t", IntegerArrays.toString(anlist)));
+            templist.add(String.join("\t", IntegerArrays.toStrings(anlist)));
         }
         Tools.PrintList(templist, new File(outfile));
 

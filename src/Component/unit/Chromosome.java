@@ -41,9 +41,7 @@ public class Chromosome implements Comparable<Chromosome> {
         return Name.compareTo(o.Name);
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        Chromosome b = (Chromosome) obj;
+    public boolean equals(Chromosome b) {
         return this.Name.equals(b.Name) && this.Size == b.Size;
     }
 

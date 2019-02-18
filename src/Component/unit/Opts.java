@@ -5,16 +5,16 @@ import org.apache.commons.cli.CommandLine;
 
 import java.io.File;
 import java.util.Hashtable;
+
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 public class Opts {
     /**
      * 文件类型枚举类
      */
     public enum FileFormat {
-        ErrorFormat, EmptyFile, BedpePointFormat, BedpeRegionFormat, DenseMatrixFormat, SpareMatrixFormat, Phred33, Phred64, ShortReads, LongReads, Undefine
+        ErrorFormat, EmptyFile, BedpePointFormat, BedpeRegionFormat, Phred33, Phred64, ShortReads, LongReads, Undefine
     }
 
     /**
@@ -61,7 +61,8 @@ public class Opts {
     public static int GetIntOpt(CommandLine commandLine, String opt_string, int default_int) {
         return commandLine.hasOption(opt_string) ? Integer.parseInt(commandLine.getOptionValue(opt_string)) : default_int;
     }
-    public static float GetFloatOpt(CommandLine commandLine, String opt_string, float default_float){
+
+    public static float GetFloatOpt(CommandLine commandLine, String opt_string, float default_float) {
         return commandLine.hasOption(opt_string) ? Float.parseFloat(commandLine.getOptionValue(opt_string)) : default_float;
     }
 

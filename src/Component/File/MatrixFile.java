@@ -1,14 +1,21 @@
 package Component.File;
 
-import Component.unit.MatrixItem;
-import Component.unit.SortItem;
+import Component.tool.Tools;
+import Component.unit.*;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Date;
 
 /**
  * Created by 浩 on 2019/2/1.
  */
 public class MatrixFile extends AbstractFile<MatrixItem> {
+    private enum Format {
+        DenseMatrix, SpareMatrix, EmptyFile, ErrorFormat
+    }
 
     public MatrixFile(String pathname) {
         super(pathname);
@@ -62,4 +69,42 @@ public class MatrixFile extends AbstractFile<MatrixItem> {
         return null;
     }
 
+    public static Format FormatDetection(MatrixFile file) throws IOException {
+        file.ReadOpen();
+        BufferedReader reader = file.getReader();
+        String Line = reader.readLine();
+        if (Line == null) {
+            return Format.EmptyFile;
+        }
+        String[] Str = Line.split("\\s+|,");
+        try {
+            StringArrays.toInteger(Str);
+        } catch (NumberFormatException e) {
+            return Format.ErrorFormat;
+        }
+        if (Str.length > 3) {
+            return Format.DenseMatrix;
+        }
+        return Format.SpareMatrix;
+    }
+
+    public int PlotHeatMap(File binSizeFile, int resolution, File outFile) throws IOException, InterruptedException {
+        String ComLine = "python " + Opts.PlotHeatMapScriptFile + " -m A -i " + getPath() + " -o " + outFile + " -r " + resolution + " -c " + binSizeFile + " -q 98";
+        Opts.CommandOutFile.Append(ComLine + "\n");
+        if (Configure.DeBugLevel < 1) {
+            return Tools.ExecuteCommandStr(ComLine, null, null);
+        } else {
+            return Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
+        }
+    }
+
+    public int PlotHeatMap(String[] Region, int resolution, File outFile) throws IOException, InterruptedException {
+        String ComLine = "python " + Opts.PlotHeatMapScriptFile + " -t localGenome -m A -i " + getPath() + " -o " + outFile + " -r " + resolution + " -p " + String.join(":", Region) + " -q 95";
+        Opts.CommandOutFile.Append(ComLine + "\n");
+        if (Configure.DeBugLevel < 1) {
+            return Tools.ExecuteCommandStr(ComLine, null, null);
+        } else {
+            return Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
+        }
+    }
 }

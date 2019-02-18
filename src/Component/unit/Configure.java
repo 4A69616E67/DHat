@@ -1,9 +1,5 @@
 package Component.unit;
 
-/**
- * Created by snowf on 2019/2/17.
- *
- */
 
 import Component.File.FastqFile;
 import Component.tool.Tools;
@@ -12,6 +8,9 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Properties;
 
+/**
+ * Created by snowf on 2019/2/17.
+ */
 public class Configure {
 
     public static File InterActionDistanceDisPng;

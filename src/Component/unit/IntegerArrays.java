@@ -1,7 +1,7 @@
 package Component.unit;
+
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 public class IntegerArrays implements Comparable {
     private int[] item;
@@ -18,7 +18,7 @@ public class IntegerArrays implements Comparable {
     }
 
     @Override
-    public int compareTo( Object o) {
+    public int compareTo(Object o) {
         IntegerArrays b = (IntegerArrays) o;
         int result = 0;
         int i = 0;
@@ -32,7 +32,7 @@ public class IntegerArrays implements Comparable {
         return result;
     }
 
-    public static String[] toString(int[] i) {
+    public static String[] toStrings(int[] i) {
         String[] s = new String[i.length];
         for (int j = 0; j < i.length; j++) {
             s[j] = String.valueOf(i[j]);
@@ -42,11 +42,14 @@ public class IntegerArrays implements Comparable {
 
     @Override
     public String toString() {
-        String s = "";
+        StringBuilder s = new StringBuilder();
         for (int i = 0; i < length; i++) {
-            s += item[i];
+            s.append(item[i]).append(" ");
         }
-        return s;
+        if (s.length() > 0) {
+            s.deleteCharAt(s.length() - 1);
+        }
+        return s.toString();
     }
 
     public static double[] toDouble(int[] i) {
