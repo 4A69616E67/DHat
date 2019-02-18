@@ -34,8 +34,9 @@ public class Tools {
             for (Object i : o) {
                 s.append(i).append(" ");
             }
+            return s.deleteCharAt(s.length() - 1).toString();
         }
-        return s.deleteCharAt(s.length() - 1).toString();
+        return "";
     }
 
     public static String ArraysToString(int[] o) {
@@ -44,8 +45,9 @@ public class Tools {
             for (Object i : o) {
                 s.append(i).append(" ");
             }
+            return s.deleteCharAt(s.length() - 1).toString();
         }
-        return s.deleteCharAt(s.length() - 1).toString();
+        return "";
     }
 
     public static Chromosome[] CheckChromosome(Chromosome[] Chrs, File GenomeFile) throws IOException {
