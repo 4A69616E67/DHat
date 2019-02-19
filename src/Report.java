@@ -77,7 +77,7 @@ public class Report {
         }
         System.out.println("\n-----------------------------------------\nBed file\tUniq reads number\tPercent\tBed file\tUniq reads number\tPercent");
         for (int i = 0; i < UseLinker.length; i++) {
-            System.out.println(UseLinker[i].UniqMapFileR1.getName() + "\t" + new DecimalFormat("#,###").format(UseLinker[i].UniqMapNumR1) + "\t" + String.format("%.2f", (double) UseLinker[i].UniqMapNumR1 / UseLinker[i].FastqNumR1 * 100) + "%" + "\t" + UseLinker[i].UniqMapFileR2.getName() + "\t" + new DecimalFormat("#,###").format(UseLinker[i].UniqMapNumR2) + "\t" + String.format("%.2f", (double) UseLinker[i].UniqMapNumR2 / UseLinker[i].FastqNumR2 * 100) + "%");
+            System.out.println(UseLinker[i].UniqMapFileR1.getName() + "\t" + new DecimalFormat("#,###").format(UseLinker[i].UniqMapNumR1) + "\t" + String.format("%.2f", UseLinker[i].UniqMapNumR1 / UseLinker[i].FastqNumR1 * 100) + "%" + "\t" + UseLinker[i].UniqMapFileR2.getName() + "\t" + new DecimalFormat("#,###").format(UseLinker[i].UniqMapNumR2) + "\t" + String.format("%.2f", UseLinker[i].UniqMapNumR2 / UseLinker[i].FastqNumR2 * 100) + "%");
         }
         double sum = 0;
         System.out.println("\n-----------------------------------------\nBedpe file\tReads number\tPercent");

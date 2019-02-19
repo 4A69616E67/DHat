@@ -359,7 +359,7 @@ public class BedpeProcess {
         if (i >= j) {
             p = i;
         }
-        for (int k = p - 1; list.get(k).IsOverlap(site); k--) {
+        for (int k = p - 1; k >= 0 && list.get(k).IsOverlap(site); k--) {
             item = list.get(k);
             dis = Math.min(Math.abs(site.Start - item.Start), Math.abs(site.End - item.End));
             if (dis < MinDis) {
@@ -367,7 +367,7 @@ public class BedpeProcess {
                 MinIndex = k;
             }
         }
-        for (int k = p + 1; list.get(k).IsOverlap(site); k++) {
+        for (int k = p + 1; k < list.size() && list.get(k).IsOverlap(site); k++) {
             item = list.get(k);
             dis = Math.min(Math.abs(site.Start - item.Start), Math.abs(site.End - item.End));
             if (dis < MinDis) {

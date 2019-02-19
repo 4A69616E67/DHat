@@ -57,9 +57,13 @@ public class Configure {
             this.Value = v;
         }
 
+        public String getStr() {
+            return Str;
+        }
+
         @Override
         public String toString() {
-            return Str;
+            return Str + " = " + Value;
         }
     }
 
@@ -73,9 +77,13 @@ public class Configure {
             this.Value = v;
         }
 
+        public String getStr() {
+            return Str;
+        }
+
         @Override
         public String toString() {
-            return Str;
+            return Str + " = " + Value;
         }
     }
 
@@ -89,9 +97,13 @@ public class Configure {
             this.Value = v;
         }
 
+        public String getStr() {
+            return Str;
+        }
+
         @Override
         public String toString() {
-            return Str;
+            return Str + " = " + Value;
         }
     }
 
@@ -102,16 +114,16 @@ public class Configure {
         }
         Config.load(new FileReader(ConfFile));
         for (Require r : Require.values()) {
-            if (Config.getProperty(r.toString()) != null && !Config.getProperty(r.toString()).trim().equals(""))
-                r.Value = Config.getProperty(r.toString()).trim();
+            if (Config.getProperty(r.getStr()) != null && !Config.getProperty(r.getStr()).trim().equals(""))
+                r.Value = Config.getProperty(r.getStr()).trim();
         }
         for (Optional o : Optional.values()) {
-            if (Config.getProperty(o.toString()) != null && !Config.getProperty(o.toString()).trim().equals(""))
-                o.Value = Config.getProperty(o.toString()).trim();
+            if (Config.getProperty(o.getStr()) != null && !Config.getProperty(o.getStr()).trim().equals(""))
+                o.Value = Config.getProperty(o.getStr()).trim();
         }
         for (Advance a : Advance.values()) {
-            if (Config.getProperty(a.toString()) != null && !Config.getProperty(a.toString()).trim().equals(""))
-                a.Value = Config.getProperty(a.toString()).trim();
+            if (Config.getProperty(a.getStr()) != null && !Config.getProperty(a.getStr()).trim().equals(""))
+                a.Value = Config.getProperty(a.getStr()).trim();
         }
         Init();
     }
@@ -122,19 +134,16 @@ public class Configure {
         for (Require opt : Require.values()) {
             String s = opt + ":\t" + (opt.Value == null ? "" : opt.Value);
             ParameterStr.add(s);
-//            System.out.println(s);
         }
         ParameterStr.add("======================================================================================");
         for (Optional opt : Optional.values()) {
             String s = opt + ":\t" + (opt.Value == null ? "" : opt.Value);
             ParameterStr.add(s);
-//            System.out.println(opt + ":\t" + (opt.Value == null ? "" : opt.Value));
         }
         ParameterStr.add("======================================================================================");
         for (Advance opt : Advance.values()) {
             String s = opt + ":\t" + (opt.Value == null ? "" : opt.Value);
             ParameterStr.add(s);
-//            System.out.println(opt + ":\t" + (opt.Value == null ? "" : opt.Value));
         }
         return String.join("\n", ParameterStr.toArray(new String[0]));
     }

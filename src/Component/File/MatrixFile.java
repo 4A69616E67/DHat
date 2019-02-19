@@ -91,7 +91,7 @@ public class MatrixFile extends AbstractFile<MatrixItem> {
         String ComLine = "python " + Opts.PlotHeatMapScriptFile + " -m A -i " + getPath() + " -o " + outFile + " -r " + resolution + " -c " + binSizeFile + " -q 98";
         Opts.CommandOutFile.Append(ComLine + "\n");
         if (Configure.DeBugLevel < 1) {
-            return Tools.ExecuteCommandStr(ComLine, null, null);
+            return Tools.ExecuteCommandStr(ComLine);
         } else {
             return Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
         }
@@ -101,7 +101,7 @@ public class MatrixFile extends AbstractFile<MatrixItem> {
         String ComLine = "python " + Opts.PlotHeatMapScriptFile + " -t localGenome -m A -i " + getPath() + " -o " + outFile + " -r " + resolution + " -p " + String.join(":", Region) + " -q 95";
         Opts.CommandOutFile.Append(ComLine + "\n");
         if (Configure.DeBugLevel < 1) {
-            return Tools.ExecuteCommandStr(ComLine, null, null);
+            return Tools.ExecuteCommandStr(ComLine);
         } else {
             return Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
         }

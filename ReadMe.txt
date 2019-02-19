@@ -29,7 +29,7 @@ Chromosomes =
 AdapterSeq =
 Resolutions = 1000000
 DrawResolution = 1000000
-Threads = 4
+Thread = 4
 Step = -
 #------------------------------advance parameters---------------------------
 MatchScore = 1
@@ -60,7 +60,7 @@ AdapterSeq          String[]    Adapter sequence, null means don't remove adapte
                                 If you want to remove adapter but you don't know the adapter seq, you can set "Auto"
 Resolutions         Int[]       Bin size when create interaction matrix  (default    "1000000" byte)
 DrawResolution      Int[]       Resolution for you draw heat-map    (default    "100000")
-Threads             Int         Number of threads    (default    "4")
+Thread              Int         Number of threads    (default    "4")
 Step                String[]    assign  where start and end (default    "-")
 #===============================================================================
 MatchScore          Int         Match score in linker filter    (default    "1")

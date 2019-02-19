@@ -45,21 +45,6 @@ public class PreProcess extends AbstractProcess {
     public PreProcess(String[] args) throws IOException {
         super(PreProcess.class.getName() + "\t" + Thread.currentThread().getName());
         ArgumentInit();
-//        Options Argument = new Options();
-//        Argument.addOption(Option.builder("i").hasArg().argName("file").required().desc("Input fastq file").build());
-//        Argument.addOption(Option.builder("p").hasArg().argName("string").desc("prefix (default " + Prefix + ")").build());
-//        Argument.addOption(Option.builder("o").longOpt("out").hasArg().argName("path").desc("Out path (default " + OutPath + ")").build());
-//        Argument.addOption(Option.builder("L").longOpt("Linker").hasArgs().argName("file").required().desc("Linker file").build());
-//        Argument.addOption(Option.builder("A").longOpt("Adapter").hasArgs().argName("file").desc("Adapter file").build());
-//        Argument.addOption(Option.builder("M").longOpt("MatchScore").hasArg().argName("int").desc("Match score (default " + MatchScore + ")").build());
-//        Argument.addOption(Option.builder("Mi").longOpt("MisScore").hasArg().argName("int").desc("MisMatch Score (default " + MisMatchScore + ")").build());
-//        Argument.addOption(Option.builder("I").longOpt("InDelScore").hasArg().argName("int").desc("Insert and Delete Score (default " + InDelScore + ")").build());
-//        Argument.addOption(Option.builder("minc").hasArg().argName("int").desc("minimum linker mapping score (default " + MinLinkerMappingScore + ")").build());
-//        Argument.addOption(Option.builder("minp").hasArg().argName("float").desc("minimum adapter mapping percentage (default " + MinAdapterPercent + ")").build());
-//        Argument.addOption(Option.builder("maxl").hasArg().argName("int").desc("maximum reads length (default " + MaxReadsLen + ")").build());
-//        Argument.addOption(Option.builder("c").hasArg().argName("int").desc("cutoff (default " + CutOff + ")").build());
-//        Argument.addOption(Option.builder("r").hasArg().argName("string").desc("restriction").build());
-//        Argument.addOption(Option.builder("t").hasArg().argName("int").desc("ThreadNum (default " + Threads + ")").build());
         if (args.length == 0) {
             new HelpFormatter().printHelp("java -cp " + Opts.JarFile.getName() + " " + PreProcess.class.getName(), Argument, true);
             System.exit(1);

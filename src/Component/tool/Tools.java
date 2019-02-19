@@ -161,6 +161,17 @@ public class Tools {
         return Num * UnitMap.get(PrimaryUint) / UnitMap.get(TransedUint);
     }
 
+    /**
+     * close the io stream when you redirect to a file
+     */
+    public static int ExecuteCommandStr(String CommandStr) throws IOException, InterruptedException {
+        return ExecuteCommandStr(CommandStr, null, null);
+    }
+
+    /**
+     * close the io stream when you redirect to a file
+     */
+
     public static int ExecuteCommandStr(String CommandStr, PrintWriter Out, PrintWriter Error) throws IOException, InterruptedException {
         int ExitValue;
         System.out.println(new Date() + "\t" + CommandStr);

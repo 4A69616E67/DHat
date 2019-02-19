@@ -194,7 +194,7 @@ public class SeProcess {
             CommandStr = Configure.Bwa + " aln -t " + Threads + " -n " + MisMatchNum + " -f " + SaiFile + " " + IndexPrefix + " " + FastqFile;
             Opts.CommandOutFile.Append(CommandStr + "\n");
             if (Configure.DeBugLevel < 1) {
-                Tools.ExecuteCommandStr(CommandStr, null, null);//执行命令行
+                Tools.ExecuteCommandStr(CommandStr);//执行命令行
             } else {
                 Tools.ExecuteCommandStr(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
             }

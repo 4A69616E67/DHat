@@ -3,6 +3,7 @@ import java.io.*;
 //import java.lang.management.MemoryUsage;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.util.*;
 
 import Bin.*;
@@ -239,12 +240,11 @@ public class Main {
         ST = new Thread(() -> {
             try {
                 Stat.RawDataReadsNum = InputFile.getItemNum();
-                System.err.println(InputFile + ":\t" + InputFile.ItemNum);
-                //calculate linker count
+                System.err.println(InputFile.getName() + ":\t" + new DecimalFormat("#,###").format(InputFile.ItemNum));
                 for (int i = 0; i < LinkerSeq.length; i++) {
                     Stat.Linkers[i].Name = LinkerSeq[i].getType();
                     Stat.Linkers[i].Num = (double) preprocess.getFastqR1File()[i].getItemNum();
-                    System.err.println(Stat.Linkers[i].Name + ":\t" + Stat.Linkers[i].Num);
+                    System.err.println(Stat.Linkers[i].Name + ":\t" + new DecimalFormat("#,###").format(Stat.Linkers[i].Num));
                 }
                 File LinkerDisFile = new File(Stat.getDataDir() + "/LinkerScoreDis.data");
                 Statistic.CalculateLinkerScoreDistribution(PastFile, LinkerLength * MatchScore, LinkerDisFile);
@@ -312,6 +312,8 @@ public class Main {
         createindex.join();
         //=======================================Se Process===单端处理==================================================
         Date seTime = new Date();
+        System.err.println("Linker filter: " + preTime + " - " + seTime);
+        //--------------------------------------------------------------------------------------------------------------
         for (int i = 0; i < ValidLinkerSeq.length; i++) {
             if (StepCheck(Opts.Step.SeProcess.toString())) {
                 System.out.println(new Date() + "\tStart SeProcess");
@@ -359,6 +361,7 @@ public class Main {
         }
         BedpeFile InterBedpeFile = new BedpeFile(BedpeProcessDir + "/" + Prefix + ".inter.clean.bedpe");
         Date bedpeTime = new Date();
+        System.err.println("Alignment: " + seTime + " - " + bedpeTime);
         Thread findenzy = FindRestrictionFragment();
         if (StepCheck(Opts.Step.BedPeProcess.toString())) {
             //==========================================获取酶切片段和染色体大小=============================================
@@ -480,7 +483,7 @@ public class Main {
         SThread.add(ST);
         //=================================================Make Matrix==================================================
         Date matrixTime = new Date();
-
+        System.err.println("Noise reducing: " + bedpeTime + " - " + matrixTime);
         if (StepCheck(Opts.Step.MakeMatrix.toString())) {
             for (Chromosome s : Chromosomes) {
                 if (s.Size == 0) {
@@ -514,7 +517,6 @@ public class Main {
                 if (!new File(MakeMatrixDir + "/" + aDrawResolution).isDirectory()) {
                     matrix.Run();
                 }
-//                new PlotMatrix(matrix.getDenseMatrixFile(), new File(OutDir + "/" + Prefix + ".interaction." + Tools.UnitTrans(aDrawResolution, "B", "M") + "M.png"), aDrawResolution).Run(matrix.getBinSizeFile());
                 if (matrix.getDenseMatrixFile().PlotHeatMap(matrix.getBinSizeFile(), aDrawResolution, new File(OutDir + "/" + Prefix + ".interaction." + Tools.UnitTrans(aDrawResolution, "B", "M") + "M.png")) != 0) {
                     System.err.println("There are some worried in plot heatmap : " + matrix.getDenseMatrixFile());
                 }
@@ -524,27 +526,26 @@ public class Main {
                     if (DenseMatrixFile[j].PlotHeatMap(new String[]{Chromosomes[j].Name + ":0", Chromosomes[j].Name + ":0"}, aDrawResolution, new File(OutDir + "/" + Prefix + "." + Chromosomes[j].Name + "." + Tools.UnitTrans(aDrawResolution, "B", "M") + "M.png")) != 0) {
                         System.err.println("There are some worried in plot heatmap : " + DenseMatrixFile[j]);
                     }
-//                    new PlotMatrix(DenseMatrixFile[j], new File(OutDir + "/" + Prefix + "." + Chromosomes[j].Name + "." + Tools.UnitTrans(aDrawResolution, "B", "M") + "M.png"), aDrawResolution / 10).Run(new String[]{Chromosomes[j].Name + ":0", Chromosomes[j].Name + ":0"});
                 }
             }
         }
         //==============================================================================================================
         ST = new Thread(() -> {
-            try {
-                Stat.HeatMapInit(DrawResolution.length);
-                for (int i = 0; i < DrawResolution.length; i++) {
-                    Stat.DrawHeatMap[i].Resolution = DrawResolution[i];
+            Stat.HeatMapInit(DrawResolution.length);
+            for (int i = 0; i < DrawResolution.length; i++) {
+                Stat.DrawHeatMap[i].Resolution = DrawResolution[i];
+                try {
                     Stat.DrawHeatMap[i].Figure = Stat.GetBase64(new File(MakeMatrixDir + "/img_" + Tools.UnitTrans(DrawResolution[i], "B", "M") + "M/" + Prefix + ".interaction." + Tools.UnitTrans(DrawResolution[i], "B", "M") + "M.png"));
+                } catch (IOException e) {
+                    Stat.DrawHeatMap[i].Figure = "";
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
-
         });
         ST.start();
         SThread.add(ST);
         //==============================================================================================================
         Date endTime = new Date();
+        System.err.println("Create matrix: " + matrixTime + " - " + endTime);
         Stat.RunTime.LinkerFilter = Tools.DateFormat((seTime.getTime() - preTime.getTime()) / 1000);
         Stat.RunTime.Mapping = Tools.DateFormat((bedpeTime.getTime() - seTime.getTime()) / 1000);
         Stat.RunTime.LigationFilter = Tools.DateFormat((matrixTime.getTime() - bedpeTime.getTime()) / 1000);
@@ -585,7 +586,7 @@ public class Main {
                 String ComLine = Bwa + " index -p " + IndexPrefix + " " + genomefile;
                 Opts.CommandOutFile.Append(ComLine + "\n");
                 if (DeBugLevel < 1) {
-                    Tools.ExecuteCommandStr(ComLine, null, null);
+                    Tools.ExecuteCommandStr(ComLine);
                 } else {
                     Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
                 }
