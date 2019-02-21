@@ -49,61 +49,61 @@ public class Configure {
 
     public enum Require {
         InputFile("InputFile", Configure.InputFile), Restriction("Restriction", Configure.Restriction), HalfLinker("HalfLinker", Tools.ArraysToString(Configure.HalfLinker)), GenomeFile("GenomeFile", Configure.GenomeFile);
-        private String Str;
+        private String Key;
         public Object Value;
 
         Require(String s, Object v) {
-            this.Str = s;
+            this.Key = s;
             this.Value = v;
         }
 
-        public String getStr() {
-            return Str;
+        public String getKey() {
+            return Key;
         }
 
         @Override
         public String toString() {
-            return Str + " = " + Value;
+            return Key + " = " + (Value == null ? "" : Value.toString());
         }
     }
 
     private enum Optional {
         OutPath("OutPath", Configure.OutPath), Prefix("Prefix", Configure.Prefix), Index("Index", Configure.Index), Chromosomes("Chromosomes", Tools.ArraysToString(Configure.Chromosome)), AdapterSeq("AdapterSeq", Tools.ArraysToString(Configure.AdapterSeq)), Resolutions("Resolutions", Tools.ArraysToString(Configure.Resolution)), DrawResolution("DrawResolution", Tools.ArraysToString(Configure.DrawResolution)), DetectResolution("DetectRes", Configure.DetectResolution), Thread("Thread", Configure.Thread), Step("Step", Configure.Step);
-        private String Str;
+        private String Key;
         public Object Value;
 
         Optional(String s, Object v) {
-            this.Str = s;
+            this.Key = s;
             this.Value = v;
         }
 
-        public String getStr() {
-            return Str;
+        public String getKey() {
+            return Key;
         }
 
         @Override
         public String toString() {
-            return Str + " = " + Value;
+            return Key + " = " + (Value == null ? "" : Value.toString());
         }
     }
 
     private enum Advance {
         Python("Python", Configure.Python), BWA("Bwa", Configure.Bwa), MatchScore("MatchScore", Configure.MatchScore), MisMatchScore("MisMatchScore", Configure.MisMatchScore), InDelScore("InDelScore", Configure.InDelScore), MinLinkerLen("MinLinkerLen", Configure.MinLinkerLen), MinReadsLength("MinReadsLength", Configure.MinReadsLen), MaxReadsLength("MaxReadsLength", Configure.MaxReadsLen), AlignThread("AlignThread", Configure.AlignThread), AlignType("AlignType", Configure.AlignType), AlignMisMatch("AlignMisMatch", Configure.AlignMisMatch), MinUniqueScore("MinUniqueScore", Configure.MinUniqueScore), Iteration("Iteration", Configure.Iteration), DeBugLevel("DeBugLevel", Configure.DeBugLevel);
-        private String Str;
+        private String Key;
         public Object Value;
 
         Advance(String s, Object v) {
-            this.Str = s;
+            this.Key = s;
             this.Value = v;
         }
 
-        public String getStr() {
-            return Str;
+        public String getKey() {
+            return Key;
         }
 
         @Override
         public String toString() {
-            return Str + " = " + Value;
+            return Key + " = " + (Value == null ? "" : Value.toString());
         }
     }
 
@@ -114,16 +114,16 @@ public class Configure {
         }
         Config.load(new FileReader(ConfFile));
         for (Require r : Require.values()) {
-            if (Config.getProperty(r.getStr()) != null && !Config.getProperty(r.getStr()).trim().equals(""))
-                r.Value = Config.getProperty(r.getStr()).trim();
+            if (Config.getProperty(r.getKey()) != null && !Config.getProperty(r.getKey()).trim().equals(""))
+                r.Value = Config.getProperty(r.getKey()).trim();
         }
         for (Optional o : Optional.values()) {
-            if (Config.getProperty(o.getStr()) != null && !Config.getProperty(o.getStr()).trim().equals(""))
-                o.Value = Config.getProperty(o.getStr()).trim();
+            if (Config.getProperty(o.getKey()) != null && !Config.getProperty(o.getKey()).trim().equals(""))
+                o.Value = Config.getProperty(o.getKey()).trim();
         }
         for (Advance a : Advance.values()) {
-            if (Config.getProperty(a.getStr()) != null && !Config.getProperty(a.getStr()).trim().equals(""))
-                a.Value = Config.getProperty(a.getStr()).trim();
+            if (Config.getProperty(a.getKey()) != null && !Config.getProperty(a.getKey()).trim().equals(""))
+                a.Value = Config.getProperty(a.getKey()).trim();
         }
         Init();
     }
@@ -132,18 +132,18 @@ public class Configure {
         Update();
         ArrayList<String> ParameterStr = new ArrayList<>();
         for (Require opt : Require.values()) {
-            String s = opt + ":\t" + (opt.Value == null ? "" : opt.Value);
-            ParameterStr.add(s);
+//            String s = opt + "=\t" + (opt.Value == null ? "" : opt.Value);
+            ParameterStr.add(opt.toString());
         }
         ParameterStr.add("======================================================================================");
         for (Optional opt : Optional.values()) {
-            String s = opt + ":\t" + (opt.Value == null ? "" : opt.Value);
-            ParameterStr.add(s);
+//            String s = opt + "=\t" + (opt.Value == null ? "" : opt.Value);
+            ParameterStr.add(opt.toString());
         }
         ParameterStr.add("======================================================================================");
         for (Advance opt : Advance.values()) {
-            String s = opt + ":\t" + (opt.Value == null ? "" : opt.Value);
-            ParameterStr.add(s);
+//            String s = opt + "=\t" + (opt.Value == null ? "" : opt.Value);
+            ParameterStr.add(opt.toString());
         }
         return String.join("\n", ParameterStr.toArray(new String[0]));
     }
@@ -152,15 +152,15 @@ public class Configure {
         Update();
         BufferedWriter writer = new BufferedWriter(new FileWriter(file));
         for (Require opt : Require.values()) {
-            writer.write(opt + " = " + (opt.Value == null ? "" : opt.Value) + "\n");
+            writer.write(opt + "\n");
         }
         writer.write("#======================================================================================\n");
         for (Optional opt : Optional.values()) {
-            writer.write(opt + " = " + (opt.Value == null ? "" : opt.Value) + "\n");
+            writer.write(opt + "\n");
         }
         writer.write("#======================================================================================\n");
         for (Advance opt : Advance.values()) {
-            writer.write(opt + " = " + (opt.Value == null ? "" : opt.Value) + "\n");
+            writer.write(opt + "\n");
         }
         writer.close();
     }
@@ -268,3 +268,4 @@ public class Configure {
         return d;
     }
 }
+
