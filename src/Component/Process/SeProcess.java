@@ -10,7 +10,7 @@ import Component.unit.Configure;
 import Component.unit.Opts;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
-import Archive.SamFilter;
+import Utils.SamFilter;
 
 /**
  * Created by snowf on 2019/2/17.

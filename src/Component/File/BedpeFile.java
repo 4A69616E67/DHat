@@ -6,9 +6,9 @@ import Component.unit.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
+
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 public class BedpeFile extends AbstractFile<InterAction> {
     private Opts.FileFormat Format = Opts.FileFormat.BedpeRegionFormat;
@@ -34,9 +34,9 @@ public class BedpeFile extends AbstractFile<InterAction> {
         super(f);
     }
 
-    protected InterAction ExtractItem(String s) {
+    protected InterAction ExtractItem(String[] s) {
         if (s != null) {
-            String[] ss = s.split("\\s+");
+            String[] ss = s[0].split("\\s+");
             try {
                 if (ss.length >= 11) {
                     Item = new InterAction(new ChrRegion(new String[]{ss[0], ss[1], ss[2], ss[9]}), new ChrRegion(new String[]{ss[3], ss[4], ss[5], ss[10]}));
@@ -59,16 +59,6 @@ public class BedpeFile extends AbstractFile<InterAction> {
     @Override
     public void WriteItem(InterAction item) throws IOException {
         writer.write(item.toString());
-    }
-
-    @Override
-    public SortItem<InterAction> ReadSortItem() throws IOException {
-        String Line = ReadItemLine();
-        Item = ExtractItem(Line);
-        if (Item == null) {
-            return null;
-        }
-        return new SortItem<>(Item, Line.toCharArray());
     }
 
     public void SplitSortFile(BedpeFile OutFile) throws IOException {

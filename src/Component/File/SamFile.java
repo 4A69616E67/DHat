@@ -24,23 +24,23 @@ public class SamFile extends AbstractFile<SamItem> {
 //    }
 
     @Override
-    protected SamItem ExtractItem(String s) {
+    protected SamItem ExtractItem(String[] s) {
         if (s == null) {
             return null;
         }
         Item = new SamItem();
-        if (s.matches("^@.*")) {
-            Header.add(s);
+        if (s[0].matches("^@.*")) {
+            Header.add(s[0]);
         } else {
-            String[] ss = s.split("\\s+");
-            Item.Title = ss[0];
-            Item.Stat = Integer.parseInt(ss[1]);
-            Item.Chr = ss[2];
-            Item.BeginSite = Integer.parseInt(ss[3]);
-            Item.MappingQuality = Integer.parseInt(ss[4]);
-            Item.MappingStat = ss[5];
-            Item.Sequence = ss[9];
-            Item.Quality = ss[10];
+            String[] line_split = s[0].split("\\s+");
+            Item.Title = line_split[0];
+            Item.Stat = Integer.parseInt(line_split[1]);
+            Item.Chr = line_split[2];
+            Item.BeginSite = Integer.parseInt(line_split[3]);
+            Item.MappingQuality = Integer.parseInt(line_split[4]);
+            Item.MappingStat = line_split[5];
+            Item.Sequence = line_split[9];
+            Item.Quality = line_split[10];
             Item.SortByName = SortByName;
         }
         return Item;
@@ -54,11 +54,11 @@ public class SamFile extends AbstractFile<SamItem> {
 
     @Override
     public SortItem<SamItem> ReadSortItem() throws IOException {
-        String line = ReadItemLine();
-        if (line == null) {
+        String[] lines = ReadItemLine();
+        if (lines == null) {
             return null;
         }
-        String[] ss = line.split("\\s+");
+        String[] ss = lines[0].split("\\s+");
         Item = new SamItem();
         if (SortByName) {
             Item.Title = ss[0];
@@ -67,7 +67,7 @@ public class SamFile extends AbstractFile<SamItem> {
             Item.BeginSite = Integer.parseInt(ss[3]);
         }
         Item.SortByName = SortByName;
-        return new SortItem<>(Item, line.toCharArray());
+        return new SortItem<>(Item, String.join("\n", lines).toCharArray());
     }
 
     private static int CalculateFragLength(String s) {

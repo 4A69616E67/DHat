@@ -24,46 +24,32 @@ public class FastqFile extends AbstractFile<FastqItem> {
     }
 
     @Override
-    protected FastqItem ExtractItem(String s) {
+    protected FastqItem ExtractItem(String[] s) {
         if (s == null) {
             Item = null;
         } else {
-            String[] ss = s.split("\\n+");
             Item = new FastqItem();
-            Item.Title = ss[0];
-            Item.Sequence = ss[1];
-            Item.Orientation = ss[2];
-            Item.Quality = ss[3];
+            Item.Title = s[0];
+            Item.Sequence = s[1];
+            Item.Orientation = s[2];
+            Item.Quality = s[3];
         }
         return Item;
     }
 
 
     @Override
-    public synchronized String ReadItemLine() throws IOException {
-        StringBuilder s = new StringBuilder();
+    public synchronized String[] ReadItemLine() throws IOException {
+        String[] s = new String[4];
         for (int i = 1; i <= 4; i++) {
             String line = reader.readLine();
             if (line != null) {
-                s.append(line).append("\n");
+                s[i - 1] = line;
             } else {
                 return null;
             }
         }
-        s.deleteCharAt(s.length() - 1);
-        return s.toString();
-    }
-
-    @Override
-    public FastqItem ReadItem() throws IOException {
-        Item = new FastqItem();
-        Item.Title = reader.readLine();
-        Item.Sequence = reader.readLine();
-        Item.Orientation = reader.readLine();
-        Item.Quality = reader.readLine();
-        if (Item.Quality == null)
-            Item = null;
-        return Item;
+        return s;
     }
 
     @Override
@@ -92,6 +78,7 @@ public class FastqFile extends AbstractFile<FastqItem> {
                 }
             }
         }
+        ReadClose();
         return Count[0] >= Count[1] ? Opts.FileFormat.Phred33 : Opts.FileFormat.Phred64;
     }
 

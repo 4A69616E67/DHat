@@ -4,6 +4,8 @@ import Component.unit.FastaItem;
 import Component.unit.SortItem;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Created by snowf on 2019/2/17.
@@ -18,41 +20,36 @@ public class FastaFile extends AbstractFile<FastaItem> {
     }
 
     @Override
-    protected FastaItem ExtractItem(String s) {
+    protected FastaItem ExtractItem(String[] s) {
         Item = new FastaItem();
-        if (s == null) {
+        if (s == null || s.length <= 1) {
             Item = null;
         } else {
-            String[] ss = s.split("\\n");
-            if (ss.length <= 1) {
-                return null;
-            }
-            Item.Title = ss[0];
-            for (int i = 1; i < ss.length; i++) {
-                Item.Sequence.append(ss[i]);
+            Item.Title = s[0];
+            for (int i = 1; i < s.length; i++) {
+                Item.Sequence.append(s[i]);
             }
         }
         return Item;
     }
 
     @Override
-    public synchronized String ReadItemLine() throws IOException {
+    public synchronized String[] ReadItemLine() throws IOException {
+        ArrayList<String> seq = new ArrayList<>();
         String line = reader.readLine();
         if (line == null) {
             return null;
         }
-        StringBuilder s = new StringBuilder();
-        s.append(line).append("\n");
+        seq.add(line);
         reader.mark(1000);
         line = reader.readLine();
         while (line != null && !line.matches("^>.*")) {
-            s.append(line).append("\n");
+            seq.add(line);
             reader.mark(1000);
             line = reader.readLine();
         }
-        s.deleteCharAt(s.length() - 1);
         reader.reset();
-        return s.toString();
+        return seq.toArray(new String[0]);
     }
 
     @Override

@@ -85,6 +85,6 @@ DeBugLevel          Int         0 means remain base output, 1 means more output,
 //If we want to run all, we can set "-"
 
 #=========================Other Script=================
-java -cp DLO-HIC-AnalysisTools.jar Archive.PetCluster
-java -cp DLO-HIC-AnalysisTools.jar Archive.CreateMatrix
+java -cp DLO-HIC-AnalysisTools.jar Utils.PetCluster
+java -cp DLO-HIC-AnalysisTools.jar Utils.CreateMatrix
 java -cp DLO-HIC-AnalysisTools.jar Bin.Guide    (need visual interface)

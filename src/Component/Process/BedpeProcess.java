@@ -103,6 +103,7 @@ public class BedpeProcess {
     }
 
     public void Run() throws IOException {
+        ArrayList<Thread> ThreadList = new ArrayList<>();
         if (EnzyFile == null) {
             FindRestrictionSite fd = new FindRestrictionSite(GenomeFile, OutPath, Restriction, Prefix);
             fd.Run();

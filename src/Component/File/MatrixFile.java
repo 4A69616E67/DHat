@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 
 /**
  * Created by 浩 on 2019/2/1.
@@ -21,14 +22,13 @@ public class MatrixFile extends AbstractFile<MatrixItem> {
     }
 
     @Override
-    protected MatrixItem ExtractItem(String s) {
-        if (s != null) {
-            String[] ss = s.split("\\n+");
-            Item = new MatrixItem(ss.length, ss.length);
-            for (int i = 0; i < ss.length; i++) {
-                String[] sss = ss[i].split("\\s+|,+");
-                for (int j = 0; j < sss.length; j++) {
-                    Item.setEntry(i, j, Double.parseDouble(sss[j]));
+    protected MatrixItem ExtractItem(String[] s) {
+        if (s != null && s.length > 0) {
+            Item = new MatrixItem(s.length, s.length);
+            for (int i = 0; i < s.length; i++) {
+                String[] ss = s[i].split("\\s+|,+");
+                for (int j = 0; j < ss.length; j++) {
+                    Item.setEntry(i, j, Double.parseDouble(ss[j]));
                 }
             }
         } else {
@@ -38,14 +38,13 @@ public class MatrixFile extends AbstractFile<MatrixItem> {
     }
 
     @Override
-    public synchronized String ReadItemLine() throws IOException {
-        StringBuilder s = new StringBuilder();
+    public synchronized String[] ReadItemLine() throws IOException {
         String line;
+        ArrayList<String> matrix_line = new ArrayList<>();
         while ((line = reader.readLine()) != null) {
-            s.append(line.trim()).append("\n");
+            matrix_line.add(line.trim());
         }
-        s.setLength(s.length() - 1);
-        return s.toString();
+        return matrix_line.toArray(new String[0]);
     }
 
     @Override

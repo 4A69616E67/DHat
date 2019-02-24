@@ -23,9 +23,9 @@ public class BedFile extends AbstractFile<ChrRegion> {
     }
 
     @Override
-    protected ChrRegion ExtractItem(String s) {
+    protected ChrRegion ExtractItem(String[] s) {
         if (s != null) {
-            String[] ss = s.split("\\s+");
+            String[] ss = s[0].split("\\s+");
             Item = new ChrRegion(new Chromosome(ss[0]), Integer.parseInt(ss[1]), Integer.parseInt(ss[2]));
             if (ss.length >= 4) {
                 Item.Name = ss[3];
@@ -42,9 +42,7 @@ public class BedFile extends AbstractFile<ChrRegion> {
 
     public void SplitSortFile(BedFile OutFile) throws IOException {
         int splitItemNum = 5000000;
-        if (this.ItemNum == 0) {
-            this.CalculateItemNumber();
-        }
+        ItemNum = getItemNum();
         if (this.ItemNum > splitItemNum) {
             splitItemNum = (int) Math.ceil(this.ItemNum / Math.ceil((double) this.ItemNum / splitItemNum));
             ArrayList<CommonFile> TempSplitFile = this.SplitFile(this.getPath(), splitItemNum);
@@ -69,16 +67,5 @@ public class BedFile extends AbstractFile<ChrRegion> {
     public void WriteItem(ChrRegion item) throws IOException {
         writer.write(item.toString());
     }
-
-    @Override
-    public SortItem<ChrRegion> ReadSortItem() throws IOException {
-        String line = ReadItemLine();
-        Item = ExtractItem(line);
-        if (Item == null) {
-            return null;
-        }
-        return new SortItem<>(Item, line.toCharArray());
-    }
-
 
 }

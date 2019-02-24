@@ -11,6 +11,8 @@ import java.util.*;
 public abstract class AbstractFile<E extends Comparable<E>> extends File {
     protected E Item;
     public long ItemNum = 0;
+    private boolean Sorted = false;
+    private int BufferSize = 1024 * 1024;// default 1M
     protected BufferedReader reader;
     protected BufferedWriter writer;
 
@@ -43,7 +45,7 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
     }
 
     void ReadOpen() throws IOException {
-        reader = new BufferedReader(new FileReader(this));
+        reader = new BufferedReader(new FileReader(this), BufferSize);
     }
 
     void ReadClose() throws IOException {
@@ -55,7 +57,7 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
     }
 
     private BufferedWriter WriteOpen(boolean append) throws IOException {
-        writer = new BufferedWriter(new FileWriter(this, append));
+        writer = new BufferedWriter(new FileWriter(this, append), BufferSize);
         return writer;
     }
 
@@ -63,10 +65,14 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
         writer.close();
     }
 
-    protected abstract E ExtractItem(String s);
+    protected abstract E ExtractItem(String[] s);
 
-    public synchronized String ReadItemLine() throws IOException {
-        return reader.readLine();
+    public synchronized String[] ReadItemLine() throws IOException {
+        String line = reader.readLine();
+        if (line != null) {
+            return new String[]{line};
+        }
+        return null;
     }
 
     public E ReadItem() throws IOException {
@@ -90,11 +96,11 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
 
     public synchronized void Append(AbstractFile file) throws IOException {
         System.out.println(new Date() + "\tAppend " + file.getName() + " to " + getName());
-        String item;
+        String[] item;
         file.ReadOpen();
         BufferedWriter writer = WriteOpen(true);
         while ((item = file.ReadItemLine()) != null) {
-            writer.write(item + "\n");
+            writer.write(String.join("\n", item) + "\n");
             ItemNum++;
         }
         file.ReadClose();
@@ -110,7 +116,7 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
     }
 
     public void SortFile(AbstractFile OutFile) throws IOException {
-        System.out.println(new Date() + "\tBegin to sort file " + getName());
+        System.out.println(new Date() + "\tSort file: " + getName());
         BufferedWriter outfile = OutFile.WriteOpen();
         ItemNum = 0;
         ReadOpen();
@@ -128,7 +134,8 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
         SortList.clear();
         outfile.close();
         ReadClose();
-        System.out.println(new Date() + "\tEnd sort file " + getName());
+        Sorted = true;
+        System.out.println(new Date() + "\tEnd sort file: " + getName());
     }
 
     public synchronized void MergeSortFile(AbstractFile<E>[] InFile) throws IOException {
@@ -198,12 +205,12 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
     public static void Merge(AbstractFile file, AbstractFile[] merge_files) throws IOException {
         BufferedWriter writer = file.WriteOpen();
         file.ItemNum = 0;
-        String line;
+        String[] lines;
         for (AbstractFile x : merge_files) {
             System.out.println(new Date() + "\tMerge " + x.getName() + " to " + file.getName());
             x.ReadOpen();
-            while ((line = x.ReadItemLine()) != null) {
-                writer.write(line + "\n");
+            while ((lines = x.ReadItemLine()) != null) {
+                writer.write(String.join("\n", lines) + "\n");
                 file.ItemNum++;
             }
             x.ReadClose();
@@ -216,12 +223,12 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
         int filecount = 0;
         int count = 0;
         CommonFile TempFile;
-        String line;
+        String[] lines;
         ArrayList<CommonFile> Outfile = new ArrayList<>();
         this.ReadOpen();
         Outfile.add(TempFile = new CommonFile(Prefix + ".Split" + filecount));
         BufferedWriter outfile = TempFile.WriteOpen();
-        while ((line = ReadItemLine()) != null) {
+        while ((lines = ReadItemLine()) != null) {
             count++;
             if (count > itemNum) {
                 TempFile.ItemNum = itemNum;
@@ -231,7 +238,7 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
                 outfile = TempFile.WriteOpen();
                 count = 1;
             }
-            outfile.write(line + "\n");
+            outfile.write(String.join("\n", lines) + "\n");
         }
         TempFile.ItemNum = count;
         outfile.close();
@@ -264,17 +271,32 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
         }
     }
 
-    public abstract SortItem<E> ReadSortItem() throws IOException;
+    public SortItem<E> ReadSortItem() throws IOException {
+        String[] Lines = ReadItemLine();
+        Item = ExtractItem(Lines);
+        if (Item == null) {
+            return null;
+        }
+        return new SortItem<>(Item, String.join("\n", Lines).toCharArray());
+    }
 
     public long getItemNum() {
-        if (ItemNum == 0) {
+        if (ItemNum <= 0) {
             try {
                 CalculateItemNumber();
             } catch (IOException e) {
-                System.err.println("Warning! can't get correct item number, current item number: " + getName() + " " + ItemNum);
+                System.err.println("Warning! can't get accurate item number, current item number: " + getName() + " " + ItemNum);
             }
         }
         return ItemNum;
+    }
+
+    public boolean isSorted() {
+        return Sorted;
+    }
+
+    public void setBufferSize(int bufferSize) {
+        BufferSize = bufferSize;
     }
 }
 

@@ -1,4 +1,4 @@
-package Archive;
+package Utils;
 
 import Component.File.BedpeFile;
 import Component.unit.Opts;
@@ -30,7 +30,7 @@ public class PowerLaw {
         Argument.addOption(Option.builder("l").longOpt("step").argName("int").hasArg().required().desc("[required] step length").build());
         Argument.addOption(Option.builder("o").longOpt("out").argName("file").hasArg().desc("out file").build());
         if (args.length == 0) {
-            new HelpFormatter().printHelp("java -cp DLO-HIC-AnalysisTools.jar Archive.PowerLaw [option]", Argument);
+            new HelpFormatter().printHelp("java -cp DLO-HIC-AnalysisTools.jar Utils.PowerLaw [option]", Argument);
             System.exit(1);
         }
         CommandLine line = new DefaultParser().parse(Argument, args);

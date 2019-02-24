@@ -1,4 +1,4 @@
-package Archive;
+package Utils;
 
 import Component.File.BedpeFile;
 import Component.File.MatrixFile;
