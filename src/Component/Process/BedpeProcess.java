@@ -122,22 +122,33 @@ public class BedpeProcess {
         BedpeToSameAndDiff(BedpeFile, SameFile, DiffFile);
         ChrSameFile = SameFile.SeparateBedpe(Chromosomes, OutPath + "/" + Prefix, Threads);
         //=====================================染色体内的交互处理=========================================
-        Thread[] Process = new Thread[Chromosomes.length];
-        for (int i = 0; i < Chromosomes.length; i++) {
-            int finalI = i;
+        final int[] I = {0};
+        Thread[] Process = new Thread[Threads];
+        for (int i = 0; i < Process.length; i++) {
             Process[i] = new Thread(() -> {
+                int finalI;
                 try {
-                    //定位交互发生在哪个酶切片段
-                    FragmentLocation(ChrSameFile[finalI], EnzyFile[finalI], ChrFragLocationFile[finalI]);
-                    //区分不同的连接类型（自连接，再连接，有效数据）
-                    SeparateLigationType(ChrFragLocationFile[finalI], ChrLigationFile[finalI][0], ChrLigationFile[finalI][1], ChrLigationFile[finalI][2]);
-                    BedpeFile SortChrLigationFile = new BedpeFile(ChrLigationFile[finalI][2] + ".sort");
-                    //按交互位置排序
-                    ChrLigationFile[finalI][2].SortFile(SortChrLigationFile);
-                    //去除duplication
-                    RemoveRepeat(SortChrLigationFile, ChrSameNoDumpFile[finalI], ChrSameRepetaFile[finalI]);
-                    if (Configure.DeBugLevel < 1) {
-                        AbstractFile.delete(SortChrLigationFile);
+                    synchronized (Process) {
+                        finalI = I[0];
+                        I[0]++;
+                    }
+                    while (finalI < Chromosomes.length) {
+                        //定位交互发生在哪个酶切片段
+                        FragmentLocation(ChrSameFile[finalI], EnzyFile[finalI], ChrFragLocationFile[finalI]);
+                        //区分不同的连接类型（自连接，再连接，有效数据）
+                        SeparateLigationType(ChrFragLocationFile[finalI], ChrLigationFile[finalI][0], ChrLigationFile[finalI][1], ChrLigationFile[finalI][2]);
+                        BedpeFile SortChrLigationFile = new BedpeFile(ChrLigationFile[finalI][2] + ".sort");
+                        //按交互位置排序
+                        ChrLigationFile[finalI][2].SortFile(SortChrLigationFile);
+                        //去除duplication
+                        RemoveRepeat(SortChrLigationFile, ChrSameNoDumpFile[finalI], ChrSameRepetaFile[finalI]);
+                        if (Configure.DeBugLevel < 1) {
+                            AbstractFile.delete(SortChrLigationFile);
+                        }
+                        synchronized (Process) {
+                            finalI = I[0];
+                            I[0]++;
+                        }
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -305,7 +316,7 @@ public class BedpeProcess {
         System.out.println(new Date() + "\tEnd to find eny site\t" + BedpeFile.getName());
     }//OK
 
-    private void SeparateLigationType(File InFile, File SelfFile, File ReligFile, File ValidFile) throws IOException {
+    private void SeparateLigationType(BedpeFile InFile, BedpeFile SelfFile, BedpeFile ReligFile, BedpeFile ValidFile) throws IOException {
         BufferedReader infile = new BufferedReader(new FileReader(InFile));
         BufferedWriter selffile = new BufferedWriter(new FileWriter(SelfFile));
         BufferedWriter religfile = new BufferedWriter(new FileWriter(ReligFile));

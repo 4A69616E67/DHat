@@ -88,38 +88,34 @@ public class SamFilter {
         System.out.println(new Date() + "\tBegin to sam filter\t" + SamFile.getName());
         Thread[] t = new Thread[Threads];
         for (int i = 0; i < t.length; i++) {
-            t[i] = new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        String line;
-                        String[] str;
-                        while ((line = sam_read.readLine()) != null) {
-                            str = line.split("\\s+");
-                            if (str[0].matches("^@.+")) {
-                                continue;
+            t[i] = new Thread(() -> {
+                try {
+                    String line;
+                    String[] str;
+                    while ((line = sam_read.readLine()) != null) {
+                        str = line.split("\\s+");
+                        if (str[0].matches("^@.+")) {
+                            continue;
+                        }
+                        if (Integer.parseInt(str[4]) >= MinQuality) {
+                            synchronized (uniq_write) {
+                                Count[0]++;
+                                uniq_write.write(line + "\n");
                             }
-                            if (Integer.parseInt(str[4]) >= MinQuality) {
-                                synchronized (uniq_write) {
-                                    Count[0]++;
-                                    uniq_write.write(line + "\n");
-                                }
-                            } else if (str[2].equals("*")) {
-                                synchronized (unmap_write) {
-                                    Count[1]++;
-                                    unmap_write.write(line + "\n");
-                                }
-                            } else {
-                                synchronized (multi_write) {
-                                    Count[2]++;
-                                    multi_write.write(line + "\n");
-                                }
+                        } else if (str[2].equals("*")) {
+                            synchronized (unmap_write) {
+                                Count[1]++;
+                                unmap_write.write(line + "\n");
+                            }
+                        } else {
+                            synchronized (multi_write) {
+                                Count[2]++;
+                                multi_write.write(line + "\n");
                             }
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             });
             t[i].start();

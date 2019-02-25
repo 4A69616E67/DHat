@@ -28,8 +28,7 @@ public class FastqFile extends AbstractFile<FastqItem> {
         if (s == null) {
             Item = null;
         } else {
-            Item = new FastqItem();
-            Item.Title = s[0];
+            Item = new FastqItem(s[0]);
             Item.Sequence = s[1];
             Item.Orientation = s[2];
             Item.Quality = s[3];
@@ -58,9 +57,11 @@ public class FastqFile extends AbstractFile<FastqItem> {
     }
 
     @Override
-    @Deprecated
-    public SortItem<FastqItem> ReadSortItem() {
-        return null;
+    protected SortItem<FastqItem> ExtractSortItem(String[] s) {
+        if (s == null) {
+            return null;
+        }
+        return new SortItem<>(new FastqItem(s[0]));
     }
 
 

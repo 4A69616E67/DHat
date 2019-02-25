@@ -67,6 +67,11 @@ public class MatrixFile extends AbstractFile<MatrixItem> {
         return null;
     }
 
+    @Override
+    protected SortItem<MatrixItem> ExtractSortItem(String[] s) {
+        return null;
+    }
+
     public static Format FormatDetection(MatrixFile file) throws IOException {
         file.ReadOpen();
         BufferedReader reader = file.getReader();

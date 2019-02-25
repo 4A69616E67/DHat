@@ -134,6 +134,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         //==============================================测试区==========================================================
+
 //        MemoryUsage memoryUsage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
 //        long maxMemorySize = memoryUsage.getMax();
 //        long usedMemorySize = memoryUsage.getUsed();
@@ -330,7 +331,8 @@ public class Main {
             R2SortBedFile[i] = new SeProcess(UseLinkerFasqFileR2[i], IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR2[i].getName().replace(".fastq", ""), ReadsType).getSortBedFile();
             SeBedpeFile[i] = new BedpeFile(SeProcessDir + "/" + Prefix + "." + ValidLinkerSeq[i].getType() + ".bedpe");
             if (StepCheck(Opts.Step.Bed2BedPe.toString())) {
-                new BedToBedpe(R1SortBedFile[i], R2SortBedFile[i], SeBedpeFile[i], 4, "");//合并左右端bed文件，输出bedpe文件
+                SeBedpeFile[i].BedToBedpe(R1SortBedFile[i], R2SortBedFile[i]);//合并左右端bed文件，输出bedpe文件
+//                new BedToBedpe(R1SortBedFile[i], R2SortBedFile[i], SeBedpeFile[i], 4, "");
             }
             //==========================================================================================================
             Stat.UseLinker[i].UniqMapFileR1 = R1SortBedFile[i];

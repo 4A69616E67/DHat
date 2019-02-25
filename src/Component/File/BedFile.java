@@ -1,7 +1,7 @@
 package Component.File;
 
+import Component.unit.BedItem;
 import Component.unit.ChrRegion;
-import Component.unit.Chromosome;
 import Component.unit.Configure;
 import Component.unit.SortItem;
 
@@ -11,8 +11,8 @@ import java.util.ArrayList;
 /**
  * Created by snowf on 2019/2/17.
  */
-public class BedFile extends AbstractFile<ChrRegion> {
-    public boolean SortByName = true;
+public class BedFile extends AbstractFile<BedItem> {
+    public BedItem.Sort SortBy = BedItem.Sort.SeqTitle;
 
     public BedFile(String pathname) {
         super(pathname);
@@ -23,17 +23,27 @@ public class BedFile extends AbstractFile<ChrRegion> {
     }
 
     @Override
-    protected ChrRegion ExtractItem(String[] s) {
+    protected SortItem<BedItem> ExtractSortItem(String[] s) {
+        if (s == null) {
+            return null;
+        }
+        String[] ls = s[0].split("\\s+");
+        if (SortBy == BedItem.Sort.SeqTitle) {
+            Item = new BedItem(ls[3], null, 0, null);
+        } else {
+            Item = new BedItem(null, new ChrRegion(ls), 0, null);
+            if (ls.length > 5) {
+                Item.getLocation().Orientation = ls[5].charAt(0);
+            }
+        }
+        return new SortItem<>(Item);
+    }
+
+    @Override
+    protected BedItem ExtractItem(String[] s) {
         if (s != null) {
-            String[] ss = s[0].split("\\s+");
-            Item = new ChrRegion(new Chromosome(ss[0]), Integer.parseInt(ss[1]), Integer.parseInt(ss[2]));
-            if (ss.length >= 4) {
-                Item.Name = ss[3];
-            }
-            if (ss.length >= 6) {
-                Item.Orientation = ss[5].charAt(0);
-            }
-            Item.SortByName = SortByName;
+            Item = new BedItem(s[0].split("\\s+"));
+            Item.SortBy = SortBy;
         } else {
             Item = null;
         }
@@ -64,7 +74,7 @@ public class BedFile extends AbstractFile<ChrRegion> {
     }
 
     @Override
-    public void WriteItem(ChrRegion item) throws IOException {
+    public void WriteItem(BedItem item) throws IOException {
         writer.write(item.toString());
     }
 

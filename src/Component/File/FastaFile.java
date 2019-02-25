@@ -21,11 +21,10 @@ public class FastaFile extends AbstractFile<FastaItem> {
 
     @Override
     protected FastaItem ExtractItem(String[] s) {
-        Item = new FastaItem();
-        if (s == null || s.length <= 1) {
+        if (s == null) {
             Item = null;
         } else {
-            Item.Title = s[0];
+            Item = new FastaItem(s[0]);
             for (int i = 1; i < s.length; i++) {
                 Item.Sequence.append(s[i]);
             }
@@ -58,8 +57,11 @@ public class FastaFile extends AbstractFile<FastaItem> {
     }
 
     @Override
-    public SortItem<FastaItem> ReadSortItem() {
-        return null;
+    protected SortItem<FastaItem> ExtractSortItem(String[] s) {
+        if (s == null) {
+            return null;
+        }
+        return new SortItem<>(new FastaItem(s[0]));
     }
 
 }

@@ -52,124 +52,124 @@ public class PetCluster {
     }
 
 
-    public static void main(String[] args) throws IOException, ParseException, InterruptedException {
-        PetCluster pet = new PetCluster(args);
-        pet.Run();
-        pet.WriteOut();
-    }
+//    public static void main(String[] args) throws IOException, ParseException, InterruptedException {
+//        PetCluster pet = new PetCluster(args);
+//        pet.Run();
+//        pet.WriteOut();
+//    }
 
-    public ArrayList<InterAction> Run() throws IOException {
-        Hashtable<String, ArrayList<int[]>> ChrMatrix = new Hashtable<>();
-        if (InFile != null) {
-            BufferedReader in = new BufferedReader(new FileReader(InFile));
-            int[] ChrIndex = new int[0], RegionIndex = new int[0];
-            int MaxLength = 0, CountIndex = 0;
-            switch (InFile.BedpeDetect()) {
-                case BedpePointFormat:
-                    if (Length == 0) {
-                        System.err.println("Error! extend length is 0");
-                        System.exit(1);
-                    }
-                    ChrIndex = new int[]{0, 2};
-                    RegionIndex = new int[]{1, 1, 3, 3};
-                    CountIndex = 4;
-                    MaxLength = 5;
-                    break;
-                case BedpeRegionFormat:
-                    ChrIndex = new int[]{0, 3};
-                    RegionIndex = new int[]{1, 2, 4, 5};
-                    CountIndex = 6;
-                    MaxLength = 7;
-                    break;
-                default:
-                    System.err.println(PetCluster.class.getName() + ":\tError format !");
-                    System.exit(1);
-            }
-            //---------------------对每两条染色体的交创建一个cluster列表--------------------
-            String Line;
-            while ((Line = in.readLine()) != null) {
-                String[] str = Line.split("\\s+");
-                String chr1 = str[ChrIndex[0]];
-                String chr2 = str[ChrIndex[1]];
-                String key = chr1 + "-" + chr2;
-                int count = 1;
-                if (!ChrMatrix.containsKey(key)) {
-                    ChrMatrix.put(key, new ArrayList<>());
-                }
-                if (str.length >= MaxLength) {
-                    try {
-                        count = Integer.parseInt(str[CountIndex]);
-                    } catch (NumberFormatException ignored) {
-                    }
-                }
-                ChrMatrix.get(key).add(new int[]{Integer.parseInt(str[RegionIndex[0]]) - Length, Integer.parseInt(str[RegionIndex[1]]) + Length, Integer.parseInt(str[RegionIndex[2]]) - Length, Integer.parseInt(str[RegionIndex[3]]) + Length, count});
-            }
-            in.close();
-        } else if (List.size() > 0) {
-            for (InterAction a : List) {
-                ChrRegion region1 = a.getLeft();
-                ChrRegion region2 = a.getRight();
-                int count = a.Count == 0 ? 1 : a.Count;
-                String key = region1.Chr.Name + "-" + region2.Chr.Name;
-                if (!ChrMatrix.containsKey(key)) {
-                    ChrMatrix.put(key, new ArrayList<>());
-                }
-                ChrMatrix.get(key).add(new int[]{region1.region.Start - Length, region1.region.End + Length, region2.region.Start - Length, region2.region.End + Length, count});
-            }
-        } else {
-            return Cluster;
-        }
-        //-----------------------------------------------------------------------
-        Set<String> InterList = ChrMatrix.keySet();
-        Iterator<String> p = InterList.iterator();
-        Thread[] t = new Thread[Threads];
-        for (int i = 0; i < t.length; i++) {
-            t[i] = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    String chrinter;
-                    while (p.hasNext()) {
-                        synchronized (t) {
-                            try {
-                                chrinter = p.next();
-                            } catch (NoSuchElementException e) {
-                                break;
-                            }
-                        }
-                        String chr1 = chrinter.split("-")[0];
-                        String chr2 = chrinter.split("-")[1];
-                        ArrayList<int[]> cluster = FindCluster(ChrMatrix.get(chrinter));
-                        synchronized (t) {
-                            for (int[] aCluster : cluster) {
-                                Cluster.add(new InterAction(new ChrRegion(new Chromosome(chr1), aCluster[0] + Length, aCluster[1] - Length), new ChrRegion(new Chromosome(chr2), aCluster[2] + Length, aCluster[3] - Length), aCluster[4]));
-                            }
-                        }
-                    }
+//    public ArrayList<InterAction> Run() throws IOException {
+//        Hashtable<String, ArrayList<int[]>> ChrMatrix = new Hashtable<>();
+//        if (InFile != null) {
+//            BufferedReader in = new BufferedReader(new FileReader(InFile));
+//            int[] ChrIndex = new int[0], RegionIndex = new int[0];
+//            int MaxLength = 0, CountIndex = 0;
+//            switch (InFile.BedpeDetect()) {
+//                case BedpePointFormat:
+//                    if (Length == 0) {
+//                        System.err.println("Error! extend length is 0");
+//                        System.exit(1);
+//                    }
+//                    ChrIndex = new int[]{0, 2};
+//                    RegionIndex = new int[]{1, 1, 3, 3};
+//                    CountIndex = 4;
+//                    MaxLength = 5;
+//                    break;
+//                case BedpeRegionFormat:
+//                    ChrIndex = new int[]{0, 3};
+//                    RegionIndex = new int[]{1, 2, 4, 5};
+//                    CountIndex = 6;
+//                    MaxLength = 7;
+//                    break;
+//                default:
+//                    System.err.println(PetCluster.class.getName() + ":\tError format !");
+//                    System.exit(1);
+//            }
+//            //---------------------对每两条染色体的交创建一个cluster列表--------------------
+//            String Line;
+//            while ((Line = in.readLine()) != null) {
+//                String[] str = Line.split("\\s+");
+//                String chr1 = str[ChrIndex[0]];
+//                String chr2 = str[ChrIndex[1]];
+//                String key = chr1 + "-" + chr2;
+//                int count = 1;
+//                if (!ChrMatrix.containsKey(key)) {
+//                    ChrMatrix.put(key, new ArrayList<>());
+//                }
+//                if (str.length >= MaxLength) {
+//                    try {
+//                        count = Integer.parseInt(str[CountIndex]);
+//                    } catch (NumberFormatException ignored) {
+//                    }
+//                }
+//                ChrMatrix.get(key).add(new int[]{Integer.parseInt(str[RegionIndex[0]]) - Length, Integer.parseInt(str[RegionIndex[1]]) + Length, Integer.parseInt(str[RegionIndex[2]]) - Length, Integer.parseInt(str[RegionIndex[3]]) + Length, count});
+//            }
+//            in.close();
+//        } else if (List.size() > 0) {
+//            for (InterAction a : List) {
+//                ChrRegion region1 = a.getLeft();
+//                ChrRegion region2 = a.getRight();
+//                int count = a.Score == 0 ? 1 : a.Score;
+//                String key = region1.Chr + "-" + region2.Chr;
+//                if (!ChrMatrix.containsKey(key)) {
+//                    ChrMatrix.put(key, new ArrayList<>());
+//                }
+//                ChrMatrix.get(key).add(new int[]{region1.region.Start - Length, region1.region.End + Length, region2.region.Start - Length, region2.region.End + Length, count});
+//            }
+//        } else {
+//            return Cluster;
+//        }
+//        //-----------------------------------------------------------------------
+//        Set<String> InterList = ChrMatrix.keySet();
+//        Iterator<String> p = InterList.iterator();
+//        Thread[] t = new Thread[Threads];
+//        for (int i = 0; i < t.length; i++) {
+//            t[i] = new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    String chrinter;
+//                    while (p.hasNext()) {
+//                        synchronized (t) {
+//                            try {
+//                                chrinter = p.next();
+//                            } catch (NoSuchElementException e) {
+//                                break;
+//                            }
+//                        }
+//                        String chr1 = chrinter.split("-")[0];
+//                        String chr2 = chrinter.split("-")[1];
+//                        ArrayList<int[]> cluster = FindCluster(ChrMatrix.get(chrinter));
+//                        synchronized (t) {
+//                            for (int[] aCluster : cluster) {
+//                                Cluster.add(new InterAction(new ChrRegion(chr1, aCluster[0] + Length, aCluster[1] - Length), new ChrRegion(chr2, aCluster[2] + Length, aCluster[3] - Length), aCluster[4]);
+//                            }
+//                        }
+//                    }
+//
+//                }
+//            });
+//            t[i].start();
+//        }
+//        Tools.ThreadsWait(t);
+//        return Cluster;
+//    }
 
-                }
-            });
-            t[i].start();
-        }
-        Tools.ThreadsWait(t);
-        return Cluster;
-    }
-
-    public void WriteOut() throws IOException {
-        BufferedWriter out = new BufferedWriter(new FileWriter(OutPrefix + ".cluster"));
-        for (InterAction action : Cluster) {
-            ChrRegion chr1 = action.getLeft();
-            ChrRegion chr2 = action.getRight();
-            out.write(chr1.Chr.Name + "\t" + chr1.region.Start + "\t" + chr1.region.End + "\t" + chr2.Chr.Name + "\t" + chr2.region.Start + "\t" + chr2.region.End + "\t" + action.Count + "\n");
-        }
-        out.close();
-        out = new BufferedWriter(new FileWriter(OutPrefix + ".cluster.stat"));
-        ArrayList<Integer> Key = new ArrayList<>(CountStat.keySet());
-        Collections.sort(Key);
-        for (int i : Key) {
-            out.write(i + ":\t" + CountStat.get(i) + "\n");
-        }
-        out.close();
-    }
+//    public void WriteOut() throws IOException {
+//        BufferedWriter out = new BufferedWriter(new FileWriter(OutPrefix + ".cluster"));
+//        for (InterAction action : Cluster) {
+//            ChrRegion chr1 = action.getLeft();
+//            ChrRegion chr2 = action.getRight();
+//            out.write(chr1.Chr + "\t" + chr1.region.Start + "\t" + chr1.region.End + "\t" + chr2.Chr + "\t" + chr2.region.Start + "\t" + chr2.region.End + "\t" + action.Score + "\n");
+//        }
+//        out.close();
+//        out = new BufferedWriter(new FileWriter(OutPrefix + ".cluster.stat"));
+//        ArrayList<Integer> Key = new ArrayList<>(CountStat.keySet());
+//        Collections.sort(Key);
+//        for (int i : Key) {
+//            out.write(i + ":\t" + CountStat.get(i) + "\n");
+//        }
+//        out.close();
+//    }
 
     private ArrayList<int[]> FindCluster(ArrayList<int[]> Region) {
         int OldSize = 0;

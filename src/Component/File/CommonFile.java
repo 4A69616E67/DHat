@@ -35,8 +35,10 @@ public class CommonFile extends AbstractFile<String> {
     }
 
     @Override
-    public SortItem<String> ReadSortItem() throws IOException {
-        String Line = reader.readLine();
-        return new SortItem<>(Line, Line.toCharArray());
+    protected SortItem<String> ExtractSortItem(String[] s) {
+        if (s == null) {
+            return null;
+        }
+        return new SortItem<>(s[0]);
     }
 }

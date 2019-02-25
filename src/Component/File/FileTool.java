@@ -109,70 +109,70 @@ public class FileTool {
         return matrix;
     }
 
-    public static ArrayList<InterAction> ReadInterActionFile(BedpeFile file, int Name, int Count, int Fragment1, int Fragment2) throws IOException {
-        String line;
-        String[] str;
-        ArrayList<InterAction> List = new ArrayList<>();
-        BufferedReader in = new BufferedReader(new FileReader(file));
-        if (file.BedpeDetect() == Opts.FileFormat.BedpePointFormat) {
-            while ((line = in.readLine()) != null) {
-                str = line.split("\\s+");
-                InterAction inter = new InterAction(new ChrRegion(new String[]{str[0], str[1], str[1]}), new ChrRegion(new String[]{str[2], str[3], str[3]}));
-                if (Name >= 0) {
-                    try {
-                        inter.Name = str[Name];
-                    } catch (IndexOutOfBoundsException e) {
-                        inter.Name = null;
-                    }
-                }
-                if (Count >= 0) {
-                    try {
-                        inter.Count = Integer.parseInt(str[Count]);
-                    } catch (NumberFormatException | IndexOutOfBoundsException e) {
-                        inter.Count = 1;
-                    }
-                }
-                if (Fragment1 >= 0 && Fragment2 >= 0) {
-                    try {
-                        inter.LeftFragment = Integer.parseInt(str[Fragment1]);
-                        inter.RightFragment = Integer.parseInt(str[Fragment2]);
-                    } catch (IndexOutOfBoundsException | NumberFormatException ignored) {
-                    }
-                }
-                List.add(inter);
-            }
-        } else if (file.BedpeDetect() == Opts.FileFormat.BedpeRegionFormat) {
-            while ((line = in.readLine()) != null) {
-                str = line.split("\\s+");
-                InterAction inter = new InterAction(new ChrRegion(new String[]{str[0], str[1], str[2]}), new ChrRegion(new String[]{str[3], str[4], str[5]}));
-                if (Name >= 0) {
-                    try {
-                        inter.Name = str[Name];
-                    } catch (IndexOutOfBoundsException e) {
-                        inter.Name = null;
-                    }
-                }
-                if (Count >= 0) {
-                    try {
-                        inter.Count = Integer.parseInt(str[Count]);
-                    } catch (NumberFormatException | IndexOutOfBoundsException e) {
-                        inter.Count = 1;
-                    }
-                }
-                if (Fragment1 >= 0 && Fragment2 >= 0) {
-                    try {
-                        inter.LeftFragment = Integer.parseInt(str[Fragment1]);
-                        inter.RightFragment = Integer.parseInt(str[Fragment2]);
-                    } catch (IndexOutOfBoundsException | NumberFormatException ignored) {
-                    }
-                }
-                List.add(inter);
-            }
-        } else {
-            System.out.println("Error format");
-            System.exit(1);
-        }
-        in.close();
-        return List;
-    }
+//    public static ArrayList<InterAction> ReadInterActionFile(BedpeFile file, int Name, int Count, int Fragment1, int Fragment2) throws IOException {
+//        String line;
+//        String[] str;
+//        ArrayList<InterAction> List = new ArrayList<>();
+//        BufferedReader in = new BufferedReader(new FileReader(file));
+//        if (file.BedpeDetect() == Opts.FileFormat.BedpePointFormat) {
+//            while ((line = in.readLine()) != null) {
+//                str = line.split("\\s+");
+//                InterAction inter = new InterAction(new ChrRegion(new String[]{str[0], str[1], str[1]}), new ChrRegion(new String[]{str[2], str[3], str[3]}));
+//                if (Name >= 0) {
+//                    try {
+//                        inter.Name = str[Name];
+//                    } catch (IndexOutOfBoundsException e) {
+//                        inter.Name = null;
+//                    }
+//                }
+//                if (Count >= 0) {
+//                    try {
+//                        inter.Score = Integer.parseInt(str[Count]);
+//                    } catch (NumberFormatException | IndexOutOfBoundsException e) {
+//                        inter.Score = 1;
+//                    }
+//                }
+//                if (Fragment1 >= 0 && Fragment2 >= 0) {
+//                    try {
+//                        inter.LeftFragment = Integer.parseInt(str[Fragment1]);
+//                        inter.RightFragment = Integer.parseInt(str[Fragment2]);
+//                    } catch (IndexOutOfBoundsException | NumberFormatException ignored) {
+//                    }
+//                }
+//                List.add(inter);
+//            }
+//        } else if (file.BedpeDetect() == Opts.FileFormat.BedpeRegionFormat) {
+//            while ((line = in.readLine()) != null) {
+//                str = line.split("\\s+");
+//                InterAction inter = new InterAction(new ChrRegion(new String[]{str[0], str[1], str[2]}), new ChrRegion(new String[]{str[3], str[4], str[5]}));
+//                if (Name >= 0) {
+//                    try {
+//                        inter.Name = str[Name];
+//                    } catch (IndexOutOfBoundsException e) {
+//                        inter.Name = null;
+//                    }
+//                }
+//                if (Count >= 0) {
+//                    try {
+//                        inter.Score = Integer.parseInt(str[Count]);
+//                    } catch (NumberFormatException | IndexOutOfBoundsException e) {
+//                        inter.Score = 1;
+//                    }
+//                }
+//                if (Fragment1 >= 0 && Fragment2 >= 0) {
+//                    try {
+//                        inter.LeftFragment = Integer.parseInt(str[Fragment1]);
+//                        inter.RightFragment = Integer.parseInt(str[Fragment2]);
+//                    } catch (IndexOutOfBoundsException | NumberFormatException ignored) {
+//                    }
+//                }
+//                List.add(inter);
+//            }
+//        } else {
+//            System.out.println("Error format");
+//            System.exit(1);
+//        }
+//        in.close();
+//        return List;
+//    }
 }

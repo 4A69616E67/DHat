@@ -51,24 +51,11 @@ public class SamFile extends AbstractFile<SamItem> {
         writer.write(item.toString());
     }
 
-
     @Override
-    public SortItem<SamItem> ReadSortItem() throws IOException {
-        String[] lines = ReadItemLine();
-        if (lines == null) {
-            return null;
-        }
-        String[] ss = lines[0].split("\\s+");
-        Item = new SamItem();
-        if (SortByName) {
-            Item.Title = ss[0];
-        } else {
-            Item.Chr = ss[2];
-            Item.BeginSite = Integer.parseInt(ss[3]);
-        }
-        Item.SortByName = SortByName;
-        return new SortItem<>(Item, String.join("\n", lines).toCharArray());
+    protected SortItem<SamItem> ExtractSortItem(String[] s) {
+        return null;
     }
+
 
     private static int CalculateFragLength(String s) {
         int Length = 0;

@@ -66,14 +66,14 @@ public class FindRestrictionSite {
                     int[] item = list1.get(i);
                     chrwrite.write(Count + "\t+\t" + Chr + "\t" + item[0] + "\t" + item[1] + "\n");
                 }
-//                chrwrite.write(Count + "\t+\t" + Chr + "\t0\n");
+//                chrwrite.write(Score + "\t+\t" + Chr + "\t0\n");
 //                for (int i = 0; i <= len - ResLength; i++) {
 //                    if (Seq.substring(i, i + ResLength).equals(Restriction)) {
-//                        Count++;
-//                        chrwrite.write(Count + "\t+\t" + Chr + "\t" + (i + Site) + "\n");
+//                        Score++;
+//                        chrwrite.write(Score + "\t+\t" + Chr + "\t" + (i + Site) + "\n");
 //                    }
 //                }
-//                chrwrite.write((++Count) + "\t+\t" + Chr + "\t" + len + "\n");
+//                chrwrite.write((++Score) + "\t+\t" + Chr + "\t" + len + "\n");
                 chrwrite.close();
                 Seq.setLength(0);
                 Chr = line.split("\\s+")[0].replace(">", "");

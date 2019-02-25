@@ -1,7 +1,7 @@
 package Component.unit;
+
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 public class Region implements Comparable<Region> {
     public int Start;
@@ -26,7 +26,12 @@ public class Region implements Comparable<Region> {
         return this.Start <= reg.Start && this.End >= reg.End;
     }
 
+    public int Distance(Region b) {
+        return Math.abs((Start + End) / 2 - (b.Start + b.End) / 2);
+    }
+
     @Override
+
     public int compareTo(Region o) {
         if (this.Start == o.Start) {
             return this.End - o.End;
@@ -37,5 +42,10 @@ public class Region implements Comparable<Region> {
 
     public int getLength() {
         return Length;
+    }
+
+    @Override
+    public String toString() {
+        return Start + "\t" + End;
     }
 }
