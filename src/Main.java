@@ -202,6 +202,7 @@ public class Main {
         }
         //==============================================================================================================
         AbstractFile.delete(Opts.CommandOutFile);
+        AbstractFile.delete(Opts.StatisticFile);
         Thread ST;//统计线程
         Thread[] STS;//统计线程
         //==========================================Create Index========================================================
@@ -384,7 +385,7 @@ public class Main {
             //==============================================BedpeFile Process====bedpe 处理=================================
             Thread[] LinkerProcess = new Thread[ValidLinkerSeq.length];//不同linker类型并行
             for (int i = 0; i < LinkerProcess.length; i++) {
-                LinkerProcess[i] = BedpeProcess(ValidLinkerSeq[i].getType(), SeBedpeFile[i]);
+                LinkerProcess[i] = BedpeProcess(ValidLinkerSeq[i].getType(), SeBedpeFile[i], Math.max(1, Threads / ValidLinkerSeq.length));
                 LinkerProcess[i].start();
                 BedpeProcess Temp = new BedpeProcess(new File(BedpeProcessDir + "/" + ValidLinkerSeq[i].getType()), Prefix + "." + ValidLinkerSeq[i].getType(), Chromosomes, ChrEnzyFile, SeBedpeFile[i]);
                 FinalLinkerBedpe[i] = Temp.getFinalFile();
@@ -393,9 +394,6 @@ public class Main {
                 LinkerChrSameCleanBedpeFile[i] = Temp.getChrSameNoDumpFile();
             }
             Tools.ThreadsWait(LinkerProcess);
-//            for (int i = 0; i < ValidLinkerSeq.length; i++) {
-//                LinkerProcess[i].join();
-//            }
             Thread t1 = new Thread(() -> {
                 try {
                     SameBedpeFile.Merge(LinkerFinalSameCleanBedpeFile);
@@ -460,6 +458,16 @@ public class Main {
                 Stat.UseLinker[finalI].RawDiffBedpeNum = Temp.getDiffFile().getItemNum();
                 Stat.UseLinker[finalI].SameCleanNum = Temp.getSameNoDumpFile().getItemNum();
                 Stat.UseLinker[finalI].DiffCleanNum = Temp.getDiffNoDumpFile().getItemNum();
+                try {
+                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].SelfLigationFile.getName() + ":\t" + Stat.UseLinker[finalI].SelfLigationNum + "\n");
+                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].RelLigationFile.getName() + ":\t" + Stat.UseLinker[finalI].RelLigationNum + "\n");
+                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].SameValidFile.getName() + ":\t" + Stat.UseLinker[finalI].SameValidNum + "\n");
+                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].SameCleanFile.getName() + ":\t" + Stat.UseLinker[finalI].SameCleanNum + "\n");
+                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].RawDiffBedpeFile.getName() + ":\t" + Stat.UseLinker[finalI].RawDiffBedpeNum + "\n");
+                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].DiffCleanFile.getName() + ":\t" + Stat.UseLinker[finalI].DiffCleanNum + "\n");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             });
             STS[i].start();
             SThread.add(STS[i]);
@@ -732,11 +740,11 @@ public class Main {
         t3.join();
     }
 
-    private Thread BedpeProcess(String UseLinker, BedpeFile SeBedpeFile) {
+    private Thread BedpeProcess(String UseLinker, BedpeFile SeBedpeFile, int threads) {
         return new Thread(() -> {
             try {
                 BedpeProcess bedpe = new BedpeProcess(new File(BedpeProcessDir + "/" + UseLinker), Prefix + "." + UseLinker, Chromosomes, ChrEnzyFile, SeBedpeFile);//bedpe文件处理类
-                bedpe.Threads = Threads;//设置线程数
+                bedpe.Threads = threads;//设置线程数
                 bedpe.Run();//运行
             } catch (IOException e) {
                 e.printStackTrace();

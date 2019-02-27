@@ -229,7 +229,10 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
             System.out.println(new Date() + "\tMerge " + x.getName() + " to " + getName());
             x.ReadOpen();
             while ((lines = x.ReadItemLine()) != null) {
-                writer.write(String.join("\n", lines) + "\n");
+                for (String line : lines) {
+                    writer.write(line);
+                    writer.write("\n");
+                }
                 ItemNum++;
             }
             x.ReadClose();

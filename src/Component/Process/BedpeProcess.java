@@ -33,18 +33,17 @@ public class BedpeProcess {
     private BedpeFile[] ChrFragLocationFile;//每条染色体的交互定位
     /**
      * 每一行表示一条染色体，每一列表示一种连接类型例如：
-     * Sel     Rel     Valid
-     * Chr1  -       -       -
-     * Chr2  -       -       -
-     * Chr3  -       -       -
-     * Chr4  -       -       -
+     * <p>Chr1  Chr2  Chr3  Chr4</p>
+     * <p>Sel    -     -     -     -</p>
+     * <p>Rel    -     -     -     -</p>
+     * <p>Valid  -     -     -     -</p>
      */
     private BedpeFile[][] ChrLigationFile;
-    private BedpeFile SelfLigationFile;//总的自连接文件=SUM(ChrLigationFile[:][0])
-    private BedpeFile ReLigationFile;//总的再连接文件=SUM(ChrLigationFile[:][1])
-    private BedpeFile ValidFile;//总的有效数据文件=SUM(ChrLigationFile[:][2])
+    private BedpeFile SelfLigationFile;//总的自连接文件=SUM(ChrLigationFile[0][:])
+    private BedpeFile ReLigationFile;//总的再连接文件=SUM(ChrLigationFile[1][:])
+    private BedpeFile ValidFile;//总的有效数据文件=SUM(ChrLigationFile[2][:])
     private BedpeFile[] ChrSameFile;//每条染色体内的交互
-    private BedpeFile[] ChrSameNoDumpFile;//每条染色体内的交互（去duplication）=ChrLigationFile[:][2]去duplication
+    private BedpeFile[] ChrSameNoDumpFile;//每条染色体内的交互（去duplication）=ChrLigationFile[2][:]去duplication
     private BedpeFile[] ChrSameRepetaFile;///每条染色体内的重复片段
     private BedpeFile SameNoDumpFile;//最终的染色体内的交互文件=SUM(ChrSameNoDumpFile[:])
     private BedpeFile DiffNoDumpFile;//最终的染色体间的交互文件=DiffFile去duplication
@@ -142,10 +141,10 @@ public class BedpeProcess {
                         //定位交互发生在哪个酶切片段
                         FragmentLocation(ChrSameFile[finalI], EnzyFile[finalI], ChrFragLocationFile[finalI]);
                         //区分不同的连接类型（自连接，再连接，有效数据）
-                        SeparateLigationType(ChrFragLocationFile[finalI], ChrLigationFile[finalI][0], ChrLigationFile[finalI][1], ChrLigationFile[finalI][2]);
-                        BedpeFile SortChrLigationFile = new BedpeFile(ChrLigationFile[finalI][2] + ".sort");
+                        SeparateLigationType(ChrFragLocationFile[finalI], ChrLigationFile[0][finalI], ChrLigationFile[1][finalI], ChrLigationFile[2][finalI]);
+                        BedpeFile SortChrLigationFile = new BedpeFile(ChrLigationFile[2][finalI] + ".sort");
                         //按交互位置排序
-                        ChrLigationFile[finalI][2].SortFile(SortChrLigationFile);
+                        ChrLigationFile[2][finalI].SortFile(SortChrLigationFile);
                         //去除duplication
                         RemoveRepeat(SortChrLigationFile, ChrSameNoDumpFile[finalI], ChrSameRepetaFile[finalI]);
                         if (Configure.DeBugLevel < 1) {
@@ -183,33 +182,25 @@ public class BedpeProcess {
                 int finalI = index.Add(1);
                 try {
                     while (finalI < 6) {
-                        for (int j = 0; j < Chromosomes.length; j++) {
-                            switch (finalI) {
-                                case 0:
-                                    SameNoDumpFile.Append(ChrSameNoDumpFile[j]);//合并染色体内的交互（去除duplication）
-                                    break;
-                                case 1:
-                                    SelfLigationFile.Append(ChrLigationFile[j][0]);//合并自连接
-                                    break;
-                                case 2:
-                                    ReLigationFile.Append(ChrLigationFile[j][1]);//合并再连接
-                                    break;
-                                case 3:
-                                    ValidFile.Append(ChrLigationFile[j][2]);//合并有效数据（未去duplication）
-                                    break;
-                                case 4:
-                                    FragmentLocationFile.Append(ChrFragLocationFile[j]);//合并定位的交互片段
-                                    break;
-                                case 5:
-                                    RepeatFile.Append(ChrSameRepetaFile[j]);//合并重复片段
-                                    break;
-                            }
-                        }
                         switch (finalI) {
                             case 0:
+                                SameNoDumpFile.Merge(ChrSameNoDumpFile);//合并染色体内的交互（去除duplication）
                                 FinalFile.Merge(new BedpeFile[]{SameNoDumpFile, DiffNoDumpFile});
                                 break;
+                            case 1:
+                                SelfLigationFile.Merge(ChrLigationFile[0]);//合并自连接
+                                break;
+                            case 2:
+                                ReLigationFile.Merge(ChrLigationFile[1]);//合并再连接
+                                break;
+                            case 3:
+                                ValidFile.Merge(ChrLigationFile[2]);//合并有效数据（未去duplication）
+                                break;
+                            case 4:
+                                FragmentLocationFile.Merge(ChrFragLocationFile);//合并定位的交互片段
+                                break;
                             case 5:
+                                RepeatFile.Merge(ChrSameRepetaFile);//合并重复片段
                                 RepeatFile.Append(DiffRepeatFile);
                                 break;
                         }
@@ -225,66 +216,12 @@ public class BedpeProcess {
         for (int i = 0; i < Chromosomes.length; i++) {
             if (Configure.DeBugLevel < 1) {
                 for (int j = 0; j < 3; j++) {
-                    AbstractFile.delete(ChrLigationFile[i][j]);//删除（自连接，再连接，有效数据）
+                    AbstractFile.delete(ChrLigationFile[j][i]);//删除（自连接，再连接，有效数据）
                 }
                 AbstractFile.delete(ChrSameRepetaFile[i]);
                 AbstractFile.delete(ChrFragLocationFile[i]);//删除每条染色体的交互片段定位的文件（只保留包含全部染色体的一个文件）
             }
         }
-
-//        index.setIndex(-1);
-//        for (int i = 0; i < t.length; i++) {
-//            t[i] = new Thread(() -> {
-//                int finaI = index.Add(1);
-//                try {
-//                    while (finaI < Chromosomes.length) {
-//                        SameNoDumpFile.Append(ChrSameNoDumpFile[finaI]);//合并染色体内的交互（去除duplication）
-//                        SelfLigationFile.Append(ChrLigationFile[finaI][0]);//合并自连接
-//                        ReLigationFile.Append(ChrLigationFile[finaI][1]);//合并再连接
-//                        ValidFile.Append(ChrLigationFile[finaI][2]);//合并有效数据（未去duplication）
-//                        FragmentLocationFile.Append(ChrFragLocationFile[finaI]);//合并定位的交互片段
-//                        RepeatFile.Append(ChrSameRepetaFile[finaI]);
-//                        //删除中间文件
-//                        if (Configure.DeBugLevel < 1) {
-//                            for (int j = 0; j < 3; j++) {
-//                                AbstractFile.delete(ChrLigationFile[finaI][j]);//删除（自连接，再连接，有效数据）
-//                            }
-//                            AbstractFile.delete(ChrFragLocationFile[finaI]);//删除每条染色体的交互片段定位的文件（只保留包含全部染色体的一个文件）
-//                        }
-//                        finaI = index.Add(1);
-//                    }
-//                    if (finaI == Chromosomes.length) {
-//                        FinalFile.Merge(new BedpeFile[]{SameNoDumpFile, DiffNoDumpFile});
-//                        finaI = index.Add(1);
-//                    }
-//                    if (finaI == Chromosomes.length + 1) {
-//                        RepeatFile.Append(DiffRepeatFile);
-//                    }
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            });
-//            t[i].start();
-//        }
-//        Tools.ThreadsWait(t);
-//        for (int j = 0; j < Chromosomes.length; j++) {
-//            SameNoDumpFile.Append(ChrSameNoDumpFile[j]);//合并染色体内的交互（去除duplication）
-//            SelfLigationFile.Append(ChrLigationFile[j][0]);//合并自连接
-//            ReLigationFile.Append(ChrLigationFile[j][1]);//合并再连接
-//            ValidFile.Append(ChrLigationFile[j][2]);//合并有效数据（未去duplication）
-//            FragmentLocationFile.Append(ChrFragLocationFile[j]);//合并定位的交互片段
-//            RepeatFile.Append(ChrSameRepetaFile[j]);
-//            //删除中间文件
-//            if (Configure.DeBugLevel < 1) {
-//                for (int i = 0; i < 3; i++) {
-//                    AbstractFile.delete(ChrLigationFile[j][i]);//删除（自连接，再连接，有效数据）
-//                }
-//                AbstractFile.delete(ChrFragLocationFile[j]);//删除每条染色体的交互片段定位的文件（只保留包含全部染色体的一个文件）
-//            }
-//
-//        }
-//        FinalFile.Merge(new BedpeFile[]{SameNoDumpFile, DiffNoDumpFile});
-//        RepeatFile.Append(DiffRepeatFile);
     }
 
     public Component.File.BedpeFile getFinalFile() {
@@ -335,14 +272,14 @@ public class BedpeProcess {
         FragmentLocationFile = new BedpeFile(LigationDir + "/" + Prefix + ".enzy.bedpe");
         ChrSameFile = new BedpeFile[Chromosomes.length];
         ChrFragLocationFile = new BedpeFile[Chromosomes.length];
-        ChrLigationFile = new BedpeFile[Chromosomes.length][3];
+        ChrLigationFile = new BedpeFile[3][Chromosomes.length];
         ChrSameNoDumpFile = new BedpeFile[Chromosomes.length];
         ChrSameRepetaFile = new BedpeFile[Chromosomes.length];
         for (int j = 0; j < Chromosomes.length; j++) {
             ChrFragLocationFile[j] = new BedpeFile(MiddleDir + "/" + Prefix + "." + Chromosomes[j].Name + ".enzy.bedpe");
-            ChrLigationFile[j][0] = new BedpeFile(MiddleDir + "/" + Prefix + "." + Chromosomes[j].Name + ".self.bedpe");
-            ChrLigationFile[j][1] = new BedpeFile(MiddleDir + "/" + Prefix + "." + Chromosomes[j].Name + ".rel.bedpe");
-            ChrLigationFile[j][2] = new BedpeFile(MiddleDir + "/" + Prefix + "." + Chromosomes[j].Name + ".valid.bedpe");
+            ChrLigationFile[0][j] = new BedpeFile(MiddleDir + "/" + Prefix + "." + Chromosomes[j].Name + ".self.bedpe");
+            ChrLigationFile[1][j] = new BedpeFile(MiddleDir + "/" + Prefix + "." + Chromosomes[j].Name + ".rel.bedpe");
+            ChrLigationFile[2][j] = new BedpeFile(MiddleDir + "/" + Prefix + "." + Chromosomes[j].Name + ".valid.bedpe");
             ChrSameNoDumpFile[j] = new BedpeFile(FinalDir + "/" + Prefix + "." + Chromosomes[j].Name + ".same.clean.bedpe");
             ChrSameRepetaFile[j] = new BedpeFile(FinalDir + "/" + Prefix + "." + Chromosomes[j].Name + ".same.repeat.bedpe");
         }
