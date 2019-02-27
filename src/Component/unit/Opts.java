@@ -91,7 +91,8 @@ public class Opts {
     public static final File JarFile = new File(Opts.class.getProtectionDomain().getCodeSource().getLocation().getFile());
     public static final File ScriptDir = new File(JarFile.getParent() + "/Script");//脚本文件存放的位置
     public static final File ResourceDir = new File(JarFile.getParent() + "/Resource");//资源文件存放的位置
-    public static final CommonFile CommandOutFile = new CommonFile("./command.log");
+    public static final CommonFile CommandOutFile = new CommonFile("./Command.log");
+    public static final CommonFile StatisticFile = new CommonFile("./Statistic.txt");
     public static final String[] ResourceFile = new String[]{"default.conf", "default_adv.conf"};
     public static final String[] ScriptFile = new String[]{"PlotHeatMap.py", "StatisticPlot.py", "RegionPlot.py"};
     public static final CommonFile ConfigFile = new CommonFile(ResourceDir + "/" + ResourceFile[0]);

@@ -146,8 +146,8 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
         for (int i = 0; i < SortList.size(); i++) {
             outfile.write(LinesList.get(SortList.get(i).index));
             outfile.write("\n");
-            LinesList.set(SortList.get(i).index, null);
-            SortList.set(i, null);
+            LinesList.set(SortList.get(i).index, null);//及时去除，减少内存占用
+            SortList.set(i, null);//及时去除，减少内存占用
         }
         outfile.close();
         ReadClose();
@@ -222,25 +222,22 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
     }
 
     public synchronized void Merge(AbstractFile[] files) throws IOException {
-        Merge(this, files);
-    }
-
-    public static void Merge(AbstractFile file, AbstractFile[] merge_files) throws IOException {
-        BufferedWriter writer = file.WriteOpen();
-        file.ItemNum = 0;
+        BufferedWriter writer = WriteOpen();
+        ItemNum = 0;
         String[] lines;
-        for (AbstractFile x : merge_files) {
-            System.out.println(new Date() + "\tMerge " + x.getName() + " to " + file.getName());
+        for (AbstractFile x : files) {
+            System.out.println(new Date() + "\tMerge " + x.getName() + " to " + getName());
             x.ReadOpen();
             while ((lines = x.ReadItemLine()) != null) {
                 writer.write(String.join("\n", lines) + "\n");
-                file.ItemNum++;
+                ItemNum++;
             }
             x.ReadClose();
         }
-        file.WriteClose();
+        WriteClose();
         System.out.println(new Date() + "\tDone merge");
     }
+
 
     public ArrayList<CommonFile> SplitFile(String Prefix, long itemNum) throws IOException {
         int filecount = 0;

@@ -160,7 +160,12 @@ public class BedpeFile extends AbstractFile<BedpeItem> {
         while (item1 != null && item2 != null) {
             int res = item1.compareTo(item2);
             if (res == 0) {
-                WriteItemln(item1.ToBedpe(item2));
+                item1.SortBy = BedItem.Sort.Location;
+                if (item1.compareTo(item2) > 0) {
+                    WriteItemln(item2.ToBedpe(item1));
+                } else {
+                    WriteItemln(item1.ToBedpe(item2));
+                }
                 ItemNum++;
                 item1 = file1.ReadItem();
                 item2 = file2.ReadItem();

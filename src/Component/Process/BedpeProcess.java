@@ -122,16 +122,22 @@ public class BedpeProcess {
         BedpeToSameAndDiff(BedpeFile, SameFile, DiffFile);
         ChrSameFile = SameFile.SeparateBedpe(Chromosomes, OutPath + "/" + Prefix, Threads);
         //=====================================染色体内的交互处理=========================================
-        final int[] I = {0};
-        Thread[] Process = new Thread[Threads];
-        for (int i = 0; i < Process.length; i++) {
-            Process[i] = new Thread(() -> {
-                int finalI;
+        ThreadIndex index = new ThreadIndex(-2);
+        Thread[] t = new Thread[Threads];
+        for (int i = 0; i < t.length; i++) {
+            t[i] = new Thread(() -> {
+                int finalI = index.Add(1);
                 try {
-                    synchronized (Process) {
-                        finalI = I[0];
-                        I[0]++;
+                    //===========================================染色体间的交互处理======================================
+                    if (finalI < 0) {
+                        BedpeFile SortDiffFile = new BedpeFile(FragmentDiffFile + ".sort");
+                        AllEnzyFile.Merge(EnzyFile);
+                        FragmentLocation(DiffFile, AllEnzyFile, FragmentDiffFile);
+                        FragmentDiffFile.SplitSortFile(SortDiffFile);
+                        RemoveRepeat(SortDiffFile, DiffNoDumpFile, DiffRepeatFile);//去duplication
+                        finalI = index.Add(1);
                     }
+                    //=======================================染色体内的交互处理==========================================
                     while (finalI < Chromosomes.length) {
                         //定位交互发生在哪个酶切片段
                         FragmentLocation(ChrSameFile[finalI], EnzyFile[finalI], ChrFragLocationFile[finalI]);
@@ -145,69 +151,140 @@ public class BedpeProcess {
                         if (Configure.DeBugLevel < 1) {
                             AbstractFile.delete(SortChrLigationFile);
                         }
-                        synchronized (Process) {
-                            finalI = I[0];
-                            I[0]++;
-                        }
+                        finalI = index.Add(1);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             });
-            Process[i].start();
+            t[i].start();
         }
-        Tools.ThreadsWait(Process);
+        Tools.ThreadsWait(t);
         //==========================================染色体间的交互处理==================================================
-        BedpeFile SortDiffFile = new BedpeFile(FragmentDiffFile + ".sort");
-        AllEnzyFile.Merge(EnzyFile);
-        FragmentLocation(DiffFile, AllEnzyFile, FragmentDiffFile);
-        FragmentDiffFile.SplitSortFile(SortDiffFile);
-        RemoveRepeat(SortDiffFile, DiffNoDumpFile, DiffRepeatFile);//去duplication
+//        BedpeFile SortDiffFile = new BedpeFile(FragmentDiffFile + ".sort");
+//        AllEnzyFile.Merge(EnzyFile);
+//        FragmentLocation(DiffFile, AllEnzyFile, FragmentDiffFile);
+//        FragmentDiffFile.SplitSortFile(SortDiffFile);
+//        RemoveRepeat(SortDiffFile, DiffNoDumpFile, DiffRepeatFile);//去duplication
         //================================================================
-        File[] NeedRemove = new File[]{SameNoDumpFile, SelfLigationFile, ReLigationFile, ValidFile, FragmentLocationFile};
-        for (File f : NeedRemove) {
-            if (f.exists() && !f.delete()) {
-                System.err.println(new Date() + "\tWarning! Can't delete " + f.getName());
+        AbstractFile[] NeedRemove = new AbstractFile[]{SameNoDumpFile, SelfLigationFile, ReLigationFile, ValidFile, FragmentLocationFile, RepeatFile};
+        for (int i = 0; i < NeedRemove.length; i++) {
+            if (NeedRemove[i].exists() && !NeedRemove[i].delete()) {
+                System.err.println(new Date() + "\tWarning! Can't delete " + NeedRemove[i].getName());
+            }
+            if (!NeedRemove[i].clean()) {
+                NeedRemove[i] = new BedpeFile(NeedRemove[i] + ".temp");
+                System.err.println("Create another file " + NeedRemove[i]);
             }
         }
-        if (!SameNoDumpFile.clean()) {
-            SameNoDumpFile = new BedpeFile(SameNoDumpFile + ".temp");
-            System.err.println("Create another file " + SameNoDumpFile);
-        }
-        if (!SelfLigationFile.clean()) {
-            SelfLigationFile = new BedpeFile(SelfLigationFile + ".temp");
-            System.err.println("Create another file " + SelfLigationFile);
-        }
-        if (!ReLigationFile.clean()) {
-            ReLigationFile = new BedpeFile(ReLigationFile + ".temp");
-            System.err.println("Create another file " + ReLigationFile);
-        }
-        if (!ValidFile.clean()) {
-            SameNoDumpFile = new BedpeFile(ValidFile + ".temp");
-            System.err.println("Create another file " + ValidFile);
-        }
-        if (!FragmentLocationFile.clean()) {
-            FragmentLocationFile = new BedpeFile(FragmentLocationFile + ".temp");
-            System.err.println("Create another file " + FragmentLocationFile);
-        }
-        for (int j = 0; j < Chromosomes.length; j++) {
-            SameNoDumpFile.Append(ChrSameNoDumpFile[j]);//合并染色体内的交互（去除duplication）
-            SelfLigationFile.Append(ChrLigationFile[j][0]);//合并自连接
-            ReLigationFile.Append(ChrLigationFile[j][1]);//合并再连接
-            ValidFile.Append(ChrLigationFile[j][2]);//合并有效数据（未去duplication）
-            FragmentLocationFile.Append(ChrFragLocationFile[j]);//合并定位的交互片段
-            RepeatFile.Append(ChrSameRepetaFile[j]);
-            //删除中间文件
-            if (Configure.DeBugLevel < 1) {
-                for (int i = 0; i < 3; i++) {
-                    AbstractFile.delete(ChrLigationFile[j][i]);//删除（自连接，再连接，有效数据）
+        index.setIndex(-1);
+        for (int i = 0; i < Threads; i++) {
+            t[i] = new Thread(() -> {
+                int finalI = index.Add(1);
+                try {
+                    while (finalI < 6) {
+                        for (int j = 0; j < Chromosomes.length; j++) {
+                            switch (finalI) {
+                                case 0:
+                                    SameNoDumpFile.Append(ChrSameNoDumpFile[j]);//合并染色体内的交互（去除duplication）
+                                    break;
+                                case 1:
+                                    SelfLigationFile.Append(ChrLigationFile[j][0]);//合并自连接
+                                    break;
+                                case 2:
+                                    ReLigationFile.Append(ChrLigationFile[j][1]);//合并再连接
+                                    break;
+                                case 3:
+                                    ValidFile.Append(ChrLigationFile[j][2]);//合并有效数据（未去duplication）
+                                    break;
+                                case 4:
+                                    FragmentLocationFile.Append(ChrFragLocationFile[j]);//合并定位的交互片段
+                                    break;
+                                case 5:
+                                    RepeatFile.Append(ChrSameRepetaFile[j]);//合并重复片段
+                                    break;
+                            }
+                        }
+                        switch (finalI) {
+                            case 0:
+                                FinalFile.Merge(new BedpeFile[]{SameNoDumpFile, DiffNoDumpFile});
+                                break;
+                            case 5:
+                                RepeatFile.Append(DiffRepeatFile);
+                                break;
+                        }
+                        finalI = index.Add(1);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-                AbstractFile.delete(ChrFragLocationFile[j]);//删除每条染色体的交互片段定位的文件（只保留包含全部染色体的一个文件）
-            }
-
+            });
+            t[i].start();
         }
-        FinalFile.Merge(new BedpeFile[]{SameNoDumpFile, DiffNoDumpFile});
-        RepeatFile.Append(DiffRepeatFile);
+        Tools.ThreadsWait(t);
+        for (int i = 0; i < Chromosomes.length; i++) {
+            if (Configure.DeBugLevel < 1) {
+                for (int j = 0; j < 3; j++) {
+                    AbstractFile.delete(ChrLigationFile[i][j]);//删除（自连接，再连接，有效数据）
+                }
+                AbstractFile.delete(ChrSameRepetaFile[i]);
+                AbstractFile.delete(ChrFragLocationFile[i]);//删除每条染色体的交互片段定位的文件（只保留包含全部染色体的一个文件）
+            }
+        }
+
+//        index.setIndex(-1);
+//        for (int i = 0; i < t.length; i++) {
+//            t[i] = new Thread(() -> {
+//                int finaI = index.Add(1);
+//                try {
+//                    while (finaI < Chromosomes.length) {
+//                        SameNoDumpFile.Append(ChrSameNoDumpFile[finaI]);//合并染色体内的交互（去除duplication）
+//                        SelfLigationFile.Append(ChrLigationFile[finaI][0]);//合并自连接
+//                        ReLigationFile.Append(ChrLigationFile[finaI][1]);//合并再连接
+//                        ValidFile.Append(ChrLigationFile[finaI][2]);//合并有效数据（未去duplication）
+//                        FragmentLocationFile.Append(ChrFragLocationFile[finaI]);//合并定位的交互片段
+//                        RepeatFile.Append(ChrSameRepetaFile[finaI]);
+//                        //删除中间文件
+//                        if (Configure.DeBugLevel < 1) {
+//                            for (int j = 0; j < 3; j++) {
+//                                AbstractFile.delete(ChrLigationFile[finaI][j]);//删除（自连接，再连接，有效数据）
+//                            }
+//                            AbstractFile.delete(ChrFragLocationFile[finaI]);//删除每条染色体的交互片段定位的文件（只保留包含全部染色体的一个文件）
+//                        }
+//                        finaI = index.Add(1);
+//                    }
+//                    if (finaI == Chromosomes.length) {
+//                        FinalFile.Merge(new BedpeFile[]{SameNoDumpFile, DiffNoDumpFile});
+//                        finaI = index.Add(1);
+//                    }
+//                    if (finaI == Chromosomes.length + 1) {
+//                        RepeatFile.Append(DiffRepeatFile);
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            });
+//            t[i].start();
+//        }
+//        Tools.ThreadsWait(t);
+//        for (int j = 0; j < Chromosomes.length; j++) {
+//            SameNoDumpFile.Append(ChrSameNoDumpFile[j]);//合并染色体内的交互（去除duplication）
+//            SelfLigationFile.Append(ChrLigationFile[j][0]);//合并自连接
+//            ReLigationFile.Append(ChrLigationFile[j][1]);//合并再连接
+//            ValidFile.Append(ChrLigationFile[j][2]);//合并有效数据（未去duplication）
+//            FragmentLocationFile.Append(ChrFragLocationFile[j]);//合并定位的交互片段
+//            RepeatFile.Append(ChrSameRepetaFile[j]);
+//            //删除中间文件
+//            if (Configure.DeBugLevel < 1) {
+//                for (int i = 0; i < 3; i++) {
+//                    AbstractFile.delete(ChrLigationFile[j][i]);//删除（自连接，再连接，有效数据）
+//                }
+//                AbstractFile.delete(ChrFragLocationFile[j]);//删除每条染色体的交互片段定位的文件（只保留包含全部染色体的一个文件）
+//            }
+//
+//        }
+//        FinalFile.Merge(new BedpeFile[]{SameNoDumpFile, DiffNoDumpFile});
+//        RepeatFile.Append(DiffRepeatFile);
     }
 
     public Component.File.BedpeFile getFinalFile() {
@@ -277,7 +354,6 @@ public class BedpeProcess {
     }
 
     private void FragmentLocation(File BedpeFile, File EnySiteFile, File OutFile) throws IOException {
-//        ArrayList<int[]> EnySiteList = new ArrayList<>();
         Hashtable<String, ArrayList<Region>> EnySiteList = new Hashtable<>();
         BufferedReader EnySiteRead = new BufferedReader(new FileReader(EnySiteFile));
         BufferedReader SeqRead = new BufferedReader(new FileReader(BedpeFile));
@@ -410,8 +486,8 @@ public class BedpeProcess {
             boolean flag = false;
             for (int i = 0; i < TempList.size(); i++) {
                 String[] tempstr = TempList.get(i);
-                if (Str[0].equals(tempstr[0]) && Str[11].equals(tempstr[4])) {
-                    if (Str[3].equals(tempstr[1]) && Str[9].equals(tempstr[2]) && Str[10].equals(tempstr[3]) && Str[13].equals(tempstr[5])) {
+                if (Str[0].equals(tempstr[0]) && Str[10].equals(tempstr[4])) {
+                    if (Str[3].equals(tempstr[1]) && Str[8].equals(tempstr[2]) && Str[9].equals(tempstr[3]) && Str[12].equals(tempstr[5])) {
                         flag = true;
                         repeat_file.write(line + "\n");
                         break;
@@ -422,7 +498,7 @@ public class BedpeProcess {
                 }
             }
             if (!flag) {
-                TempList.add(new String[]{Str[0], Str[3], Str[9], Str[10], Str[11], Str[13]});
+                TempList.add(new String[]{Str[0], Str[3], Str[8], Str[9], Str[10], Str[12]});
                 clean_file.write(line + "\n");
             }
         }
@@ -447,25 +523,13 @@ public class BedpeProcess {
                         str = line.split("\\s+");
                         if (str[0].equals(str[3])) {
                             //---------------------------取相同染色体上的交互-----------------------
-                            if (Integer.parseInt(str[1]) < Integer.parseInt(str[4])) {
-                                synchronized (SameBedpeWrite) {
-                                    SameBedpeWrite.write(line + "\n");
-                                }
-                            } else {
-                                synchronized (SameBedpeWrite) {
-                                    SameBedpeWrite.write(str[3] + "\t" + str[4] + "\t" + str[5] + "\t" + str[0] + "\t" + str[1] + "\t" + str[2] + "\t" + str[6] + "\t" + str[8] + "\t" + str[7] + "\t" + str[10] + "\t" + str[9] + "\n");
-                                }
+                            synchronized (SameBedpeWrite) {
+                                SameBedpeWrite.write(line + "\n");
                             }
                         } else {
                             //--------------------------取不同染色体上的交互----------------------
-                            if (str[0].compareTo(str[3]) < 0) {
-                                synchronized (DiffBedpeWrite) {
-                                    DiffBedpeWrite.write(line + "\n");
-                                }
-                            } else {
-                                synchronized (DiffBedpeWrite) {
-                                    DiffBedpeWrite.write(str[3] + "\t" + str[4] + "\t" + str[5] + "\t" + str[0] + "\t" + str[1] + "\t" + str[2] + "\t" + str[6] + "\t" + str[8] + "\t" + str[7] + "\t" + str[10] + "\t" + str[9] + "\n");
-                                }
+                            synchronized (DiffBedpeWrite) {
+                                DiffBedpeWrite.write(line + "\n");
                             }
                         }
                     }
