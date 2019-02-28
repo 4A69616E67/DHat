@@ -82,49 +82,49 @@ public class Statistic {
         return Count;
     }
 
-    public static long RangeCount(BedpeFile BedpeFile, double Min, double Max, int Threads) throws IOException, InterruptedException {
-        if (!BedpeFile.isFile()) {
-            return 0;
-        }
-        BufferedReader bedpe = new BufferedReader(new FileReader(BedpeFile));
-        final long[] Count = {0};
-        int[] Index = new int[4];
-        switch (BedpeFile.BedpeDetect()) {
-            case BedpePointFormat:
-                Index = new int[]{3, 3, 1, 1};
-                break;
-            case BedpeRegionFormat:
-                Index = new int[]{5, 4, 2, 1};
-                break;
-        }
-        Thread[] Process = new Thread[Threads];
-        for (int i = 0; i < Threads; i++) {
-            int[] finalIndex = Index;
-            Process[i] = new Thread(() -> {
-                String line;
-                String[] str;
-                try {
-                    while ((line = bedpe.readLine()) != null) {
-                        str = line.split("\\s+");
-                        int dis = Math.abs(Integer.parseInt(str[finalIndex[0]]) + Integer.parseInt(str[finalIndex[1]]) - Integer.parseInt(str[finalIndex[2]]) - Integer.parseInt(str[finalIndex[3]])) / 2;
-                        if (dis <= Max && dis >= Min) {
-                            synchronized (Thread.class) {
-                                Count[0]++;
-                            }
-                        }
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-            Process[i].start();
-        }
-        for (int i = 0; i < Threads; i++) {
-            Process[i].join();
-        }
-        bedpe.close();
-        return Count[0];
-    }
+//    public static long RangeCount(BedpeFile BedpeFile, double Min, double Max, int Threads) throws IOException, InterruptedException {
+//        if (!BedpeFile.isFile()) {
+//            return 0;
+//        }
+//        BufferedReader bedpe = new BufferedReader(new FileReader(BedpeFile));
+//        final long[] Count = {0};
+//        int[] Index = new int[4];
+//        switch (BedpeFile.BedpeDetect()) {
+//            case BedpePointFormat:
+//                Index = new int[]{3, 3, 1, 1};
+//                break;
+//            case BedpeRegionFormat:
+//                Index = new int[]{5, 4, 2, 1};
+//                break;
+//        }
+//        Thread[] Process = new Thread[Threads];
+//        for (int i = 0; i < Threads; i++) {
+//            int[] finalIndex = Index;
+//            Process[i] = new Thread(() -> {
+//                String line;
+//                String[] str;
+//                try {
+//                    while ((line = bedpe.readLine()) != null) {
+//                        str = line.split("\\s+");
+//                        int dis = Math.abs(Integer.parseInt(str[finalIndex[0]]) + Integer.parseInt(str[finalIndex[1]]) - Integer.parseInt(str[finalIndex[2]]) - Integer.parseInt(str[finalIndex[3]])) / 2;
+//                        if (dis <= Max && dis >= Min) {
+//                            synchronized (Thread.class) {
+//                                Count[0]++;
+//                            }
+//                        }
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            });
+//            Process[i].start();
+//        }
+//        for (int i = 0; i < Threads; i++) {
+//            Process[i].join();
+//        }
+//        bedpe.close();
+//        return Count[0];
+//    }
 
     public static int[] CalculatorBinSize(int[] ChrSize, int Resolution) {
         int[] ChrBinSize = new int[ChrSize.length];

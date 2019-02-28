@@ -1,12 +1,13 @@
+package Utils;
+
 import java.io.IOException;
 
 import Component.File.BedpeFile;
-import Component.tool.Statistic;
 import Component.unit.Opts;
 import org.apache.commons.cli.*;
+
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 public class RangeCount {
     public static void main(String[] args) throws IOException, ParseException {
@@ -20,22 +21,18 @@ public class RangeCount {
         }
         CommandLine ComLine = new DefaultParser().parse(Argument, args);
         BedpeFile File = new BedpeFile(ComLine.getOptionValue("f"));
-        float[] range = new float[2];
+        int[] range = new int[2];
         try {
-            range[0] = Float.parseFloat(ComLine.getOptionValue("r").split(":")[0]);
+            range[0] = Integer.parseInt(ComLine.getOptionValue("r").split(":")[0]);
         } catch (NumberFormatException | IndexOutOfBoundsException e) {
-            range[0] = Float.NEGATIVE_INFINITY;
+            range[0] = 0;
         }
         try {
-            range[1] = Float.parseFloat(ComLine.getOptionValue("r").split(":")[1]);
+            range[1] = Integer.parseInt(ComLine.getOptionValue("r").split(":")[1]);
         } catch (NumberFormatException | IndexOutOfBoundsException e) {
-            range[1] = Float.POSITIVE_INFINITY;
+            range[1] = Integer.MAX_VALUE;
         }
         int Threads = ComLine.hasOption("t") ? Integer.parseInt(ComLine.getOptionValue("t")) : 1;
-        try {
-            System.out.println("Range between " + range[0] + " to " + range[1] + " :\t" + Statistic.RangeCount(File, range[0], range[1], Threads));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        System.out.println("Range between " + range[0] + " to " + range[1] + " :\t" + File.DistanceCount(range[0], range[1], Threads));
     }
 }

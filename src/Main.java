@@ -459,12 +459,12 @@ public class Main {
                 Stat.UseLinker[finalI].SameCleanNum = Temp.getSameNoDumpFile().getItemNum();
                 Stat.UseLinker[finalI].DiffCleanNum = Temp.getDiffNoDumpFile().getItemNum();
                 try {
-                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].SelfLigationFile.getName() + ":\t" + Stat.UseLinker[finalI].SelfLigationNum + "\n");
-                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].RelLigationFile.getName() + ":\t" + Stat.UseLinker[finalI].RelLigationNum + "\n");
-                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].SameValidFile.getName() + ":\t" + Stat.UseLinker[finalI].SameValidNum + "\n");
-                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].SameCleanFile.getName() + ":\t" + Stat.UseLinker[finalI].SameCleanNum + "\n");
-                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].RawDiffBedpeFile.getName() + ":\t" + Stat.UseLinker[finalI].RawDiffBedpeNum + "\n");
-                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].DiffCleanFile.getName() + ":\t" + Stat.UseLinker[finalI].DiffCleanNum + "\n");
+                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].SelfLigationFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].SelfLigationNum) + "\n");
+                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].RelLigationFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].RelLigationNum) + "\n");
+                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].SameValidFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].SameValidNum) + "\n");
+                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].SameCleanFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].SameCleanNum) + "\n");
+                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].RawDiffBedpeFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].RawDiffBedpeNum) + "\n");
+                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].DiffCleanFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].DiffCleanNum) + "\n");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -486,9 +486,9 @@ public class Main {
                 Stat.InterAction.IntraActionNum = new BedpeFile(SameBedpeFile).getItemNum();
                 Stat.InterAction.InterActionNum = Stat.InterAction.FinalBedpeNum - Stat.InterAction.IntraActionNum;
                 if (Stat.ComInfor.Restriction.replace("^", "").length() <= 4) {
-                    Stat.InterAction.ShortRegionNum = Statistic.RangeCount(SameBedpeFile, 0, 5000, 4);
+                    Stat.InterAction.ShortRegionNum = SameBedpeFile.DistanceCount(0, 5000, 1);
                 } else {
-                    Stat.InterAction.ShortRegionNum += Statistic.RangeCount(SameBedpeFile, 0, 20000, 4);
+                    Stat.InterAction.ShortRegionNum = SameBedpeFile.DistanceCount(0, 20000, 1);
                 }
                 Stat.InterAction.LongRegionNum = Stat.InterAction.IntraActionNum - Stat.InterAction.ShortRegionNum;
                 File InterActionLengthDisData = new File(Stat.getDataDir() + "/InterActionLengthDistribution.data");

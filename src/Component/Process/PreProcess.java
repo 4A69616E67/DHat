@@ -145,7 +145,7 @@ public class PreProcess extends AbstractProcess {
                             synchronized (Linkers[j]) {
                                 LinkerCout[j]++;
                             }
-                            fastq_string = DivideLinker.Parse(filter_result, MatchSeq, AppendSeq, AppendQuality, MaxReadsLen, DivideLinker.Format.All);
+                            fastq_string = DivideLinker.Execute(filter_result, MatchSeq, AppendSeq, AppendQuality, MaxReadsLen, DivideLinker.Format.All);
                             if (fastq_string[0] != null && fastq_string[1] != null) {
                                 synchronized (Linkers[j]) {
                                     try {

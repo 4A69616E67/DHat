@@ -14,7 +14,6 @@ import Utils.SamFilter;
 
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 
 public class SeProcess {
@@ -37,6 +36,13 @@ public class SeProcess {
     private SamFile MultiSamFile;//多比对文件
     private BedFile BedFile;//Bed文件
     private BedFile SortBedFile;//排序后的bed文件
+
+    //================================================================
+    private long RawNum;
+    private long UniqueMappedNum;
+    private long MultiMappedNum;
+    private long UnMappedNum;
+
 
     public SeProcess(FastqFile fastqfile, File index, int mismatch, int minquality, File outpath, String prefix, Opts.FileFormat readstype) throws IOException {
         FastqFile = fastqfile;
@@ -83,7 +89,6 @@ public class SeProcess {
      * <p>2. sam文件过滤</p>
      * <p>3. sam转bed</p>
      * <p>4. bed文件排序</p>
-     *
      */
     public void Run() throws IOException, InterruptedException {
         //========================================================================================
@@ -109,7 +114,6 @@ public class SeProcess {
             MultiSamFile.Append(TempFile[1]);
         }
         //Sam文件转bed
-//        Tools.ToBedFile(UniqSamFile, BedFile);
         UniqSamFile.ToBedFile(BedFile);
         BedFile.SplitSortFile(SortBedFile);
         System.out.println(new Date() + "\tDelete " + BedFile.getName());
@@ -229,8 +233,8 @@ public class SeProcess {
 
     /**
      * @param ReadsList 序列列表
-     * @param Prefix 前缀
-     * @param Num 序号
+     * @param Prefix    前缀
+     * @param Num       序号
      * @return <>samfile of unique map and multi map</p>
      */
     private SamFile[] IterationAlignment(Hashtable<String, char[]> ReadsList, String Prefix, int Num) throws IOException, InterruptedException {

@@ -7,9 +7,9 @@ import org.apache.commons.cli.*;
 
 import java.io.*;
 import java.util.Date;
+
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 public class DivideLinker {
     public enum Format {
@@ -158,7 +158,7 @@ public class DivideLinker {
                                     synchronized (LinkerList[j]) {
                                         LinkerCount[j]++;
                                     }
-                                    OutString = Parse(Str, MatchSeq, AppendSeq, AppendQuality, MaxReadsLength, Type);
+                                    OutString = Execute(Str, MatchSeq, AppendSeq, AppendQuality, MaxReadsLength, Type);
                                     switch (Type) {
                                         case First:
                                             if (OutString[0] != null) {
@@ -219,7 +219,7 @@ public class DivideLinker {
         System.out.println(new Date() + "\tDivide " + PastFile + " end");
     }
 
-    public static String[] Parse(String[] items, String[] matchSeq, String[] appendSeq, String[] appendQuality, int maxReadsLength, Format format) {
+    public static String[] Execute(String[] items, String[] matchSeq, String[] appendSeq, String[] appendQuality, int maxReadsLength, Format format) {
         String OutString1 = null, OutString2 = null;
         switch (format) {
             case All:
@@ -250,7 +250,7 @@ public class DivideLinker {
         String Quality = S[10].substring(EndSite - ReadsSeq.length(), EndSite);
         //---------------------------------------------------
         if (!MatchSeq.equals("") && AppendBase(ReadsSeq, MatchSeq, Format.First)) {
-            if (ReadsSeq.length() <= MaxReadsLength + 10) {
+            if (ReadsSeq.length() <= MaxReadsLength + 2) {
                 ReadsSeq += AppendSeq;
                 Quality += AppendQuality;
             } else {
@@ -258,7 +258,7 @@ public class DivideLinker {
                 Quality = Quality.substring(Quality.length() - MaxReadsLength) + AppendQuality;
             }
         } else {
-            if (ReadsSeq.length() > MaxReadsLength + 10) {
+            if (ReadsSeq.length() > MaxReadsLength + 2) {
                 ReadsSeq = ReadsSeq.substring(ReadsSeq.length() - MaxReadsLength);
                 Quality = Quality.substring(Quality.length() - MaxReadsLength);
             }
@@ -273,15 +273,15 @@ public class DivideLinker {
             return null;
         }
         StringBuilder FastqString = new StringBuilder();
-        int StartSite = Integer.parseInt(S[2]) + 1;
+        int StartSite = Integer.parseInt(S[2]);
         int EndSite = S[4].equals("*") ? S[8].length() : Integer.parseInt(S[4]) - 1;
         String ReadsTitle = S[7];
-        String ReadsSeq = S[8].substring(StartSite - 1, EndSite).replace("N", "");
+        String ReadsSeq = S[8].substring(StartSite, EndSite).replace("N", "");
         String Orientation = S[9];
-        String Quality = S[10].substring(StartSite - 1, StartSite - 1 + ReadsSeq.length());
+        String Quality = S[10].substring(StartSite, StartSite + ReadsSeq.length());
         //------------------------------------------------------
         if (!MatchSeq.equals("") && AppendBase(ReadsSeq, MatchSeq, Format.Second)) {
-            if (ReadsSeq.length() <= MaxReadsLength + 10) {
+            if (ReadsSeq.length() <= MaxReadsLength + 2) {
                 ReadsSeq = AppendSeq + ReadsSeq;
                 Quality = AppendQuality + Quality;
             } else {
@@ -289,7 +289,7 @@ public class DivideLinker {
                 Quality = AppendQuality + Quality.substring(0, MaxReadsLength);
             }
         } else {
-            if (ReadsSeq.length() > MaxReadsLength + 10) {
+            if (ReadsSeq.length() > MaxReadsLength + 2) {
                 ReadsSeq = ReadsSeq.substring(0, MaxReadsLength);
                 Quality = Quality.substring(0, MaxReadsLength);
             }

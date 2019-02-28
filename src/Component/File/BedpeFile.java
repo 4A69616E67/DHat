@@ -180,4 +180,35 @@ public class BedpeFile extends AbstractFile<BedpeItem> {
         file2.ReadClose();
         WriteClose();
     }
+
+    public int DistanceCount(int min, int max, int thread) throws IOException {
+        if (thread <= 0) {
+            thread = 1;
+        }
+        final int[] Count = {0};
+        ReadOpen();
+        Thread[] t = new Thread[thread];
+        for (int i = 0; i < t.length; i++) {
+            t[i] = new Thread(() -> {
+                try {
+                    String[] Lines;
+                    while ((Lines = ReadItemLine()) != null) {
+                        InterAction action = new InterAction(Lines[0].split("\\s+"));
+                        int dis = action.Distance();
+                        if (dis <= max && dis >= min) {
+                            synchronized (t) {
+                                Count[0]++;
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            t[i].start();
+        }
+        Tools.ThreadsWait(t);
+        ReadClose();
+        return Count[0];
+    }
 }
