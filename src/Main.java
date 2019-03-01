@@ -234,6 +234,7 @@ public class Main {
         //-----------------------------------------------------------------------------
         PreProcess preprocess = new PreProcess(PreProcessDir, Prefix, InputFile, LinkerFile, AdapterFile, Restriction);
         preprocess.setMinLinkerMappingScore(MinLinkerFilterQuality);
+        Opts.LFStat.Threshold = MinLinkerFilterQuality;
         if (StepCheck(Opts.Step.PreProcess.toString())) {
             preprocess.run();
         }
@@ -244,12 +245,14 @@ public class Main {
                 Stat.RawDataReadsNum = InputFile.getItemNum();
                 Opts.StatisticFile.Append(InputFile.getName() + ":\t" + new DecimalFormat("#,###").format(InputFile.ItemNum) + "\n");
 //                System.err.println(InputFile.getName() + ":\t" + new DecimalFormat("#,###").format(InputFile.ItemNum));
-                for (int i = 0; i < LinkerSeq.length; i++) {
-                    Stat.Linkers[i].Name = LinkerSeq[i].getType();
-                    Stat.Linkers[i].Num = (double) preprocess.getFastqR1File()[i].getItemNum();
-                    Opts.StatisticFile.Append(Stat.Linkers[i].Name + ":\t" + new DecimalFormat("#,###").format(Stat.Linkers[i].Num) + "\n");
-//                    System.err.println(Stat.Linkers[i].Name + ":\t" + new DecimalFormat("#,###").format(Stat.Linkers[i].Num));
-                }
+//                for (int i = 0; i < LinkerSeq.length; i++) {
+//                    Stat.Linkers[i].Name = LinkerSeq[i].getType();
+//                    Stat.Linkers[i].Num = (double) preprocess.getFastqR1File()[i].getItemNum();
+//                    Opts.StatisticFile.Append(Stat.Linkers[i].Name + ":\t" + new DecimalFormat("#,###").format(Stat.Linkers[i].Num) + "\n");
+////                    System.err.println(Stat.Linkers[i].Name + ":\t" + new DecimalFormat("#,###").format(Stat.Linkers[i].Num));
+//                }
+                Opts.StatisticFile.Append(Opts.LFStat.Show() + "\n");
+
                 File LinkerDisFile = new File(Stat.getDataDir() + "/LinkerScoreDis.data");
                 Statistic.CalculateLinkerScoreDistribution(PastFile, LinkerLength * MatchScore, LinkerDisFile);
                 Configure.LinkerScoreDisPng = new File(Stat.getImageDir() + "/" + LinkerDisFile.getName().replace(".data", ".png"));

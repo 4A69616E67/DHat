@@ -1,6 +1,7 @@
 package Component.unit;
 
 import Component.File.CommonFile;
+import Component.Statistic.LinkerFilterStat;
 import org.apache.commons.cli.CommandLine;
 
 import java.io.File;
@@ -110,6 +111,7 @@ public class Opts {
     public static final long MaxMemory = Runtime.getRuntime().maxMemory();//java能获取的最大内存
     public static Hashtable<String, Integer> ChrSize = new Hashtable<>();
     //==================================================================================================================
+    public static final LinkerFilterStat LFStat = new LinkerFilterStat();
 
 }
 

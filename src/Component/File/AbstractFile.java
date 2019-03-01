@@ -44,15 +44,15 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
         ReadClose();
     }
 
-    void ReadOpen() throws IOException {
+    public void ReadOpen() throws IOException {
         reader = new BufferedReader(new FileReader(this), BufferSize);
     }
 
-    void ReadClose() throws IOException {
+    public void ReadClose() throws IOException {
         reader.close();
     }
 
-    BufferedWriter WriteOpen() throws IOException {
+    public BufferedWriter WriteOpen() throws IOException {
         return WriteOpen(false);
     }
 
@@ -61,7 +61,7 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
         return writer;
     }
 
-    void WriteClose() throws IOException {
+    public void WriteClose() throws IOException {
         writer.close();
     }
 

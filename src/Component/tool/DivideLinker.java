@@ -49,7 +49,7 @@ public class DivideLinker {
         Init();
     }
 
-    public static void main(String[] args) throws ParseException, InterruptedException, IOException {
+    public static void main(String[] args) throws ParseException, IOException {
         Options Argument = new Options();
         Argument.addOption(Option.builder("i").hasArg().argName("file").desc("input file").required().build());
         Argument.addOption(Option.builder("p").hasArg().argName("string").desc("prefix").build());
@@ -142,23 +142,26 @@ public class DivideLinker {
             System.out.print(aLinkerList.getType() + "\t");
         }
         System.out.println();
+        Opts.LFStat.Linkers = LinkerList;
+        Opts.LFStat.Threshold = MinLinkerMappingScore;
+        Opts.LFStat.EnzymeCuttingSite = Restriction;
+        Opts.LFStat.Init();
         Thread[] Process = new Thread[Threads];//multi-ThreadNum
         for (int i = 0; i < Process.length; i++) {
-            Process[i] = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    String Line;
-                    String[] Str, OutString;
-                    try {
-                        while ((Line = reader.readLine()) != null) {
-                            Str = Line.split("\\t");
+            Process[i] = new Thread(() -> {
+                String Line;
+                String[] Str, OutString;
+                try {
+                    while ((Line = reader.readLine()) != null) {
+                        Str = Line.split("\\t");
+                        if (Integer.parseInt(Str[6]) >= MinLinkerMappingScore) {
                             for (int j = 0; j < LinkerList.length; j++) {
                                 //find out which kind of linker belong to
-                                if (Str[5].equals(LinkerList[j].getType()) && Integer.parseInt(Str[6]) >= MinLinkerMappingScore) {
+                                if (Str[5].equals(LinkerList[j].getType())) {
                                     synchronized (LinkerList[j]) {
                                         LinkerCount[j]++;
                                     }
-                                    OutString = Execute(Str, MatchSeq, AppendSeq, AppendQuality, MaxReadsLength, Type);
+                                    OutString = Execute(Str, MatchSeq, AppendSeq, AppendQuality, MaxReadsLength, Type, j);
                                     switch (Type) {
                                         case First:
                                             if (OutString[0] != null) {
@@ -187,10 +190,9 @@ public class DivideLinker {
                                 }
                             }
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
-
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             });
             Process[i].start();
@@ -219,26 +221,24 @@ public class DivideLinker {
         System.out.println(new Date() + "\tDivide " + PastFile + " end");
     }
 
-    public static String[] Execute(String[] items, String[] matchSeq, String[] appendSeq, String[] appendQuality, int maxReadsLength, Format format) {
+    public static String[] Execute(String[] items, String[] matchSeq, String[] appendSeq, String[] appendQuality, int maxReadsLength, Format format, int index) {
         String OutString1 = null, OutString2 = null;
         switch (format) {
             case All:
-                if (!items[0].equals("*") && !items[3].equals("*")) {
-                    OutString1 = ParseFirst(items, matchSeq[0], appendSeq[0], appendQuality[0], maxReadsLength);
-                    OutString2 = ParseSecond(items, matchSeq[1], appendSeq[1], appendQuality[1], maxReadsLength);
-                }
+                OutString1 = ParseFirst(items, matchSeq[0], appendSeq[0], appendQuality[0], maxReadsLength, index);
+                OutString2 = ParseSecond(items, matchSeq[1], appendSeq[1], appendQuality[1], maxReadsLength, index);
                 break;
             case First:
-                OutString1 = ParseFirst(items, matchSeq[0], appendSeq[0], appendQuality[0], maxReadsLength);
+                OutString1 = ParseFirst(items, matchSeq[0], appendSeq[0], appendQuality[0], maxReadsLength, index);
                 break;
             case Second:
-                OutString2 = ParseSecond(items, matchSeq[1], appendSeq[1], appendQuality[1], maxReadsLength);
+                OutString2 = ParseSecond(items, matchSeq[1], appendSeq[1], appendQuality[1], maxReadsLength, index);
                 break;
         }
         return new String[]{OutString1, OutString2};
     }
 
-    private static String ParseFirst(String[] S, String MatchSeq, String AppendSeq, String AppendQuality, int MaxReadsLength) throws NumberFormatException, IndexOutOfBoundsException {
+    private static String ParseFirst(String[] S, String MatchSeq, String AppendSeq, String AppendQuality, int MaxReadsLength, int index) throws NumberFormatException, IndexOutOfBoundsException {
         if (S[0].equals("*")) {
             return null;
         }
@@ -250,6 +250,9 @@ public class DivideLinker {
         String Quality = S[10].substring(EndSite - ReadsSeq.length(), EndSite);
         //---------------------------------------------------
         if (!MatchSeq.equals("") && AppendBase(ReadsSeq, MatchSeq, Format.First)) {
+            synchronized (Opts.LFStat) {
+                Opts.LFStat.AddBaseToLeftPair[index]++;
+            }
             if (ReadsSeq.length() <= MaxReadsLength + 2) {
                 ReadsSeq += AppendSeq;
                 Quality += AppendQuality;
@@ -263,12 +266,15 @@ public class DivideLinker {
                 Quality = Quality.substring(Quality.length() - MaxReadsLength);
             }
         }
+        synchronized (Opts.LFStat) {
+            Opts.LFStat.LeftValidPairNum[index]++;
+        }
         //reads title
         FastqString.append(ReadsTitle).append("\n").append(ReadsSeq).append("\n").append(Orientation).append("\n").append(Quality).append("\n");
         return FastqString.toString();
     }
 
-    private static String ParseSecond(String[] S, String MatchSeq, String AppendSeq, String AppendQuality, int MaxReadsLength) throws NumberFormatException, IndexOutOfBoundsException {
+    private static String ParseSecond(String[] S, String MatchSeq, String AppendSeq, String AppendQuality, int MaxReadsLength, int index) throws NumberFormatException, IndexOutOfBoundsException {
         if (S[3].equals("*")) {
             return null;
         }
@@ -281,6 +287,9 @@ public class DivideLinker {
         String Quality = S[10].substring(StartSite, StartSite + ReadsSeq.length());
         //------------------------------------------------------
         if (!MatchSeq.equals("") && AppendBase(ReadsSeq, MatchSeq, Format.Second)) {
+            synchronized (Opts.LFStat) {
+                Opts.LFStat.AddBaseToRightPair[index]++;
+            }
             if (ReadsSeq.length() <= MaxReadsLength + 2) {
                 ReadsSeq = AppendSeq + ReadsSeq;
                 Quality = AppendQuality + Quality;
@@ -293,6 +302,9 @@ public class DivideLinker {
                 ReadsSeq = ReadsSeq.substring(0, MaxReadsLength);
                 Quality = Quality.substring(0, MaxReadsLength);
             }
+        }
+        synchronized (Opts.LFStat) {
+            Opts.LFStat.RightValidPairNum[index]++;
         }
         FastqString.append(ReadsTitle).append("\n").append(ReadsSeq).append("\n").append(Orientation).append("\n").append(Quality).append("\n");
         return FastqString.toString();

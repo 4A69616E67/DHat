@@ -1,5 +1,6 @@
 package Component.Process;
 
+import Component.File.CommonFile;
 import Component.File.FastqFile;
 import Component.File.FileTool;
 import Component.tool.DivideLinker;
@@ -10,9 +11,9 @@ import org.apache.commons.cli.*;
 
 import java.io.*;
 import java.util.Date;
+
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 public class PreProcess extends AbstractProcess {
 
@@ -31,7 +32,7 @@ public class PreProcess extends AbstractProcess {
     private int Threads = Configure.Thread;//线程数
     private int CutOff = 0;
     //=================================================================
-    private long[] LinkerCout;
+//    private long[] LinkerCout;
     private LinkerSequence[] Linkers;
     private String[] Adapters;
     private File LinkerFilterOutFile;
@@ -108,30 +109,44 @@ public class PreProcess extends AbstractProcess {
         StartTime = new Date();
         System.out.println(new Date() + "\tStart to linker filter");
         //=========================================
-        long[] Count = new long[]{0};
-        BufferedReader infile = new BufferedReader(new FileReader(FastqFile));
+        FastqFile.ReadOpen();
+//        BufferedReader infile = new BufferedReader(new FileReader(FastqFile));
         BufferedWriter writer = new BufferedWriter(new FileWriter(LinkerFilterOutFile));
         BufferedWriter[] writer1 = new BufferedWriter[Linkers.length];
         BufferedWriter[] writer2 = new BufferedWriter[Linkers.length];
         for (int i = 0; i < Linkers.length; i++) {
-            writer1[i] = new BufferedWriter(new FileWriter(FastqR1File[i]));
-            writer2[i] = new BufferedWriter(new FileWriter(FastqR2File[i]));
+            writer1[i] = FastqR1File[i].WriteOpen();
+            writer2[i] = FastqR2File[i].WriteOpen();
+//            writer1[i] = new BufferedWriter(new FileWriter(FastqR1File[i]));
+//            writer2[i] = new BufferedWriter(new FileWriter(FastqR2File[i]));
         }
+        Opts.LFStat.Linkers = Linkers;
+        Opts.LFStat.Init();
         Thread[] t = new Thread[Threads];
         LocalAlignment[] local = new LocalAlignment[Threads];
         for (int i = 0; i < t.length; i++) {
             int finalI = i;
             t[i] = new Thread(() -> {
-                String[] Lines;
+                String[] Lines = null;
                 local[finalI] = new LocalAlignment(MatchScore, MisMatchScore, InDelScore);
-                synchronized (infile) {
-                    Lines = FileTool.Read4Line(infile);
+//                synchronized (infile) {
+//                    Lines = FileTool.Read4Line(infile);
+//                }
+                try {
+                    Lines = FastqFile.ReadItemLine();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-                while (Lines[3] != null) {
+                while (Lines != null) {
                     String[] filter_result = LinkerFiltering.Execute(Lines[1], local[finalI], Linkers, Adapters, CutOff, MinAdapterPercent);
                     filter_result[7] = Lines[0];
                     filter_result[9] = Lines[2];
                     filter_result[10] = Lines[3];
+                    if (!filter_result[4].equals("*")) {
+                        synchronized (Opts.LFStat) {
+                            Opts.LFStat.AdapterMatchableNum++;
+                        }
+                    }
                     synchronized (writer) {
                         try {
                             writer.write(String.join("\t", filter_result) + "\n");
@@ -140,37 +155,48 @@ public class PreProcess extends AbstractProcess {
                         }
                     }
                     String[] fastq_string;
-                    for (int j = 0; j < Linkers.length; j++) {
-                        if (filter_result[5].equals(Linkers[j].getType()) && Integer.parseInt(filter_result[6]) >= MinLinkerMappingScore) {
-                            synchronized (Linkers[j]) {
-                                LinkerCout[j]++;
-                            }
-                            fastq_string = DivideLinker.Execute(filter_result, MatchSeq, AppendSeq, AppendQuality, MaxReadsLen, DivideLinker.Format.All);
-                            if (fastq_string[0] != null && fastq_string[1] != null) {
+                    if (Integer.parseInt(filter_result[6]) >= MinLinkerMappingScore) {
+                        for (int j = 0; j < Linkers.length; j++) {
+                            if (filter_result[5].equals(Linkers[j].getType())) {
                                 synchronized (Linkers[j]) {
-                                    try {
-                                        writer1[j].write(fastq_string[0]);
-                                        writer2[j].write(fastq_string[1]);
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
+                                    Opts.LFStat.LinkerMatchableNum[j]++;
+//                                LinkerCout[j]++;
+                                }
+                                fastq_string = DivideLinker.Execute(filter_result, MatchSeq, AppendSeq, AppendQuality, MaxReadsLen, DivideLinker.Format.All, j);
+                                if (fastq_string[0] != null && fastq_string[1] != null) {
+                                    synchronized (Linkers[j]) {
+                                        Opts.LFStat.ValidPairNum[j]++;
+                                        try {
+                                            writer1[j].write(fastq_string[0]);
+                                            writer2[j].write(fastq_string[1]);
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
                                     }
                                 }
+                                break;
                             }
-                            break;
                         }
                     }
-                    synchronized (infile) {
-                        Count[0]++;
-                        if (Count[0] % 1000000 == 0) {
-                            System.out.println(new Date() + "\t" + (Count[0] / 1000000) + " Million reads processed");
+                    synchronized (FastqFile.toString()) {
+                        FastqFile.ItemNum++;
+//                        Count[0]++;
+                        if (FastqFile.ItemNum % 1000000 == 0) {
+                            System.out.println(new Date() + "\t" + (FastqFile.ItemNum / 1000000) + " Million reads processed");
                         }
-                        Lines = FileTool.Read4Line(infile);
+//                        Lines = FileTool.Read4Line(infile);
+                        try {
+                            Lines = FastqFile.ReadItemLine();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
-                FastqFile.ItemNum = Count[0];
+//                FastqFile.ItemNum = Count[0];
+                Opts.LFStat.InputFile.ItemNum = FastqFile.ItemNum;
                 for (int j = 0; j < Linkers.length; j++) {
-                    FastqR1File[j].ItemNum = LinkerCout[j];
-                    FastqR2File[j].ItemNum = LinkerCout[j];
+                    FastqR1File[j].ItemNum = Opts.LFStat.ValidPairNum[j];
+                    FastqR2File[j].ItemNum = Opts.LFStat.ValidPairNum[j];
                 }
             });
             t[i].start();
@@ -181,7 +207,7 @@ public class PreProcess extends AbstractProcess {
             writer1[i].close();
             writer2[i].close();
         }
-        System.out.println(new Date() + "\t" + Count[0] + " reads processed in total.");
+        System.out.println(new Date() + "\t" + FastqFile.ItemNum + " reads processed in total.");
         EndTime = new Date();
         return 0;
     }
@@ -208,7 +234,7 @@ public class PreProcess extends AbstractProcess {
         }
         FastqR1File = new FastqFile[Linkers.length];
         FastqR2File = new FastqFile[Linkers.length];
-        LinkerCout = new long[Linkers.length];
+//        LinkerCout = new long[Linkers.length];
         for (int i = 0; i < Linkers.length; i++) {
             FastqR1File[i] = new FastqFile(OutPath + "/" + Prefix + "." + Linkers[i].getType() + ".R1.fastq");
             FastqR2File[i] = new FastqFile(OutPath + "/" + Prefix + "." + Linkers[i].getType() + ".R2.fastq");
@@ -221,6 +247,7 @@ public class PreProcess extends AbstractProcess {
         }
         LinkerFilterOutPrefix = OutPath + "/" + Prefix + ".linkerfilter";
         LinkerFilterOutFile = getPastFile();
+        Opts.LFStat.InputFile = new CommonFile(LinkerFilterOutFile);
         DivideLinker div = new DivideLinker(LinkerFilterOutFile, Prefix, Linkers, Restriction, DivideLinker.Format.All, MaxReadsLen, 30, new FastqFile(FastqFile).FastqPhred());
         this.MatchSeq = div.getMatchSeq();
         this.AppendSeq = div.getAppendSeq();
@@ -273,7 +300,7 @@ public class PreProcess extends AbstractProcess {
         return FastqR2File;
     }
 
-    public long[] getLinkerCout() {
-        return LinkerCout;
-    }
+//    public long[] getLinkerCout() {
+//        return LinkerCout;
+//    }
 }
