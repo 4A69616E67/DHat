@@ -22,7 +22,7 @@ public class FastqItem implements Comparable<FastqItem> {
 
     @Override
     public String toString() {
-        return String.join("\n", new String[]{Title, Sequence, Orientation, Quality});
+        return Title + "\n" + Sequence + "\n" + Orientation + "\n" + Quality;
     }
 
     @Override

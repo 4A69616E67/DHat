@@ -110,17 +110,16 @@ public class PreProcess extends AbstractProcess {
         System.out.println(new Date() + "\tStart to linker filter");
         //=========================================
         FastqFile.ReadOpen();
-//        BufferedReader infile = new BufferedReader(new FileReader(FastqFile));
         BufferedWriter writer = new BufferedWriter(new FileWriter(LinkerFilterOutFile));
         BufferedWriter[] writer1 = new BufferedWriter[Linkers.length];
         BufferedWriter[] writer2 = new BufferedWriter[Linkers.length];
         for (int i = 0; i < Linkers.length; i++) {
             writer1[i] = FastqR1File[i].WriteOpen();
             writer2[i] = FastqR2File[i].WriteOpen();
-//            writer1[i] = new BufferedWriter(new FileWriter(FastqR1File[i]));
-//            writer2[i] = new BufferedWriter(new FileWriter(FastqR2File[i]));
         }
         Opts.LFStat.Linkers = Linkers;
+        Opts.LFStat.Threshold = MinLinkerMappingScore;
+        Opts.LFStat.EnzymeCuttingSite = Restriction;
         Opts.LFStat.Init();
         Thread[] t = new Thread[Threads];
         LocalAlignment[] local = new LocalAlignment[Threads];
@@ -129,9 +128,6 @@ public class PreProcess extends AbstractProcess {
             t[i] = new Thread(() -> {
                 String[] Lines = null;
                 local[finalI] = new LocalAlignment(MatchScore, MisMatchScore, InDelScore);
-//                synchronized (infile) {
-//                    Lines = FileTool.Read4Line(infile);
-//                }
                 try {
                     Lines = FastqFile.ReadItemLine();
                 } catch (IOException e) {
@@ -142,10 +138,14 @@ public class PreProcess extends AbstractProcess {
                     filter_result[7] = Lines[0];
                     filter_result[9] = Lines[2];
                     filter_result[10] = Lines[3];
-                    if (!filter_result[4].equals("*")) {
-                        synchronized (Opts.LFStat) {
+                    synchronized (Opts.LFStat) {
+                        if (!filter_result[4].equals("*")) {
                             Opts.LFStat.AdapterMatchableNum++;
                         }
+                        if (!Opts.LFStat.LinkerMatchScoreDistribution.containsKey(filter_result[6])) {
+                            Opts.LFStat.LinkerMatchScoreDistribution.put(filter_result[6], new int[]{0});
+                        }
+                        Opts.LFStat.LinkerMatchScoreDistribution.get(filter_result[6])[0]++;
                     }
                     synchronized (writer) {
                         try {
@@ -154,21 +154,20 @@ public class PreProcess extends AbstractProcess {
                             e.printStackTrace();
                         }
                     }
-                    String[] fastq_string;
+                    FastqItem[] fastq_string;
                     if (Integer.parseInt(filter_result[6]) >= MinLinkerMappingScore) {
                         for (int j = 0; j < Linkers.length; j++) {
                             if (filter_result[5].equals(Linkers[j].getType())) {
                                 synchronized (Linkers[j]) {
                                     Opts.LFStat.LinkerMatchableNum[j]++;
-//                                LinkerCout[j]++;
                                 }
                                 fastq_string = DivideLinker.Execute(filter_result, MatchSeq, AppendSeq, AppendQuality, MaxReadsLen, DivideLinker.Format.All, j);
                                 if (fastq_string[0] != null && fastq_string[1] != null) {
                                     synchronized (Linkers[j]) {
                                         Opts.LFStat.ValidPairNum[j]++;
                                         try {
-                                            writer1[j].write(fastq_string[0]);
-                                            writer2[j].write(fastq_string[1]);
+                                            writer1[j].write(fastq_string[0].toString() + "\n");
+                                            writer2[j].write(fastq_string[1].toString() + "\n");
                                         } catch (IOException e) {
                                             e.printStackTrace();
                                         }
@@ -180,11 +179,9 @@ public class PreProcess extends AbstractProcess {
                     }
                     synchronized (FastqFile.toString()) {
                         FastqFile.ItemNum++;
-//                        Count[0]++;
                         if (FastqFile.ItemNum % 1000000 == 0) {
                             System.out.println(new Date() + "\t" + (FastqFile.ItemNum / 1000000) + " Million reads processed");
                         }
-//                        Lines = FileTool.Read4Line(infile);
                         try {
                             Lines = FastqFile.ReadItemLine();
                         } catch (IOException e) {
@@ -192,7 +189,6 @@ public class PreProcess extends AbstractProcess {
                         }
                     }
                 }
-//                FastqFile.ItemNum = Count[0];
                 Opts.LFStat.InputFile.ItemNum = FastqFile.ItemNum;
                 for (int j = 0; j < Linkers.length; j++) {
                     FastqR1File[j].ItemNum = Opts.LFStat.ValidPairNum[j];

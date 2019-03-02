@@ -36,6 +36,7 @@ public class BedFile extends AbstractFile<BedItem> {
                 Item.getLocation().Orientation = ls[5].charAt(0);
             }
         }
+        Item.SortBy = SortBy;
         return new SortItem<>(Item);
     }
 

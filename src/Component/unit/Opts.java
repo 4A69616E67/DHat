@@ -1,6 +1,7 @@
 package Component.unit;
 
 import Component.File.CommonFile;
+import Component.Statistic.AlignmentStat;
 import Component.Statistic.LinkerFilterStat;
 import org.apache.commons.cli.CommandLine;
 
@@ -112,6 +113,7 @@ public class Opts {
     public static Hashtable<String, Integer> ChrSize = new Hashtable<>();
     //==================================================================================================================
     public static final LinkerFilterStat LFStat = new LinkerFilterStat();
+    public static final AlignmentStat ALStat = new AlignmentStat();
 
 }
 

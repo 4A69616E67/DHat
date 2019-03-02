@@ -61,6 +61,7 @@ public class BedpeFile extends AbstractFile<BedpeItem> {
                 Item.getLocation().getRight().Orientation = ls[9].charAt(0);
             }
         }
+        Item.SortBy = SortBy;
         return new SortItem<>(Item);
     }
 
@@ -71,9 +72,7 @@ public class BedpeFile extends AbstractFile<BedpeItem> {
 
     public void SplitSortFile(BedpeFile OutFile) throws IOException {
         int splitItemNum = 5000000;
-        if (this.ItemNum == 0) {
-            this.CalculateItemNumber();
-        }
+        this.ItemNum = getItemNum();
         if (this.ItemNum > splitItemNum) {
             splitItemNum = (int) Math.ceil(this.ItemNum / Math.ceil((double) this.ItemNum / splitItemNum));
             ArrayList<CommonFile> TempSplitFile = this.SplitFile(this.getPath(), splitItemNum);
@@ -155,8 +154,16 @@ public class BedpeFile extends AbstractFile<BedpeItem> {
         WriteOpen();
         ItemNum = 0;
         BedItem item1 = file1.ReadItem();
+        if (item1 == null) {
+            WriteClose();
+            return;
+        }
         item1.SortBy = BedItem.Sort.SeqTitle;
         BedItem item2 = file2.ReadItem();
+        if (item2 == null) {
+            WriteClose();
+            return;
+        }
         while (item1 != null && item2 != null) {
             int res = item1.compareTo(item2);
             if (res == 0) {

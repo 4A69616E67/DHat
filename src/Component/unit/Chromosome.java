@@ -2,7 +2,6 @@ package Component.unit;
 
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 
 public class Chromosome implements Comparable<Chromosome> {
@@ -10,7 +9,7 @@ public class Chromosome implements Comparable<Chromosome> {
     public int Size;
 
     public Chromosome(String s) {
-        this(s, 0);
+        this(s.split(":"));
     }
 
     public Chromosome(String[] s) {
@@ -35,9 +34,8 @@ public class Chromosome implements Comparable<Chromosome> {
         Size = size;
     }
 
-
     @Override
-    public int compareTo( Chromosome o) {
+    public int compareTo(Chromosome o) {
         return Name.compareTo(o.Name);
     }
 

@@ -244,21 +244,31 @@ public class Main {
             try {
                 Stat.RawDataReadsNum = InputFile.getItemNum();
                 Opts.StatisticFile.Append(InputFile.getName() + ":\t" + new DecimalFormat("#,###").format(InputFile.ItemNum) + "\n");
-//                System.err.println(InputFile.getName() + ":\t" + new DecimalFormat("#,###").format(InputFile.ItemNum));
-//                for (int i = 0; i < LinkerSeq.length; i++) {
-//                    Stat.Linkers[i].Name = LinkerSeq[i].getType();
-//                    Stat.Linkers[i].Num = (double) preprocess.getFastqR1File()[i].getItemNum();
-//                    Opts.StatisticFile.Append(Stat.Linkers[i].Name + ":\t" + new DecimalFormat("#,###").format(Stat.Linkers[i].Num) + "\n");
-////                    System.err.println(Stat.Linkers[i].Name + ":\t" + new DecimalFormat("#,###").format(Stat.Linkers[i].Num));
-//                }
                 Opts.StatisticFile.Append(Opts.LFStat.Show() + "\n");
-
-                File LinkerDisFile = new File(Stat.getDataDir() + "/LinkerScoreDis.data");
-                Statistic.CalculateLinkerScoreDistribution(PastFile, LinkerLength * MatchScore, LinkerDisFile);
+                for (int i = 0; i < LinkerSeq.length; i++) {
+                    Stat.Linkers[i].Name = LinkerSeq[i].getType();
+                    Stat.Linkers[i].Num = Opts.LFStat.LinkerMatchableNum[i];
+                }
+                CommonFile LinkerDisFile = new CommonFile(Stat.getDataDir() + "/LinkerScoreDis.data");
+                Opts.LFStat.WriteLinkerScoreDis(LinkerDisFile);
+//                Statistic.CalculateLinkerScoreDistribution(PastFile, LinkerLength * MatchScore, LinkerDisFile);
                 Configure.LinkerScoreDisPng = new File(Stat.getImageDir() + "/" + LinkerDisFile.getName().replace(".data", ".png"));
                 String ComLine = Python + " " + Opts.StatisticPlotFile + " -i " + LinkerDisFile + " -t bar -o " + Configure.LinkerScoreDisPng;
                 Opts.CommandOutFile.Append(ComLine + "\n");
                 Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
+                CommonFile[] ReadsLenDisFile = new CommonFile[LinkerSeq.length];
+                Stat.ReadsLengthDisBase64 = new String[LinkerSeq.length];
+                for (int i = 0; i < ReadsLenDisFile.length; i++) {
+                    ReadsLenDisFile[i] = new CommonFile(Stat.getDataDir() + "/" + Prefix + "." + LinkerSeq[i].getType() + ".reads_length_distribution.data");
+                }
+                Opts.LFStat.WriteReadsLengthDis(ReadsLenDisFile);
+                for (int i = 0; i < ReadsLenDisFile.length; i++) {
+                    File PngFile = new File(Stat.getImageDir() + "/" + ReadsLenDisFile[i].getName().replace(".data", ".png"));
+                    ComLine = Python + " " + Opts.StatisticPlotFile + " -t bar -y Count --title " + LinkerSeq[i].getType() + " -i " + ReadsLenDisFile[i] + " -o " + PngFile;
+                    Opts.CommandOutFile.Append(ComLine + "\n");
+                    Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
+                    Stat.ReadsLengthDisBase64[i] = Stat.GetBase64(PngFile);
+                }
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
@@ -270,41 +280,41 @@ public class Main {
         LinkerFastqFileR2 = preprocess.getFastqR2File();
         Stat.ReadsLengthDisBase64 = new String[LinkerSeq.length];
         //=========================================calculate reads length===============================================
-        ST = new Thread(() -> {
-            try {
-                for (int i = 0; i < LinkerSeq.length; i++) {
-                    double[][] dis = new double[2][];
-                    dis[0] = Statistic.ReadsLengthDis(LinkerFastqFileR1[i], null);
-                    dis[1] = Statistic.ReadsLengthDis(LinkerFastqFileR2[i], null);
-                    File OutFile = new File(Stat.getDataDir() + "/" + Prefix + "." + LinkerSeq[i].getType() + ".reads_length_distribution.data");
-                    BufferedWriter writer = new BufferedWriter(new FileWriter(OutFile));
-                    writer.write("Length\tR1\tR2\n");
-                    for (int j = 0; j < Math.max(dis[0].length, dis[1].length); j++) {
-                        writer.write(j + "\t");
-                        if (j > dis[0].length - 1) {
-                            writer.write("0\t");
-                        } else {
-                            writer.write(dis[0][j] + "\t");
-                        }
-                        if (j > dis[1].length - 1) {
-                            writer.write("0\n");
-                        } else {
-                            writer.write(dis[1][j] + "\n");
-                        }
-                    }
-                    writer.close();
-                    File PngFile = new File(Stat.getImageDir() + "/" + OutFile.getName().replace(".data", ".png"));
-                    String ComLine = Python + " " + Opts.StatisticPlotFile + " -t bar -y Count --title " + LinkerSeq[i].getType() + " -i " + OutFile + " -o " + PngFile;
-                    Opts.CommandOutFile.Append(ComLine + "\n");
-                    Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
-                    Stat.ReadsLengthDisBase64[i] = Stat.GetBase64(PngFile);
-                }
-            } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
-            }
-        });
-        ST.start();
-        SThread.add(ST);
+//        ST = new Thread(() -> {
+//            try {
+//                for (int i = 0; i < LinkerSeq.length; i++) {
+//                    double[][] dis = new double[2][];
+//                    dis[0] = Statistic.ReadsLengthDis(LinkerFastqFileR1[i], null);
+//                    dis[1] = Statistic.ReadsLengthDis(LinkerFastqFileR2[i], null);
+//                    File OutFile = new File(Stat.getDataDir() + "/" + Prefix + "." + LinkerSeq[i].getType() + ".reads_length_distribution.data");
+//                    BufferedWriter writer = new BufferedWriter(new FileWriter(OutFile));
+//                    writer.write("Length\tR1\tR2\n");
+//                    for (int j = 0; j < Math.max(dis[0].length, dis[1].length); j++) {
+//                        writer.write(j + "\t");
+//                        if (j > dis[0].length - 1) {
+//                            writer.write("0\t");
+//                        } else {
+//                            writer.write(dis[0][j] + "\t");
+//                        }
+//                        if (j > dis[1].length - 1) {
+//                            writer.write("0\n");
+//                        } else {
+//                            writer.write(dis[1][j] + "\n");
+//                        }
+//                    }
+//                    writer.close();
+//                    File PngFile = new File(Stat.getImageDir() + "/" + OutFile.getName().replace(".data", ".png"));
+//                    String ComLine = Python + " " + Opts.StatisticPlotFile + " -t bar -y Count --title " + LinkerSeq[i].getType() + " -i " + OutFile + " -o " + PngFile;
+//                    Opts.CommandOutFile.Append(ComLine + "\n");
+//                    Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
+//                    Stat.ReadsLengthDisBase64[i] = Stat.GetBase64(PngFile);
+//                }
+//            } catch (IOException | InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        });
+//        ST.start();
+//        SThread.add(ST);
         //==============================================================================================================
         for (int i = 0; i < ValidLinkerSeq.length; i++) {
             for (int j = 0; j < LinkerSeq.length; j++) {
@@ -650,7 +660,7 @@ public class Main {
                         }
                     }
                     if (!flag) {
-                        System.err.println(new Date() + "\tWarning! No " + Chromosomes[i].Name + " in genomic file");
+                        System.err.println(new Date() + "\t[Main:FindRestrictionFragment]\tWarning! No " + Chromosomes[i].Name + " in genomic file");
                     }
                 }
                 System.out.println(new Date() + "\tEnd find restriction fragment");

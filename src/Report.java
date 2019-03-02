@@ -19,7 +19,6 @@ import sun.misc.BASE64Encoder;
 
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 public class Report {
     private File ReportOutPath;
@@ -64,9 +63,7 @@ public class Report {
 
     public void Show() {
         System.out.println("\n--------------------------------Statistic----------------------------------");
-        System.out.print("Raw data name:\t" + Configure.Require.InputFile.Value.toString() + "\t");
-        System.out.println("Raw reads number:\t" + new DecimalFormat("#,###").format(RawDataReadsNum));
-        System.out.println();
+        System.out.println("Raw data name:\t" + Configure.Require.InputFile.Value.toString() + "\tRaw reads number:\t" + new DecimalFormat("#,###").format(RawDataReadsNum));
         System.out.println("\n-----------------------------------------\nLinkers type\tReads number\tPercent");
         for (int i = 0; i < Linkers.length; i++) {
             System.out.println(Linkers[i].Name + "\t" + new DecimalFormat("#,###").format(Linkers[i].Num) + "\t" + String.format("%.2f", Linkers[i].Num / RawDataReadsNum * 100) + "%");
