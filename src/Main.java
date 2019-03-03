@@ -251,7 +251,6 @@ public class Main {
                 }
                 CommonFile LinkerDisFile = new CommonFile(Stat.getDataDir() + "/LinkerScoreDis.data");
                 Opts.LFStat.WriteLinkerScoreDis(LinkerDisFile);
-//                Statistic.CalculateLinkerScoreDistribution(PastFile, LinkerLength * MatchScore, LinkerDisFile);
                 Configure.LinkerScoreDisPng = new File(Stat.getImageDir() + "/" + LinkerDisFile.getName().replace(".data", ".png"));
                 String ComLine = Python + " " + Opts.StatisticPlotFile + " -i " + LinkerDisFile + " -t bar -o " + Configure.LinkerScoreDisPng;
                 Opts.CommandOutFile.Append(ComLine + "\n");
@@ -279,42 +278,6 @@ public class Main {
         LinkerFastqFileR1 = preprocess.getFastqR1File();
         LinkerFastqFileR2 = preprocess.getFastqR2File();
         Stat.ReadsLengthDisBase64 = new String[LinkerSeq.length];
-        //=========================================calculate reads length===============================================
-//        ST = new Thread(() -> {
-//            try {
-//                for (int i = 0; i < LinkerSeq.length; i++) {
-//                    double[][] dis = new double[2][];
-//                    dis[0] = Statistic.ReadsLengthDis(LinkerFastqFileR1[i], null);
-//                    dis[1] = Statistic.ReadsLengthDis(LinkerFastqFileR2[i], null);
-//                    File OutFile = new File(Stat.getDataDir() + "/" + Prefix + "." + LinkerSeq[i].getType() + ".reads_length_distribution.data");
-//                    BufferedWriter writer = new BufferedWriter(new FileWriter(OutFile));
-//                    writer.write("Length\tR1\tR2\n");
-//                    for (int j = 0; j < Math.max(dis[0].length, dis[1].length); j++) {
-//                        writer.write(j + "\t");
-//                        if (j > dis[0].length - 1) {
-//                            writer.write("0\t");
-//                        } else {
-//                            writer.write(dis[0][j] + "\t");
-//                        }
-//                        if (j > dis[1].length - 1) {
-//                            writer.write("0\n");
-//                        } else {
-//                            writer.write(dis[1][j] + "\n");
-//                        }
-//                    }
-//                    writer.close();
-//                    File PngFile = new File(Stat.getImageDir() + "/" + OutFile.getName().replace(".data", ".png"));
-//                    String ComLine = Python + " " + Opts.StatisticPlotFile + " -t bar -y Count --title " + LinkerSeq[i].getType() + " -i " + OutFile + " -o " + PngFile;
-//                    Opts.CommandOutFile.Append(ComLine + "\n");
-//                    Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
-//                    Stat.ReadsLengthDisBase64[i] = Stat.GetBase64(PngFile);
-//                }
-//            } catch (IOException | InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        });
-//        ST.start();
-//        SThread.add(ST);
         //==============================================================================================================
         for (int i = 0; i < ValidLinkerSeq.length; i++) {
             for (int j = 0; j < LinkerSeq.length; j++) {
@@ -349,7 +312,6 @@ public class Main {
             if (StepCheck(Opts.Step.Bed2BedPe.toString())) {
                 System.out.println(new Date() + ":\t" + R1SortBedFile[i].getName() + " " + R2SortBedFile[i].getName() + " to " + SeBedpeFile[i].getName());
                 SeBedpeFile[i].BedToBedpe(R1SortBedFile[i], R2SortBedFile[i]);//合并左右端bed文件，输出bedpe文件
-//                new BedToBedpe(R1SortBedFile[i], R2SortBedFile[i], SeBedpeFile[i], 4, "");
             }
             //==========================================================================================================
             Stat.UseLinker[i].UniqMapFileR1 = R1SortBedFile[i];
