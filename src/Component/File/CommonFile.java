@@ -26,7 +26,9 @@ public class CommonFile extends AbstractFile<String> {
 
     @Override
     protected String ExtractItem(String[] s) {
-        return s[0];
+        if (s != null)
+            return s[0];
+        return null;
     }
 
     @Override
