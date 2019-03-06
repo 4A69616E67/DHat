@@ -28,21 +28,16 @@ public class SamFile extends AbstractFile<SamItem> {
         if (s == null) {
             return null;
         }
-        Item = new SamItem();
-        if (s[0].matches("^@.*")) {
-            Header.add(s[0]);
-        } else {
-            String[] line_split = s[0].split("\\s+");
-            Item.Title = line_split[0];
-            Item.Stat = Integer.parseInt(line_split[1]);
-            Item.Chr = line_split[2];
-            Item.BeginSite = Integer.parseInt(line_split[3]);
-            Item.MappingQuality = Integer.parseInt(line_split[4]);
-            Item.MappingStat = line_split[5];
-            Item.Sequence = line_split[9];
-            Item.Quality = line_split[10];
-            Item.SortByName = SortByName;
-        }
+        String[] line_split = s[0].split("\\s+");
+        Item.Title = line_split[0];
+        Item.Stat = Integer.parseInt(line_split[1]);
+        Item.Chr = line_split[2];
+        Item.BeginSite = Integer.parseInt(line_split[3]);
+        Item.MappingQuality = Integer.parseInt(line_split[4]);
+        Item.MappingStat = line_split[5];
+        Item.Sequence = line_split[9];
+        Item.Quality = line_split[10];
+        Item.SortByName = SortByName;
         return Item;
     }
 
@@ -103,6 +98,19 @@ public class SamFile extends AbstractFile<SamItem> {
 
     public ArrayList<String> getHeader() {
         return Header;
+    }
+
+    public void ReadHeader() throws IOException {
+        String[] lines;
+        reader.mark(1000);
+        while ((lines = ReadItemLine()) != null) {
+            if (lines[0].matches("^@.*")) {
+                reader.reset();
+                break;
+            }
+            Header.add(lines[0]);
+            reader.mark(1000);
+        }
     }
 }
 
