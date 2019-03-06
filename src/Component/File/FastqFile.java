@@ -4,7 +4,7 @@ import Component.tool.Tools;
 import Component.unit.*;
 
 import java.io.*;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Created by snowf on 2019/2/17.
@@ -150,5 +150,68 @@ public class FastqFile extends AbstractFile<FastqItem> {
         return Adapter.toString();
     }
 
+    public ArrayList<FastqItem> ExtractID(Collection<String> List) throws IOException {
+        return ExtractID(List, 1);
+    }
+
+    public ArrayList<FastqItem> ExtractID(Collection<String> List, int threads) throws IOException {
+        ArrayList<FastqItem> ResList = new ArrayList<>();
+        ReadOpen();
+        Thread[] t = new Thread[threads];
+        for (int i = 0; i < t.length; i++) {
+            t[i] = new Thread(() -> {
+                FastqItem item;
+                try {
+                    while ((item = ReadItem()) != null) {
+                        if (List.contains(item.Title)) {
+                            synchronized (this) {
+                                ResList.add(item);
+                                List.remove(item.Title);
+                                if (List.size() <= 0) {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            t[i].start();
+        }
+        Tools.ThreadsWait(t);
+        ReadClose();
+        return ResList;
+    }
+
+    public void ExtractID(Collection<String> List, int threads, FastqFile OutFile) throws IOException {
+        ReadOpen();
+        OutFile.WriteOpen();
+        Thread[] t = new Thread[threads];
+        for (int i = 0; i < t.length; i++) {
+            t[i] = new Thread(() -> {
+                FastqItem item;
+                try {
+                    while ((item = ReadItem()) != null) {
+                        if (List.contains(item.Title)) {
+                            synchronized (this) {
+                                OutFile.WriteItemln(item);
+                                List.remove(item.Title);
+                                if (List.size() <= 0) {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            t[i].start();
+        }
+        Tools.ThreadsWait(t);
+        ReadClose();
+        OutFile.WriteClose();
+    }
 
 }
