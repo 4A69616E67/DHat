@@ -2,6 +2,7 @@ package Component.Statistic;
 
 import Component.File.AbstractFile;
 import Component.File.CommonFile;
+import Component.unit.Configure;
 import Component.unit.LinkerSequence;
 import Component.unit.StringArrays;
 import org.apache.commons.math3.util.MathUtils;
@@ -60,6 +61,7 @@ public class LinkerFilterStat extends AbstractStat {
         StringBuilder show = new StringBuilder();
         show.append("##================================Linker filter statistic=====================================\n");
         show.append("Enzyme cutting site:\t").append(EnzymeCuttingSite).append("\n");
+        show.append("Match score: ").append(Configure.MatchScore).append("\tMismatch score: ").append(Configure.MisMatchScore).append("\tInsert & Delete score: ").append(Configure.InDelScore).append("\n");
         show.append("Linker mapping minimum quality:\t").append(Threshold).append("\n");
         show.append("##--------------------------------------------------------------------------------------------\n");
         show.append(InputFile.getName()).append("\t").append(new DecimalFormat("#,###").format(InputFile.getItemNum())).append("\t").append("-").append("\n");
