@@ -22,7 +22,27 @@ public class AlignmentStat extends AbstractStat {
     @Override
     public String Show() {
         UpDate();
-        return null;
+        StringBuilder show = new StringBuilder();
+        show.append("##===================================Alignment Statistic========================================\n");
+        for (int i = 0; i < Linkers.length; i++) {
+            show.append("Linker \t").append(Linkers[i].getType()).append(":\t").append(Linkers[i].getSeq()).append("\n");
+            show.append("Input:\t").append(InputNum[i]).append("\n");
+            show.append("R1:\t").append("Mapped: ").append(LinkerR1Mapped[i]).append(" ").append(String.format("%.2f", (double) LinkerR1Mapped[i] / InputNum[i])).append("%").append("\t");
+            show.append("Unmapped: ").append(LinkerR1Unmapped[i]).append(" ").append(String.format("%.2f", (double) LinkerR1Unmapped[i] / InputNum[i])).append("\t");
+            show.append("MultiMapped: ").append(LinkerR1MultiMapped[i]).append(" ").append(String.format("%.2f", (double) LinkerR1MultiMapped[i] / InputNum[i])).append("\n");
+            show.append("R2:\t").append("Mapped: ").append(LinkerR2Mapped[i]).append(" ").append(String.format("%.2f", (double) LinkerR2Mapped[i] / InputNum[i])).append("%").append("\t");
+            show.append("Unmapped: ").append(LinkerR2Unmapped[i]).append(" ").append(String.format("%.2f", (double) LinkerR2Unmapped[i] / InputNum[i])).append("\t");
+            show.append("MultiMapped: ").append(LinkerR2MultiMapped[i]).append(" ").append(String.format("%.2f", (double) LinkerR2MultiMapped[i] / InputNum[i])).append("\n");
+        }
+        show.append("Total:\n");
+        show.append("R1:\t").append("Mapped: ").append(R1Mapped).append(" ").append(String.format("%.2f", (double) R1Mapped / Stat.sum(InputNum))).append("%").append("\t");
+        show.append("Unmapped: ").append(R1Unmapped).append(" ").append(String.format("%.2f", (double) R1Unmapped / Stat.sum(InputNum))).append("\t");
+        show.append("MultiMapped: ").append(R1MultiMapped).append(" ").append(String.format("%.2f", (double) R1MultiMapped / Stat.sum(InputNum))).append("\n");
+        show.append("R2:\t").append("Mapped: ").append(R2Mapped).append(" ").append(String.format("%.2f", (double) R2Mapped / Stat.sum(InputNum))).append("%").append("\t");
+        show.append("Unmapped: ").append(R2Unmapped).append(" ").append(String.format("%.2f", (double) R2Unmapped / Stat.sum(InputNum))).append("\t");
+        show.append("MultiMapped: ").append(R2MultiMapped).append(" ").append(String.format("%.2f", (double) R2MultiMapped / Stat.sum(InputNum))).append("\n");
+
+        return show.toString();
     }
 
     @Override
