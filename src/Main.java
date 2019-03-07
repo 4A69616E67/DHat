@@ -16,6 +16,7 @@ import Component.tool.FindRestrictionSite;
 import Component.unit.*;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
+import script.PetCluster;
 
 /**
  * Created by snowf on 2019/2/17.
@@ -205,12 +206,6 @@ public class Main {
         AbstractFile.delete(Opts.StatisticFile);
         Thread ST;//统计线程
         Thread[] STS;//统计线程
-        //==========================================Create Index========================================================
-        Thread createindex = new Thread();
-        if (IndexPrefix == null || IndexPrefix.getName().equals("")) {
-            createindex = CreateIndex(GenomeFile);
-            createindex.start();
-        }
         //=========================================linker filter==linker 过滤===========================================
         Date preTime = new Date();
         //-----------------------------------Adapter序列处理------------------------------
@@ -236,19 +231,20 @@ public class Main {
         preprocess.setMinLinkerMappingScore(MinLinkerFilterQuality);
         Opts.LFStat.Threshold = MinLinkerFilterQuality;
         if (StepCheck(Opts.Step.PreProcess.toString())) {
-            preprocess.run();
+            preprocess.run();//运行预处理部分
+            //----------------------------------------------------------------------
+            Stat.RawDataReadsNum = InputFile.getItemNum();
+            Opts.StatisticFile.Append(InputFile.getName() + ":\t" + new DecimalFormat("#,###").format(InputFile.ItemNum) + "\n");
+            Opts.StatisticFile.Append(Opts.LFStat.Show() + "\n");
+            for (int i = 0; i < LinkerSeq.length; i++) {
+                Stat.Linkers[i].Name = LinkerSeq[i].getType();
+                Stat.Linkers[i].Num = Opts.LFStat.LinkerMatchableNum[i];
+            }
         }
         File PastFile = preprocess.getLinkerFilterOutFile();//获取past文件位置
         //=================================================统计信息=====================================================
         ST = new Thread(() -> {
             try {
-                Stat.RawDataReadsNum = InputFile.getItemNum();
-                Opts.StatisticFile.Append(InputFile.getName() + ":\t" + new DecimalFormat("#,###").format(InputFile.ItemNum) + "\n");
-                Opts.StatisticFile.Append(Opts.LFStat.Show() + "\n");
-                for (int i = 0; i < LinkerSeq.length; i++) {
-                    Stat.Linkers[i].Name = LinkerSeq[i].getType();
-                    Stat.Linkers[i].Num = Opts.LFStat.LinkerMatchableNum[i];
-                }
                 CommonFile LinkerDisFile = new CommonFile(Stat.getDataDir() + "/LinkerScoreDis.data");
                 Opts.LFStat.WriteLinkerScoreDis(LinkerDisFile);
                 Configure.LinkerScoreDisPng = new File(Stat.getImageDir() + "/" + LinkerDisFile.getName().replace(".data", ".png"));
@@ -289,7 +285,6 @@ public class Main {
                 }
             }
         }
-        createindex.join();
         //=======================================Se Process===单端处理==================================================
         Date seTime = new Date();
         System.err.println("Linker filter: " + preTime + " - " + seTime);
@@ -297,6 +292,10 @@ public class Main {
         for (int i = 0; i < ValidLinkerSeq.length; i++) {
             if (StepCheck(Opts.Step.SeProcess.toString())) {
                 System.out.println(new Date() + "\tStart SeProcess");
+                //==========================================Create Index========================================================
+                if (IndexPrefix == null || IndexPrefix.getName().equals("")) {
+                    CreateIndex(GenomeFile);
+                }
                 SeProcess(UseLinkerFasqFileR1[i], UseLinkerFasqFileR1[i].getName().replace(".fastq", ""));
                 SeProcess(UseLinkerFasqFileR2[i], UseLinkerFasqFileR2[i].getName().replace(".fastq", ""));
             }
@@ -569,29 +568,16 @@ public class Main {
      * Create reference genome index
      *
      * @param genomefile genome file
-     * @return process thread
      */
-    private Thread CreateIndex(File genomefile) {
-        File IndexDir = new File(OutPath + "/" + Opts.OutDir.IndexDir);
+    private void CreateIndex(File genomefile) {
+        File IndexDir = new File(genomefile.getParent() + "/" + Opts.OutDir.IndexDir);
         if (!IndexDir.isDirectory() && !IndexDir.mkdir()) {
             System.out.println("Create " + IndexDir + " false");
             System.exit(1);
         }
         IndexPrefix = new File(IndexDir + "/" + genomefile.getName());
         Stat.ComInfor.IndexPrefix = IndexPrefix;
-        return new Thread(() -> {
-            try {
-                String ComLine = Bwa + " index -p " + IndexPrefix + " " + genomefile;
-                Opts.CommandOutFile.Append(ComLine + "\n");
-                if (DeBugLevel < 1) {
-                    Tools.ExecuteCommandStr(ComLine);
-                } else {
-                    Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
-                }
-            } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
-            }
-        });
+        SeProcess.CreateIndex(genomefile, IndexPrefix, Threads);
     }
 
     /**
@@ -741,6 +727,7 @@ public class Main {
         InputFile = Configure.InputFile;
         GenomeFile = Configure.GenomeFile;
         Restriction = Configure.Restriction;
+        Opts.LFStat.EnzymeCuttingSite = Restriction;
         String[] halfLinker = Configure.HalfLinker;
         LinkerA = halfLinker[0];
         LinkerLength = LinkerA.length();
@@ -831,6 +818,8 @@ public class Main {
             System.exit(1);
         }
         LinkerSeq = new LinkerSequence[halfLinker.length * halfLinker.length];
+        Opts.LFStat.Linkers = LinkerSeq;
+        Opts.LFStat.Init();
         ValidLinkerSeq = new LinkerSequence[halfLinker.length];
         for (int i = 0; i < halfLinker.length; i++) {
             for (int j = 0; j < halfLinker.length; j++) {
@@ -843,6 +832,7 @@ public class Main {
             }
         }
         MinLinkerFilterQuality = minLinkerLength * MatchScore + (LinkerLength - minLinkerLength) * MisMatchScore;//设置linkerfilter最小分数
+        Opts.LFStat.Threshold = MinLinkerFilterQuality;
         EnzyFilePrefix = Prefix + "." + Restriction.replace("^", "");
         LinkerFile = new File(PreProcessDir + "/" + Prefix + ".linker");
         AdapterFile = new File(PreProcessDir + "/" + Prefix + ".adapter");
@@ -854,7 +844,6 @@ public class Main {
                 System.exit(1);
             }
         }
-
         Stat = new Report(ReportDir);
     }
 
