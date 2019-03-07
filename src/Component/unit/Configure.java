@@ -33,7 +33,8 @@ public class Configure {
     public static String Step = "-";
     //-----------------------------------------------------------------
     public static String Python = "python";
-    public static String Bwa = "bwa";
+    public static String Bwa = "";//bwa
+    public static String Bowtie = "";//bowtie
     public static int MatchScore = 1;
     public static int MisMatchScore = -1;
     public static int InDelScore = -1;
@@ -88,7 +89,7 @@ public class Configure {
     }
 
     private enum Advance {
-        Python("Python", Configure.Python), BWA("Bwa", Configure.Bwa), MatchScore("MatchScore", Configure.MatchScore), MisMatchScore("MisMatchScore", Configure.MisMatchScore), InDelScore("InDelScore", Configure.InDelScore), MinLinkerLen("MinLinkerLen", Configure.MinLinkerLen), MinReadsLength("MinReadsLength", Configure.MinReadsLen), MaxReadsLength("MaxReadsLength", Configure.MaxReadsLen), AlignThread("AlignThread", Configure.AlignThread), AlignType("AlignType", Configure.AlignType), AlignMisMatch("AlignMisMatch", Configure.AlignMisMatch), MinUniqueScore("MinUniqueScore", Configure.MinUniqueScore), Iteration("Iteration", Configure.Iteration), DeBugLevel("DeBugLevel", Configure.DeBugLevel);
+        Python("Python", Configure.Python), BWA("Bwa", Configure.Bwa), Bowtie("Bowtie", Configure.Bowtie), MatchScore("MatchScore", Configure.MatchScore), MisMatchScore("MisMatchScore", Configure.MisMatchScore), InDelScore("InDelScore", Configure.InDelScore), MinLinkerLen("MinLinkerLen", Configure.MinLinkerLen), MinReadsLength("MinReadsLength", Configure.MinReadsLen), MaxReadsLength("MaxReadsLength", Configure.MaxReadsLen), AlignThread("AlignThread", Configure.AlignThread), AlignType("AlignType", Configure.AlignType), AlignMisMatch("AlignMisMatch", Configure.AlignMisMatch), MinUniqueScore("MinUniqueScore", Configure.MinUniqueScore), Iteration("Iteration", Configure.Iteration), DeBugLevel("DeBugLevel", Configure.DeBugLevel);
         private String Key;
         public Object Value;
 
@@ -132,17 +133,14 @@ public class Configure {
         Update();
         ArrayList<String> ParameterStr = new ArrayList<>();
         for (Require opt : Require.values()) {
-//            String s = opt + "=\t" + (opt.Value == null ? "" : opt.Value);
             ParameterStr.add(opt.toString());
         }
         ParameterStr.add("======================================================================================");
         for (Optional opt : Optional.values()) {
-//            String s = opt + "=\t" + (opt.Value == null ? "" : opt.Value);
             ParameterStr.add(opt.toString());
         }
         ParameterStr.add("======================================================================================");
         for (Advance opt : Advance.values()) {
-//            String s = opt + "=\t" + (opt.Value == null ? "" : opt.Value);
             ParameterStr.add(opt.toString());
         }
         return String.join("\n", ParameterStr.toArray(new String[0]));
@@ -232,6 +230,7 @@ public class Configure {
         AlignMisMatch = GetIntItem(Advance.AlignMisMatch.Value, AlignMisMatch);
         MinUniqueScore = GetIntItem(Advance.MinUniqueScore.Value, MinUniqueScore);
         Bwa = Advance.BWA.Value.toString();
+        Bowtie = Advance.Bowtie.Value.toString();
         Python = Advance.Python.Value.toString();
         DeBugLevel = Integer.parseInt(Advance.DeBugLevel.Value.toString());
     }
