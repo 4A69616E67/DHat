@@ -117,10 +117,6 @@ public class PreProcess extends AbstractProcess {
             writer1[i] = FastqR1File[i].WriteOpen();
             writer2[i] = FastqR2File[i].WriteOpen();
         }
-        Opts.LFStat.Linkers = Linkers;
-        Opts.LFStat.Threshold = MinLinkerMappingScore;
-        Opts.LFStat.EnzymeCuttingSite = Restriction;
-        Opts.LFStat.Init();
         Thread[] t = new Thread[Threads];
         LocalAlignment[] local = new LocalAlignment[Threads];
         for (int i = 0; i < t.length; i++) {
