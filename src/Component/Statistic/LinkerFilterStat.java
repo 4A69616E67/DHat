@@ -5,14 +5,11 @@ import Component.File.CommonFile;
 import Component.unit.Configure;
 import Component.unit.LinkerSequence;
 import Component.unit.StringArrays;
-import org.apache.commons.math3.util.MathUtils;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Created by snowf on 2019/3/1.
