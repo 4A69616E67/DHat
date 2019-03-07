@@ -169,7 +169,7 @@ public class LinkerFiltering {
         if (adapters != null) {
             for (String adapter : adapters) {
                 local.CreateMatrix(line, adapter);
-                local.FindMaxIndex();
+//                local.FindMaxIndex();
                 float score = (float) local.getMaxScore() / (adapter.length() * Configure.MatchScore);
                 if (score > MaxScore) {
                     local.FindMinIndex();
@@ -186,7 +186,7 @@ public class LinkerFiltering {
         }
         for (LinkerSequence linker : linkers) {
             local.CreateMatrix(line, linker.getSeq());
-            local.FindMaxIndex();
+//            local.FindMaxIndex();
             int score = local.getMaxScore();
             if (score > MaxScore) {
                 local.FindMinIndex();

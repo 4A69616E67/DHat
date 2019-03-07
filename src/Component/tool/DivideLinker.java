@@ -246,22 +246,16 @@ public class DivideLinker {
         String Orientation = S[9];
         String Quality = S[10].substring(EndSite - ReadsSeq.length(), EndSite);
         //---------------------------------------------------
+        if (ReadsSeq.length() > MaxReadsLength + 2) {
+            ReadsSeq = ReadsSeq.substring(ReadsSeq.length() - MaxReadsLength);
+            Quality = Quality.substring(Quality.length() - MaxReadsLength);
+        }
         if (!MatchSeq.equals("") && AppendBase(ReadsSeq, MatchSeq, Format.First)) {
             synchronized (Opts.LFStat) {
                 Opts.LFStat.AddBaseToLeftPair[index]++;
             }
-            if (ReadsSeq.length() <= MaxReadsLength + 2) {
-                ReadsSeq += AppendSeq;
-                Quality += AppendQuality;
-            } else {
-                ReadsSeq = ReadsSeq.substring(ReadsSeq.length() - MaxReadsLength) + AppendSeq;
-                Quality = Quality.substring(Quality.length() - MaxReadsLength) + AppendQuality;
-            }
-        } else {
-            if (ReadsSeq.length() > MaxReadsLength + 2) {
-                ReadsSeq = ReadsSeq.substring(ReadsSeq.length() - MaxReadsLength);
-                Quality = Quality.substring(Quality.length() - MaxReadsLength);
-            }
+            ReadsSeq += AppendSeq;
+            Quality += AppendQuality;
         }
         synchronized (Opts.LFStat.ReadsLengthDistributionR1[index]) {
             Opts.LFStat.LeftValidPairNum[index]++;
@@ -284,22 +278,16 @@ public class DivideLinker {
         String Orientation = S[9];
         String Quality = S[10].substring(StartSite, StartSite + ReadsSeq.length());
         //------------------------------------------------------
+        if (ReadsSeq.length() > MaxReadsLength + 2) {
+            ReadsSeq = ReadsSeq.substring(0, MaxReadsLength);
+            Quality = Quality.substring(0, MaxReadsLength);
+        }
         if (!MatchSeq.equals("") && AppendBase(ReadsSeq, MatchSeq, Format.Second)) {
             synchronized (Opts.LFStat) {
                 Opts.LFStat.AddBaseToRightPair[index]++;
             }
-            if (ReadsSeq.length() <= MaxReadsLength + 2) {
                 ReadsSeq = AppendSeq + ReadsSeq;
                 Quality = AppendQuality + Quality;
-            } else {
-                ReadsSeq = AppendSeq + ReadsSeq.substring(0, MaxReadsLength);
-                Quality = AppendQuality + Quality.substring(0, MaxReadsLength);
-            }
-        } else {
-            if (ReadsSeq.length() > MaxReadsLength + 2) {
-                ReadsSeq = ReadsSeq.substring(0, MaxReadsLength);
-                Quality = Quality.substring(0, MaxReadsLength);
-            }
         }
         synchronized (Opts.LFStat.ReadsLengthDistributionR2[index]) {
             Opts.LFStat.RightValidPairNum[index]++;

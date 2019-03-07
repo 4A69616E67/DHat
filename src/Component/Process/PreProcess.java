@@ -110,7 +110,7 @@ public class PreProcess extends AbstractProcess {
         System.out.println(new Date() + "\tStart to linker filter");
         //=========================================
         FastqFile.ReadOpen();
-        BufferedWriter writer = new BufferedWriter(new FileWriter(LinkerFilterOutFile));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(LinkerFilterOutFile), 5242800);
         BufferedWriter[] writer1 = new BufferedWriter[Linkers.length];
         BufferedWriter[] writer2 = new BufferedWriter[Linkers.length];
         for (int i = 0; i < Linkers.length; i++) {
@@ -139,13 +139,13 @@ public class PreProcess extends AbstractProcess {
                     filter_result[9] = Lines[2];
                     filter_result[10] = Lines[3];
                     synchronized (Opts.LFStat) {
-                        if (!filter_result[4].equals("*")) {
-                            Opts.LFStat.AdapterMatchableNum++;
-                        }
                         if (!Opts.LFStat.LinkerMatchScoreDistribution.containsKey(filter_result[6])) {
                             Opts.LFStat.LinkerMatchScoreDistribution.put(filter_result[6], new int[]{0});
                         }
                         Opts.LFStat.LinkerMatchScoreDistribution.get(filter_result[6])[0]++;
+                        if (!filter_result[4].equals("*")) {
+                            Opts.LFStat.AdapterMatchableNum++;
+                        }
                     }
                     synchronized (writer) {
                         try {
@@ -189,15 +189,15 @@ public class PreProcess extends AbstractProcess {
                         }
                     }
                 }
-                Opts.LFStat.InputFile.ItemNum = FastqFile.ItemNum;
-                for (int j = 0; j < Linkers.length; j++) {
-                    FastqR1File[j].ItemNum = Opts.LFStat.ValidPairNum[j];
-                    FastqR2File[j].ItemNum = Opts.LFStat.ValidPairNum[j];
-                }
             });
             t[i].start();
         }
         Tools.ThreadsWait(t);
+        Opts.LFStat.InputFile.ItemNum = FastqFile.ItemNum;
+        for (int j = 0; j < Linkers.length; j++) {
+            FastqR1File[j].ItemNum = Opts.LFStat.ValidPairNum[j];
+            FastqR2File[j].ItemNum = Opts.LFStat.ValidPairNum[j];
+        }
         writer.close();
         for (int i = 0; i < Linkers.length; i++) {
             writer1[i].close();

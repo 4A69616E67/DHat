@@ -56,20 +56,6 @@ public class LocalAlignment {
         InitMatrix(0);
     }
 
-    public void FindMaxIndex() {
-        MaxScore = 0;
-        MaxIndex = new int[]{0, 0};
-        for (int i = 0; i < MatrixSzie[0]; i++) {
-            for (int j = 0; j < MatrixSzie[1]; j++) {
-                if (ScoreMatrix[i][j] > MaxScore) {
-                    MaxScore = ScoreMatrix[i][j];
-                    MaxIndex[0] = i;
-                    MaxIndex[1] = j;
-                }
-            }
-        }
-    }
-
     public void FindMinIndex() {
         int MinI = MaxIndex[0];
         int MinJ = MaxIndex[1];
@@ -113,30 +99,39 @@ public class LocalAlignment {
     }
 
     public void CreateMatrix(String seq1, String seq2) {
-        if (MatrixSzie[0] < seq1.length() + 1 || MatrixSzie[1] < seq2.length() + 1) {
-            ScoreMatrix = new int[seq1.length() + 1][seq2.length() + 1];
+        if (ScoreMatrix.length < seq1.length() + 1 || ScoreMatrix[0].length < seq2.length() + 1) {
+            ScoreMatrix = new int[ScoreMatrix.length + seq1.length() + 1][ScoreMatrix[0].length + seq2.length() + 1];
         }
         MatrixSzie = new int[]{seq1.length() + 1, seq2.length() + 1};
+        MaxScore = 0;
+        MaxIndex = new int[]{0, 0};
         Seq1 = seq1.toCharArray();
         Seq2 = seq2.toCharArray();
         int Seq1Length = Seq1.length;
         int Seq2Length = Seq2.length;
         int Seq1Index, Seq2Index;
-        for (Seq1Index = 0; Seq1Index < Seq1Length; Seq1Index++) {
-            for (Seq2Index = 0; Seq2Index < Seq2Length; Seq2Index++) {
-                if (Seq1[Seq1Index] == Seq2[Seq2Index]) {
-                    ScoreMatrix[Seq1Index + 1][Seq2Index + 1] = ScoreMatrix[Seq1Index][Seq2Index] + MatchScore;
+        for (Seq1Index = 1; Seq1Index <= Seq1Length; Seq1Index++) {
+            for (Seq2Index = 1; Seq2Index <= Seq2Length; Seq2Index++) {
+                int insert_score = ScoreMatrix[Seq1Index][Seq2Index - 1] + IndelScore;
+                int delete_score = ScoreMatrix[Seq1Index - 1][Seq2Index] + IndelScore;
+                if (Seq1[Seq1Index - 1] == Seq2[Seq2Index - 1]) {
+                    ScoreMatrix[Seq1Index][Seq2Index] = ScoreMatrix[Seq1Index - 1][Seq2Index - 1] + MatchScore;
                 } else {
-                    ScoreMatrix[Seq1Index + 1][Seq2Index + 1] = ScoreMatrix[Seq1Index][Seq2Index] + MismatchScore;
+                    ScoreMatrix[Seq1Index][Seq2Index] = ScoreMatrix[Seq1Index - 1][Seq2Index - 1] + MismatchScore;
                 }
-                if (ScoreMatrix[Seq1Index + 1][Seq2Index + 1] < ScoreMatrix[Seq1Index + 1][Seq2Index] + IndelScore) {
-                    ScoreMatrix[Seq1Index + 1][Seq2Index + 1] = ScoreMatrix[Seq1Index + 1][Seq2Index] + IndelScore;
+                if (ScoreMatrix[Seq1Index][Seq2Index] < insert_score) {
+                    ScoreMatrix[Seq1Index][Seq2Index] = insert_score;
                 }
-                if (ScoreMatrix[Seq1Index + 1][Seq2Index + 1] < ScoreMatrix[Seq1Index][Seq2Index + 1] + IndelScore) {
-                    ScoreMatrix[Seq1Index + 1][Seq2Index + 1] = ScoreMatrix[Seq1Index][Seq2Index + 1] + IndelScore;
+                if (ScoreMatrix[Seq1Index][Seq2Index] < delete_score) {
+                    ScoreMatrix[Seq1Index][Seq2Index] = delete_score;
                 }
-                if (ScoreMatrix[Seq1Index + 1][Seq2Index + 1] < 0) {
-                    ScoreMatrix[Seq1Index + 1][Seq2Index + 1] = 0;
+                if (ScoreMatrix[Seq1Index][Seq2Index] < 0) {
+                    ScoreMatrix[Seq1Index][Seq2Index] = 0;
+                }
+                if (ScoreMatrix[Seq1Index][Seq2Index] > MaxScore) {
+                    MaxScore = ScoreMatrix[Seq1Index][Seq2Index];
+                    MaxIndex[0] = Seq1Index;
+                    MaxIndex[1] = Seq2Index;
                 }
             }
         }
@@ -242,13 +237,13 @@ public class LocalAlignment {
 
     public static void main(String[] args) {
         if (args.length < 2) {
-            System.out.println("Usage: java Component.unit.LocalAlignment <sequence 1> <sequence 2> [option]");
+            System.out.println("Usage: java -cp DHat.jar Component.unit.LocalAlignment <sequence 1> <sequence 2> [option]");
             System.exit(0);
         }
         if (args.length == 2) {
             LocalAlignment localAligner = new LocalAlignment();
             localAligner.CreateMatrix(args[0], args[1]);
-            localAligner.FindMaxIndex();
+//            localAligner.FindMaxIndex();
             localAligner.FindMinIndex();
             System.out.println(String.join("\n", localAligner.PrintAlignment()));
 //            localAligner.PrintMatrix();
@@ -256,7 +251,7 @@ public class LocalAlignment {
         } else {
             LocalAlignment localAligner = new LocalAlignment(Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4]));
             localAligner.CreateMatrix(args[0], args[1]);
-            localAligner.FindMaxIndex();
+//            localAligner.FindMaxIndex();
             localAligner.FindMinIndex();
             System.out.println(String.join("\n", localAligner.PrintAlignment()));
 //            localAligner.PrintMatrix();
@@ -280,16 +275,14 @@ public class LocalAlignment {
         int i = MaxIndex[0];
         int j = MaxIndex[1];
         while (ScoreMatrix[i][j] > 0) {
-            if (ScoreMatrix[i][j] == ScoreMatrix[i - 1][j - 1] + MatchScore && Seq1[i - 1] == Seq2[j - 1]) {
+            if (ScoreMatrix[i][j] == ScoreMatrix[i - 1][j - 1] + MatchScore) {
                 AlignStat[0] = Seq1[i - 1] + AlignStat[0];
-                AlignStat[1] = "|" + AlignStat[1];
                 AlignStat[2] = Seq2[j - 1] + AlignStat[2];
-                i--;
-                j--;
-            } else if (ScoreMatrix[i][j] == ScoreMatrix[i - 1][j - 1] + MismatchScore) {
-                AlignStat[0] = Seq1[i - 1] + AlignStat[0];
-                AlignStat[1] = "X" + AlignStat[1];
-                AlignStat[2] = Seq2[j - 1] + AlignStat[2];
+                if (Seq1[i - 1] == Seq2[j - 1]) {
+                    AlignStat[1] = "|" + AlignStat[1];
+                } else {
+                    AlignStat[1] = "X" + AlignStat[1];
+                }
                 i--;
                 j--;
             } else if (ScoreMatrix[i][j] == ScoreMatrix[i - 1][j] + IndelScore) {
@@ -305,5 +298,15 @@ public class LocalAlignment {
             }
         }
         return AlignStat;
+    }
+}
+
+class ScoreItem {
+    public int Score;
+    public byte left;
+    public byte up;
+
+    ScoreItem(int score) {
+        Score = score;
     }
 }
