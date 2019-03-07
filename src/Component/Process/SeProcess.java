@@ -93,7 +93,7 @@ public class SeProcess {
     public void Run() throws IOException, InterruptedException {
         //========================================================================================
         if (IndexPrefix == null) {
-            CreateIndex(GenomeFile);
+            CreateIndex(GenomeFile, GenomeFile, Threads);
         }
         //比对
         Align(FastqFile, SamFile, ReadsType);
@@ -173,59 +173,78 @@ public class SeProcess {
         SortBedFile = new BedFile(FilePrefix + ".sort.bed");
     }
 
-    private void CreateIndex(File genomeFile) {
-        File indexdir = new File(OutPath + "/index");
-        if (!indexdir.isDirectory() && !indexdir.mkdir()) {
-            System.err.println("Can't Create " + indexdir);
+    public static void CreateIndex(File genomeFile, File prefix, int threads) {
+        System.out.println("Create index ......");
+        String s = "";
+        if (Configure.Bwa != null && !Configure.Bwa.equals("")) {
+            s = Configure.Bwa + " index -p " + prefix + " " + genomeFile;
+        } else if (Configure.Bowtie != null && !Configure.Bowtie.equals("")) {
+            s = Configure.Bowtie + "-build --threads " + threads + " " + genomeFile + " " + prefix;
+        } else {
+            System.err.println(new Date() + ":[Create Index]\tError! no alignment tools");
             System.exit(1);
         }
-        IndexPrefix = GenomeFile;
-        System.out.println("Create index ......");
-        String s = Configure.Bwa + " index -p " + IndexPrefix + " " + genomeFile;
         try {
-            Tools.ExecuteCommandStr(s, null, new PrintWriter(System.err));
+            if (Configure.DeBugLevel < 1) {
+                Tools.ExecuteCommandStr(s, null, null);
+            } else {
+                Tools.ExecuteCommandStr(s, null, new PrintWriter(System.err));
+            }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
 
-    private void Align(File FastqFile, File SamFile, Opts.FileFormat ReadsType) throws IOException, InterruptedException {
+    private void Align(FastqFile FastqFile, File SamFile, Opts.FileFormat ReadsType) throws IOException, InterruptedException {
         //比对
         String CommandStr;
         System.out.println(new Date() + "\tBegin to align\t" + FastqFile.getName());
-        if (ReadsType == Opts.FileFormat.ShortReads) {
-            File SaiFile = new File(FastqFile + ".sai");
-            CommandStr = Configure.Bwa + " aln -t " + Threads + " -n " + MisMatchNum + " -f " + SaiFile + " " + IndexPrefix + " " + FastqFile;
-            Opts.CommandOutFile.Append(CommandStr + "\n");
-            if (Configure.DeBugLevel < 1) {
-                Tools.ExecuteCommandStr(CommandStr);//执行命令行
+        if (Configure.Bwa != null && !Configure.Bwa.equals("")) {
+            if (ReadsType == Opts.FileFormat.ShortReads) {
+                File SaiFile = new File(FastqFile + ".sai");
+                CommandStr = Configure.Bwa + " aln -t " + Threads + " -n " + MisMatchNum + " -f " + SaiFile + " " + IndexPrefix + " " + FastqFile;
+                Opts.CommandOutFile.Append(CommandStr + "\n");
+                if (Configure.DeBugLevel < 1) {
+                    Tools.ExecuteCommandStr(CommandStr);//执行命令行
+                } else {
+                    Tools.ExecuteCommandStr(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
+                }
+                System.out.println(new Date() + "\tsai to sam\t" + FastqFile.getName());
+                CommandStr = Configure.Bwa + " samse -f " + SamFile + " " + IndexPrefix + " " + SaiFile + " " + FastqFile;
+                Opts.CommandOutFile.Append(CommandStr + "\n");
+                if (Configure.DeBugLevel < 1) {
+                    Tools.ExecuteCommandStr(CommandStr, null, null);//执行命令行
+                } else {
+                    Tools.ExecuteCommandStr(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
+                }
+                if (Configure.DeBugLevel < 1) {
+                    System.out.println(new Date() + "\tDelete " + SaiFile.getName());
+                    SaiFile.delete();//删除sai文件
+                }
+            } else if (ReadsType == Opts.FileFormat.LongReads) {
+                CommandStr = Configure.Bwa + " mem -t " + Threads + " " + IndexPrefix + " " + FastqFile;
+                Opts.CommandOutFile.Append(CommandStr + "\n");
+                PrintWriter sam = new PrintWriter(SamFile);
+                if (Configure.DeBugLevel < 1) {
+                    Tools.ExecuteCommandStr(CommandStr, sam, null);//执行命令
+                } else {
+                    Tools.ExecuteCommandStr(CommandStr, sam, new PrintWriter(System.err));//执行命令
+                }
+                sam.close();
             } else {
-                Tools.ExecuteCommandStr(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
+                System.err.println("Error reads type:" + ReadsType + " reads type should set Short or Long");
+                System.exit(1);
             }
-            System.out.println(new Date() + "\tsai to sam\t" + FastqFile.getName());
-            CommandStr = Configure.Bwa + " samse -f " + SamFile + " " + IndexPrefix + " " + SaiFile + " " + FastqFile;
+        } else if (Configure.Bowtie != null && !Configure.Bowtie.equals("")) {
+            CommandStr = Configure.Bowtie + " " + (FastqFile.FastqPhred() == Opts.FileFormat.Phred33 ? "--phred33" : "--phred64") + " -p " + Threads + " -x " + IndexPrefix + " -U " + FastqFile + " -S " + SamFile;
             Opts.CommandOutFile.Append(CommandStr + "\n");
             if (Configure.DeBugLevel < 1) {
                 Tools.ExecuteCommandStr(CommandStr, null, null);//执行命令行
             } else {
                 Tools.ExecuteCommandStr(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
             }
-            if (Configure.DeBugLevel < 1) {
-                System.out.println(new Date() + "\tDelete " + SaiFile.getName());
-                SaiFile.delete();//删除sai文件
-            }
-        } else if (ReadsType == Opts.FileFormat.LongReads) {
-            CommandStr = Configure.Bwa + " mem -t " + Threads + " " + IndexPrefix + " " + FastqFile;
-            Opts.CommandOutFile.Append(CommandStr + "\n");
-            PrintWriter sam = new PrintWriter(SamFile);
-            if (Configure.DeBugLevel < 1) {
-                Tools.ExecuteCommandStr(CommandStr, sam, null);//执行命令
-            } else {
-                Tools.ExecuteCommandStr(CommandStr, sam, new PrintWriter(System.err));//执行命令
-            }
-            sam.close();
         } else {
-            System.err.println("Error reads type:" + ReadsType + " reads type should set Short or Long");
+            System.err.println(new Date() + ":\tError! No alignment software");
             System.exit(1);
         }
         System.out.println(new Date() + "\tEnd align\t" + FastqFile.getName());
@@ -242,7 +261,7 @@ public class SeProcess {
         SamFile UniqSamFile = new SamFile(IterationDir + "/" + Prefix + ".iteration" + Num + ".uniq.sam");
         SamFile UnMapSamFile = new SamFile(IterationDir + "/" + Prefix + ".iteration" + Num + ".unmap.sam");
         SamFile MultiSamFile = new SamFile(IterationDir + "/" + Prefix + ".iteration" + Num + ".multi.sam");
-        File FastaFile = new File(IterationDir + "/" + Prefix + ".iteration" + Num + ".fasta");
+        FastqFile FastaFile = new FastqFile(IterationDir + "/" + Prefix + ".iteration" + Num + ".fasta");
         BufferedWriter fasta_write = new BufferedWriter(new FileWriter(FastaFile));
         String Line;
         String[] Str;
