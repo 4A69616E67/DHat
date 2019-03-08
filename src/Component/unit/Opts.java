@@ -23,9 +23,10 @@ public class Opts {
      * 断点枚举类
      */
     public enum Step {
-        PreProcess("PreProcess"), SeProcess("SeProcess"), Bed2BedPe("Bed2BedPe"), BedPeProcess("BedPeProcess"), BedPe2Inter("BedPe2Inter"), MakeMatrix("MakeMatrix");
+        PreProcess("PreProcess"), SeProcess("SeProcess"), Bed2BedPe("Bed2BedPe"), BedPeProcess("BedPeProcess"), BedPe2Inter("BedPe2Inter"), MakeMatrix("MakeMatrix"), CreateIndex("Index"), FindEnzymeFragment("Fragment");
 
         private String Str;
+        public boolean Execute = false;//是否需要执行
 
         Step(String s) {
             this.Str = s;
@@ -86,6 +87,17 @@ public class Opts {
         } else {
             return default_string;
         }
+    }
+
+    public static void StepCheck(String s) {
+        for (Step p : Step.values()) {
+            p.Execute = false;
+        }
+        if (s == null) {
+            return;
+        }
+        String[] str = s.split("\\s+");
+
     }
 
 

@@ -16,8 +16,6 @@ import Component.tool.FindRestrictionSite;
 import Component.unit.*;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
-import script.PetCluster;
-
 /**
  * Created by snowf on 2019/2/17.
  */
@@ -61,7 +59,6 @@ public class Main {
     private Report Stat;
     private File OutPath;
     private int DeBugLevel;
-    private String Bwa = Configure.Bwa;
     private String Python = Configure.Python;
 
     private Main(String[] args) throws IOException {
@@ -760,7 +757,6 @@ public class Main {
         ChrEnzyFile = new CommonFile[Chromosomes.length];
 
         //-------------------------------------------高级参数赋值--------------------------------------------------------
-        Bwa = Configure.Bwa;
         Python = Configure.Python;
         MatchScore = Configure.MatchScore;
         MisMatchScore = Configure.MisMatchScore;
