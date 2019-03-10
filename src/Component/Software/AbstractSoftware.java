@@ -10,11 +10,14 @@ public abstract class AbstractSoftware {
     protected File Path;
     protected float Version;
     protected String Execution;
+    protected boolean Valid = false;
 
     AbstractSoftware(String exe) {
         Execution = exe;
+        Init();
     }
 
+    protected abstract void Init();
 
     protected abstract float getVersion();
 
@@ -22,5 +25,9 @@ public abstract class AbstractSoftware {
 
     public float version() {
         return Version;
+    }
+
+    public boolean isValid() {
+        return Valid;
     }
 }
