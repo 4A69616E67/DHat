@@ -44,7 +44,7 @@ public class Main {
     private int LinkerLength;
     private boolean Iteration = true;
     private int Threads;
-    private ArrayList<String> Step = new ArrayList<>();
+    //    private ArrayList<String> Step = new ArrayList<>();
     private ArrayList<Thread> SThread = new ArrayList<>();//统计线程队列
     //===================================================================
     private int MinLinkerFilterQuality;
@@ -277,6 +277,7 @@ public class Main {
                 if (LinkerSeq[j].getType().equals(ValidLinkerSeq[i].getType())) {
                     UseLinkerFasqFileR1[i] = LinkerFastqFileR1[j];
                     UseLinkerFasqFileR2[i] = LinkerFastqFileR2[j];
+                    Opts.ALStat.LinkerInputNum[i] = UseLinkerFasqFileR1[i].getItemNum();
                     Stat.UseLinker[i].FastqFileR1 = UseLinkerFasqFileR1[i];
                     Stat.UseLinker[i].FastqFileR2 = UseLinkerFasqFileR2[i];
                 }
@@ -288,7 +289,7 @@ public class Main {
         //--------------------------------------------------------------------------------------------------------------
         if (Opts.Step.SeProcess.Execute) {
             for (int i = 0; i < ValidLinkerSeq.length; i++) {
-                System.out.println(new Date() + "\tStart SeProcess");
+                System.out.println(new Date() + "\tStart Alignment");
                 //==========================================Create Index========================================================
                 if (IndexPrefix == null || IndexPrefix.getName().equals("")) {
                     CreateIndex(GenomeFile);
@@ -304,6 +305,8 @@ public class Main {
         for (int i = 0; i < ValidLinkerSeq.length; i++) {
             R1SortBedFile[i] = new SeProcess(UseLinkerFasqFileR1[i], IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR1[i].getName().replace(".fastq", ""), ReadsType).getSortBedFile();
             R2SortBedFile[i] = new SeProcess(UseLinkerFasqFileR2[i], IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR2[i].getName().replace(".fastq", ""), ReadsType).getSortBedFile();
+            Opts.ALStat.LinkerR1Mapped[i] = R1SortBedFile[i].getItemNum();
+            Opts.ALStat.LinkerR2Mapped[i] = R2SortBedFile[i].getItemNum();
             SeBedpeFile[i] = new BedpeFile(SeProcessDir + "/" + Prefix + "." + ValidLinkerSeq[i].getType() + ".bedpe");
             if (Opts.Step.Bed2BedPe.Execute) {
                 System.out.println(new Date() + ":\t" + R1SortBedFile[i].getName() + " " + R2SortBedFile[i].getName() + " to " + SeBedpeFile[i].getName());
@@ -315,24 +318,21 @@ public class Main {
             Stat.UseLinker[i].RawBedpeFile = SeBedpeFile[i];
             int finalI = i;
             ST = new Thread(() -> {
-                try {
-                    Stat.UseLinker[finalI].FastqNumR1 = (double) Stat.UseLinker[finalI].FastqFileR1.getItemNum();
-                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].FastqFileR1.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].FastqNumR1) + "\n");
-                    Stat.UseLinker[finalI].FastqNumR2 = (double) Stat.UseLinker[finalI].FastqFileR2.getItemNum();
-                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].FastqFileR2.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].FastqNumR2) + "\n");
-                    Stat.UseLinker[finalI].UniqMapNumR1 = Stat.UseLinker[finalI].UniqMapFileR1.getItemNum();
-                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].UniqMapFileR1.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].UniqMapNumR1) + "\n");
-                    Stat.UseLinker[finalI].UniqMapNumR2 = Stat.UseLinker[finalI].UniqMapFileR2.getItemNum();
-                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].UniqMapFileR2.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].UniqMapNumR2) + "\n");
-                    Stat.UseLinker[finalI].RawBedpeNum = Stat.UseLinker[finalI].RawBedpeFile.getItemNum();
-                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].RawBedpeFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].RawBedpeNum) + "\n");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                Stat.UseLinker[finalI].FastqNumR1 = (double) Stat.UseLinker[finalI].FastqFileR1.getItemNum();
+//                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].FastqFileR1.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].FastqNumR1) + "\n");
+                Stat.UseLinker[finalI].FastqNumR2 = (double) Stat.UseLinker[finalI].FastqFileR2.getItemNum();
+//                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].FastqFileR2.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].FastqNumR2) + "\n");
+                Stat.UseLinker[finalI].UniqMapNumR1 = Stat.UseLinker[finalI].UniqMapFileR1.getItemNum();
+//                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].UniqMapFileR1.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].UniqMapNumR1) + "\n");
+                Stat.UseLinker[finalI].UniqMapNumR2 = Stat.UseLinker[finalI].UniqMapFileR2.getItemNum();
+//                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].UniqMapFileR2.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].UniqMapNumR2) + "\n");
+                Stat.UseLinker[finalI].RawBedpeNum = Stat.UseLinker[finalI].RawBedpeFile.getItemNum();
+//                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].RawBedpeFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].RawBedpeNum) + "\n");
             });
             ST.start();
             SThread.add(ST);
         }
+        Opts.StatisticFile.Append(Opts.ALStat.Show() + "\n");
         //=======================================bedpe process init=====================================================
         BedpeFile FinalBedpeFile = new BedpeFile(BedpeProcessDir + "/" + Prefix + ".clean.bedpe");
         BedpeFile SameBedpeFile = new BedpeFile(BedpeProcessDir + "/" + Prefix + ".same.clean.bedpe");
@@ -740,7 +740,7 @@ public class Main {
         Resolution = Configure.Resolution;
         Threads = Configure.Thread;
         DrawResolution = Configure.DrawResolution;
-        Step.addAll(Arrays.asList(Configure.Step.trim().split("\\s+")));
+//        Step.addAll(Arrays.asList(Configure.Step.trim().split("\\s+")));
         if (Configure.AdapterSeq != null && Configure.AdapterSeq.length > 0) {
             AdapterSeq = Configure.AdapterSeq;
         }
@@ -775,6 +775,7 @@ public class Main {
         } else {
             System.err.println("Error reads type " + Configure.AlignType);
         }
+        Opts.ALStat.Threshold = MinUniqueScore;
         Configure.MinUniqueScore = MinUniqueScore;
         if (Configure.MinLinkerLen == 0) {
             Configure.MinLinkerLen = (int) (LinkerLength * 0.9);

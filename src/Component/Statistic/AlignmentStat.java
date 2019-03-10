@@ -1,18 +1,22 @@
 package Component.Statistic;
 
-import Component.File.SamFile;
 import Component.unit.LinkerSequence;
+
+import java.text.DecimalFormat;
 
 /**
  * Created by 浩 on 2019/3/2.
  */
 public class AlignmentStat extends AbstractStat {
     public LinkerSequence[] Linkers = new LinkerSequence[0];
-    public long[] InputNum = new long[0];
+    public long[] LinkerInputNum = new long[0];
+    public int Threshold;
+    public String AlignmentSoftware;
     public long[] LinkerR1Mapped = new long[0], LinkerR1Unmapped = new long[0], LinkerR1MultiMapped = new long[0];
     public long[] LinkerR2Mapped = new long[0], LinkerR2Unmapped = new long[0], LinkerR2MultiMapped = new long[0];
-    public long R1Mapped, R1Unmapped, R1MultiMapped;
-    public long R2Mapped, R2Unmapped, R2MultiMapped;
+    private long R1Mapped, R1Unmapped, R1MultiMapped;
+    private long R2Mapped, R2Unmapped, R2MultiMapped;
+    private long InputNum;
 
     @Override
     public void Stat() {
@@ -24,23 +28,27 @@ public class AlignmentStat extends AbstractStat {
         UpDate();
         StringBuilder show = new StringBuilder();
         show.append("##===================================Alignment Statistic========================================\n");
+        show.append("Alignment software:\t").append(AlignmentSoftware).append("\n");
+        show.append("Minimum unique mapped quality:\t").append(Threshold).append("\n");
+        show.append("------------------------------------------------------------------------------------------------\n");
         for (int i = 0; i < Linkers.length; i++) {
             show.append("Linker \t").append(Linkers[i].getType()).append(":\t").append(Linkers[i].getSeq()).append("\n");
-            show.append("Input:\t").append(InputNum[i]).append("\n");
-            show.append("R1:\t").append("Mapped: ").append(LinkerR1Mapped[i]).append(" ").append(String.format("%.2f", (double) LinkerR1Mapped[i] / InputNum[i])).append("%").append("\t");
-            show.append("Unmapped: ").append(LinkerR1Unmapped[i]).append(" ").append(String.format("%.2f", (double) LinkerR1Unmapped[i] / InputNum[i])).append("\t");
-            show.append("MultiMapped: ").append(LinkerR1MultiMapped[i]).append(" ").append(String.format("%.2f", (double) LinkerR1MultiMapped[i] / InputNum[i])).append("\n");
-            show.append("R2:\t").append("Mapped: ").append(LinkerR2Mapped[i]).append(" ").append(String.format("%.2f", (double) LinkerR2Mapped[i] / InputNum[i])).append("%").append("\t");
-            show.append("Unmapped: ").append(LinkerR2Unmapped[i]).append(" ").append(String.format("%.2f", (double) LinkerR2Unmapped[i] / InputNum[i])).append("\t");
-            show.append("MultiMapped: ").append(LinkerR2MultiMapped[i]).append(" ").append(String.format("%.2f", (double) LinkerR2MultiMapped[i] / InputNum[i])).append("\n");
+            show.append("Input:\t").append(new DecimalFormat("#,###").format(LinkerInputNum[i])).append("\n");
+            show.append("R1:\t").append("UniqueMapped: ").append(new DecimalFormat("#,###").format(LinkerR1Mapped[i])).append(" ").append(String.format("%.2f", (double) LinkerR1Mapped[i] / LinkerInputNum[i] * 100)).append("%").append("\t");
+            show.append("Unmapped: ").append(new DecimalFormat("#,###").format(LinkerR1Unmapped[i])).append(" ").append(String.format("%.2f", (double) LinkerR1Unmapped[i] / LinkerInputNum[i] * 100)).append("\t");
+            show.append("MultiMapped: ").append(new DecimalFormat("#,###").format(LinkerR1MultiMapped[i])).append(" ").append(String.format("%.2f", (double) LinkerR1MultiMapped[i] / LinkerInputNum[i] * 100)).append("\n");
+            show.append("R2:\t").append("UniqueMapped: ").append(new DecimalFormat("#,###").format(LinkerR2Mapped[i])).append(" ").append(String.format("%.2f", (double) LinkerR2Mapped[i] / LinkerInputNum[i] * 100)).append("%").append("\t");
+            show.append("Unmapped: ").append(new DecimalFormat("#,###").format(LinkerR2Unmapped[i])).append(" ").append(String.format("%.2f", (double) LinkerR2Unmapped[i] / LinkerInputNum[i] * 100)).append("\t");
+            show.append("MultiMapped: ").append(new DecimalFormat("#,###").format(LinkerR2MultiMapped[i])).append(" ").append(String.format("%.2f", (double) LinkerR2MultiMapped[i] / LinkerInputNum[i] * 100)).append("\n");
         }
         show.append("Total:\n");
-        show.append("R1:\t").append("Mapped: ").append(R1Mapped).append(" ").append(String.format("%.2f", (double) R1Mapped / Stat.sum(InputNum))).append("%").append("\t");
-        show.append("Unmapped: ").append(R1Unmapped).append(" ").append(String.format("%.2f", (double) R1Unmapped / Stat.sum(InputNum))).append("\t");
-        show.append("MultiMapped: ").append(R1MultiMapped).append(" ").append(String.format("%.2f", (double) R1MultiMapped / Stat.sum(InputNum))).append("\n");
-        show.append("R2:\t").append("Mapped: ").append(R2Mapped).append(" ").append(String.format("%.2f", (double) R2Mapped / Stat.sum(InputNum))).append("%").append("\t");
-        show.append("Unmapped: ").append(R2Unmapped).append(" ").append(String.format("%.2f", (double) R2Unmapped / Stat.sum(InputNum))).append("\t");
-        show.append("MultiMapped: ").append(R2MultiMapped).append(" ").append(String.format("%.2f", (double) R2MultiMapped / Stat.sum(InputNum))).append("\n");
+        show.append("Input:\t").append(new DecimalFormat("#,###").format(InputNum)).append("\n");
+        show.append("R1:\t").append("UniqueMapped: ").append(new DecimalFormat("#,###").format(R1Mapped)).append(" ").append(String.format("%.2f", (double) R1Mapped / InputNum * 100)).append("%").append("\t");
+        show.append("Unmapped: ").append(new DecimalFormat("#,###").format(R1Unmapped)).append(" ").append(String.format("%.2f", (double) R1Unmapped / InputNum * 100)).append("\t");
+        show.append("MultiMapped: ").append(new DecimalFormat("#,###").format(R1MultiMapped)).append(" ").append(String.format("%.2f", (double) R1MultiMapped / InputNum * 100)).append("\n");
+        show.append("R2:\t").append("UniqueMapped: ").append(new DecimalFormat("#,###").format(R2Mapped)).append(" ").append(String.format("%.2f", (double) R2Mapped / InputNum * 100)).append("%").append("\t");
+        show.append("Unmapped: ").append(new DecimalFormat("#,###").format(R2Unmapped)).append(" ").append(String.format("%.2f", (double) R2Unmapped / InputNum * 100)).append("\t");
+        show.append("MultiMapped: ").append(new DecimalFormat("#,###").format(R2MultiMapped)).append(" ").append(String.format("%.2f", (double) R2MultiMapped / InputNum * 100)).append("\n");
 
         return show.toString();
     }
@@ -53,11 +61,12 @@ public class AlignmentStat extends AbstractStat {
         R2Mapped = Stat.sum(LinkerR2Mapped);
         R2Unmapped = Stat.sum(LinkerR2Unmapped);
         R2MultiMapped = Stat.sum(LinkerR2MultiMapped);
+        InputNum = Stat.sum(LinkerInputNum);
     }
 
     @Override
     public void Init() {
-        InputNum = new long[Linkers.length];
+        LinkerInputNum = new long[Linkers.length];
         LinkerR1Mapped = new long[Linkers.length];
         LinkerR1Unmapped = new long[Linkers.length];
         LinkerR1MultiMapped = new long[Linkers.length];
