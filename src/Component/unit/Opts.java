@@ -6,6 +6,7 @@ import Component.Statistic.LinkerFilterStat;
 import org.apache.commons.cli.CommandLine;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Hashtable;
 
 /**
@@ -32,14 +33,18 @@ public class Opts {
             this.Str = s;
         }
 
+        public String getStr() {
+            return Str;
+        }
+
         @Override
         public String toString() {
-            return this.Str;
+            return this.Str + ":" + Execute;
         }
     }
 
     public enum OutDir {
-        PreDir("PreProcess"), SeDir("SeProcess"), BedpeDir("BedpeProcess"), MatrixDir("MakeMatrix"), EnzyFragDir("EnzymeFragment"), IndexDir("Index"), ReportDir("Report");
+        PreDir("01.PreProcess"), SeDir("02.Alignment"), BedpeDir("03.NoiseReduce"), MatrixDir("04.MakeMatrix"), EnzyFragDir("0a.EnzymeFragment"), IndexDir("0b.Index"), ReportDir("05.Report");
 
         private String Str;
 
@@ -90,14 +95,61 @@ public class Opts {
     }
 
     public static void StepCheck(String s) {
+        String Connector = "-";
         for (Step p : Step.values()) {
             p.Execute = false;
         }
-        if (s == null) {
+        if (s == null || s.trim().equals("")) {
             return;
         }
         String[] str = s.split("\\s+");
-
+        ArrayList<String> s_list = new ArrayList<>();
+        s_list.add("");
+        for (String aStr : str) {
+            if (aStr.equals(Connector)) {
+                s_list.set(s_list.size() - 1, s_list.get(s_list.size() - 1) + Connector);
+            } else if (s_list.get(s_list.size() - 1).matches(".*" + Connector)) {
+                s_list.set(s_list.size() - 1, s_list.get(s_list.size() - 1) + aStr);
+            } else {
+                s_list.add(aStr);
+            }
+        }
+        for (String l : s_list) {
+            if (l.matches(".*" + Connector + ".*")) {
+                Step start = null, end = null;
+                if (l.matches(".+" + Connector)) {
+                    l += Step.MakeMatrix.Str;
+                } else if (l.matches(Connector + ".+")) {
+                    l = Step.PreProcess.Str + l;
+                } else if (l.equals(Connector)) {
+                    l = Step.PreProcess.Str + l;
+                    l += Step.MakeMatrix.Str;
+                }
+                String[] ll = l.split(Connector);
+                for (Step t : Step.values()) {
+                    if (t.Str.equals(ll[0])) {
+                        start = t;
+                    }
+                    if (t.Str.equals(ll[1])) {
+                        end = t;
+                    }
+                }
+                if (start != null && end != null) {
+                    for (Step t : Step.values()) {
+                        if (t.compareTo(start) >= 0 && t.compareTo(end) <= 0) {
+                            t.Execute = true;
+                        }
+                    }
+                }
+            } else {
+                for (Step t : Step.values()) {
+                    if (t.Str.equals(l)) {
+                        t.Execute = true;
+                        break;
+                    }
+                }
+            }
+        }
     }
 
 

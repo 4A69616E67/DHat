@@ -122,6 +122,16 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
         System.out.println(new Date() + "\tEnd append " + file.getName() + " to " + getName());
     }
 
+    public synchronized void Append(ArrayList List) throws IOException {
+        BufferedWriter writer = WriteOpen(true);
+        for (Object i : List) {
+            writer.write(i.toString());
+            writer.write("\n");
+            ItemNum++;
+        }
+        WriteClose();
+    }
+
     public synchronized void Append(String item) throws IOException {
         BufferedWriter writer = WriteOpen(true);
         writer.write(item);

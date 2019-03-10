@@ -108,6 +108,12 @@ public class PreProcess extends AbstractProcess {
     public int run() throws IOException {
         StartTime = new Date();
         System.out.println(new Date() + "\tStart to linker filter");
+        if (Adapters == null) {
+            Adapters = LinkerFiltering.ReadAdapter(AdapterFile);
+            for (int i = 0; i < Adapters.length; i++) {
+                Adapters[i] = Adapters[i].substring(0, 30);
+            }
+        }
         //=========================================
         FastqFile.ReadOpen();
         BufferedWriter writer = new BufferedWriter(new FileWriter(LinkerFilterOutFile), 5242800);
@@ -230,12 +236,6 @@ public class PreProcess extends AbstractProcess {
         for (int i = 0; i < Linkers.length; i++) {
             FastqR1File[i] = new FastqFile(OutPath + "/" + Prefix + "." + Linkers[i].getType() + ".R1.fastq");
             FastqR2File[i] = new FastqFile(OutPath + "/" + Prefix + "." + Linkers[i].getType() + ".R2.fastq");
-        }
-        if (Adapters == null) {
-            Adapters = LinkerFiltering.ReadAdapter(AdapterFile);
-            for (int i = 0; i < Adapters.length; i++) {
-                Adapters[i] = Adapters[i].substring(0, 30);
-            }
         }
         LinkerFilterOutPrefix = OutPath + "/" + Prefix + ".linkerfilter";
         LinkerFilterOutFile = getPastFile();

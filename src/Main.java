@@ -16,6 +16,7 @@ import Component.tool.FindRestrictionSite;
 import Component.unit.*;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
+
 /**
  * Created by snowf on 2019/2/17.
  */
@@ -205,29 +206,28 @@ public class Main {
         Thread[] STS;//统计线程
         //=========================================linker filter==linker 过滤===========================================
         Date preTime = new Date();
-        //-----------------------------------Adapter序列处理------------------------------
-        if (AdapterSeq != null) {
-            //若Adapter序列不为空
-            if (AdapterSeq[0].compareToIgnoreCase("auto") == 0) {
-                //标记为自动识别Adapter
-                AdapterSeq = new String[1];
-                AdapterSeq[0] = InputFile.AdapterDetect(new File(PreProcessDir + "/" + Prefix), LinkerLength + MaxReadsLength);
-                System.out.println(new Date() + "\tDetected adapter seq:\t" + AdapterSeq[0]);
-            }
-            //将Adapter序列输出到文件中
-            FileUtils.write(AdapterFile, String.join("\n", AdapterSeq), StandardCharsets.UTF_8);
-            Stat.AdapterSequence = String.join(" ", AdapterSeq);
-        }
         //---------------------------------保存linker序列--------------------------------
         FileUtils.touch(LinkerFile);
         for (LinkerSequence linkerSeq : LinkerSeq) {
             FileUtils.write(LinkerFile, linkerSeq.getSeq() + "\t" + linkerSeq.getType() + "\n", StandardCharsets.UTF_8, true);
         }
-        //-----------------------------------------------------------------------------
         PreProcess preprocess = new PreProcess(PreProcessDir, Prefix, InputFile, LinkerFile, AdapterFile, Restriction);
         preprocess.setMinLinkerMappingScore(MinLinkerFilterQuality);
-        Opts.LFStat.Threshold = MinLinkerFilterQuality;
-        if (StepCheck(Opts.Step.PreProcess.toString())) {
+        //-----------------------------------Adapter序列处理------------------------------
+        if (Opts.Step.PreProcess.Execute) {
+            if (AdapterSeq != null) {
+                //若Adapter序列不为空
+                if (AdapterSeq[0].compareToIgnoreCase("auto") == 0) {
+                    //标记为自动识别Adapter
+                    AdapterSeq = new String[1];
+                    AdapterSeq[0] = InputFile.AdapterDetect(new File(PreProcessDir + "/" + Prefix), LinkerLength + MaxReadsLength);
+                    System.out.println(new Date() + "\tDetected adapter seq:\t" + AdapterSeq[0]);
+                }
+                //将Adapter序列输出到文件中
+                FileUtils.write(AdapterFile, String.join("\n", AdapterSeq), StandardCharsets.UTF_8);
+                Stat.AdapterSequence = String.join(" ", AdapterSeq);
+            }
+            //-----------------------------------------------------------------------------
             preprocess.run();//运行预处理部分
             //----------------------------------------------------------------------
             Stat.RawDataReadsNum = InputFile.getItemNum();
@@ -286,8 +286,8 @@ public class Main {
         Date seTime = new Date();
         System.err.println("Linker filter: " + preTime + " - " + seTime);
         //--------------------------------------------------------------------------------------------------------------
-        for (int i = 0; i < ValidLinkerSeq.length; i++) {
-            if (StepCheck(Opts.Step.SeProcess.toString())) {
+        if (Opts.Step.SeProcess.Execute) {
+            for (int i = 0; i < ValidLinkerSeq.length; i++) {
                 System.out.println(new Date() + "\tStart SeProcess");
                 //==========================================Create Index========================================================
                 if (IndexPrefix == null || IndexPrefix.getName().equals("")) {
@@ -305,7 +305,7 @@ public class Main {
             R1SortBedFile[i] = new SeProcess(UseLinkerFasqFileR1[i], IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR1[i].getName().replace(".fastq", ""), ReadsType).getSortBedFile();
             R2SortBedFile[i] = new SeProcess(UseLinkerFasqFileR2[i], IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR2[i].getName().replace(".fastq", ""), ReadsType).getSortBedFile();
             SeBedpeFile[i] = new BedpeFile(SeProcessDir + "/" + Prefix + "." + ValidLinkerSeq[i].getType() + ".bedpe");
-            if (StepCheck(Opts.Step.Bed2BedPe.toString())) {
+            if (Opts.Step.Bed2BedPe.Execute) {
                 System.out.println(new Date() + ":\t" + R1SortBedFile[i].getName() + " " + R2SortBedFile[i].getName() + " to " + SeBedpeFile[i].getName());
                 SeBedpeFile[i].BedToBedpe(R1SortBedFile[i], R2SortBedFile[i]);//合并左右端bed文件，输出bedpe文件
             }
@@ -349,7 +349,7 @@ public class Main {
         Date bedpeTime = new Date();
         System.err.println("Alignment: " + seTime + " - " + bedpeTime);
         Thread findenzy = FindRestrictionFragment();
-        if (StepCheck(Opts.Step.BedPeProcess.toString())) {
+        if (Opts.Step.BedPeProcess.Execute) {
             //==========================================获取酶切片段和染色体大小=============================================
             findenzy.start();
             findenzy.join();
@@ -446,7 +446,7 @@ public class Main {
         //=================================================BedpeFile To Inter===========================================
 
         //--------------------------------------------------------------------------------------------------------------
-        if (StepCheck(Opts.Step.BedPe2Inter.toString())) {
+        if (Opts.Step.BedPe2Inter.Execute) {
             new BedpeToInter(FinalBedpeFile.getPath(), InterBedpeFile.getPath());//将交互区间转换成交互点
         }
         //==============================================================================================================
@@ -478,7 +478,7 @@ public class Main {
         //=================================================Make Matrix==================================================
         Date matrixTime = new Date();
         System.err.println("Noise reducing: " + bedpeTime + " - " + matrixTime);
-        if (StepCheck(Opts.Step.MakeMatrix.toString())) {
+        if (Opts.Step.MakeMatrix.Execute) {
             for (Chromosome s : Chromosomes) {
                 if (s.Size == 0) {
                     findenzy.start();
@@ -746,6 +746,7 @@ public class Main {
         }
         if (Configure.Index != null && !Configure.Index.toString().trim().equals("")) {
             IndexPrefix = Configure.Index;
+            Opts.Step.CreateIndex.Execute = false;
         }
         if (Configure.Chromosome != null && Configure.Chromosome.length > 0) {
             Chromosomes = Configure.Chromosome;
@@ -799,6 +800,7 @@ public class Main {
         MakeMatrixDir = new File(OutPath + "/" + Opts.OutDir.MatrixDir);
         ReportDir = new File(OutPath + "/" + Opts.OutDir.ReportDir);
         EnzyPath = new File(OutPath + "/" + Opts.OutDir.EnzyFragDir);
+        Opts.Step.FindEnzymeFragment.Execute = true;
         File[] CheckDir = new File[]{PreProcessDir, SeProcessDir, BedpeProcessDir, MakeMatrixDir, EnzyPath, ReportDir};
         for (File s : CheckDir) {
             if (!s.isDirectory() && !s.mkdir()) {
@@ -817,6 +819,8 @@ public class Main {
         Opts.LFStat.Linkers = LinkerSeq;
         Opts.LFStat.Init();
         ValidLinkerSeq = new LinkerSequence[halfLinker.length];
+        Opts.ALStat.Linkers = ValidLinkerSeq;
+        Opts.ALStat.Init();
         for (int i = 0; i < halfLinker.length; i++) {
             for (int j = 0; j < halfLinker.length; j++) {
                 if (i == j) {
@@ -841,22 +845,6 @@ public class Main {
             }
         }
         Stat = new Report(ReportDir);
-    }
-
-    private boolean StepCheck(String step) {
-        if (Step.size() > 0) {
-            if (Step.get(0).equals(step)) {
-                Step.remove(0);
-                return true;
-            } else if (Step.get(0).equals("-") && Step.size() > 1) {
-                if (Step.get(1).equals(step)) {
-                    Step.remove(0);
-                    Step.remove(0);
-                }
-                return true;
-            } else return Step.get(0).equals("-") && Step.size() == 1;
-        }
-        return false;
     }
 
     private void ShowParameter() {

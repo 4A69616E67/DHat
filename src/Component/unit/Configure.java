@@ -129,6 +129,11 @@ public class Configure {
         Init();
     }
 
+    public static boolean DependenceCheck() {
+        boolean Satisfied = true;
+        return Satisfied;
+    }
+
     public static String ShowParameter() {
         Update();
         ArrayList<String> ParameterStr = new ArrayList<>();
@@ -143,6 +148,11 @@ public class Configure {
         for (Advance opt : Advance.values()) {
             ParameterStr.add(opt.toString());
         }
+        StringBuilder s = new StringBuilder("Execution:\t");
+        for (Opts.Step t : Opts.Step.values()) {
+            s.append(t.toString()).append(" ");
+        }
+        ParameterStr.add(s.toString());
         return String.join("\n", ParameterStr.toArray(new String[0]));
     }
 
@@ -218,6 +228,7 @@ public class Configure {
         DetectResolution = GetIntItem(Optional.DetectResolution.Value, DetectResolution);
         Thread = GetIntItem(Optional.Thread.Value, Thread);
         Step = Optional.Step.Value != null ? Optional.Step.Value.toString() : Step;
+        Opts.StepCheck(Step);
         //----------------------------------------------------------------------------------------------------
         MatchScore = GetIntItem(Advance.MatchScore.Value, MatchScore);
         MisMatchScore = GetIntItem(Advance.MisMatchScore.Value, MisMatchScore);

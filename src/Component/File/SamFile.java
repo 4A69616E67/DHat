@@ -29,14 +29,7 @@ public class SamFile extends AbstractFile<SamItem> {
             return null;
         }
         String[] line_split = s[0].split("\\s+");
-        Item.Title = line_split[0];
-        Item.Stat = Integer.parseInt(line_split[1]);
-        Item.Chr = line_split[2];
-        Item.BeginSite = Integer.parseInt(line_split[3]);
-        Item.MappingQuality = Integer.parseInt(line_split[4]);
-        Item.MappingStat = line_split[5];
-        Item.Sequence = line_split[9];
-        Item.Quality = line_split[10];
+        Item = new SamItem(s);
         Item.SortByName = SortByName;
         return Item;
     }
@@ -111,6 +104,30 @@ public class SamFile extends AbstractFile<SamItem> {
             Header.add(lines[0]);
             reader.mark(1000);
         }
+    }
+
+    public synchronized void Merge(SamFile[] files) throws IOException {
+        BufferedWriter writer = WriteOpen();
+        files[0].ReadOpen();
+        files[0].ReadHeader();
+        Append(files[0].getHeader());
+        ItemNum = 0;
+        String[] lines;
+        for (SamFile x : files) {
+            System.out.println(new Date() + "\tMerge " + x.getName() + " to " + getName());
+            x.ReadOpen();
+            x.ReadHeader();
+            while ((lines = x.ReadItemLine()) != null) {
+                for (String line : lines) {
+                    writer.write(line);
+                    writer.write("\n");
+                }
+                ItemNum++;
+            }
+            x.ReadClose();
+        }
+        WriteClose();
+        System.out.println(new Date() + "\tDone merge");
     }
 }
 
