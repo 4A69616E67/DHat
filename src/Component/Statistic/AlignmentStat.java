@@ -55,13 +55,13 @@ public class AlignmentStat extends AbstractStat {
 
     @Override
     protected void UpDate() {
-        R1Mapped = Stat.sum(LinkerR1Mapped);
-        R1Unmapped = Stat.sum(LinkerR1Unmapped);
-        R1MultiMapped = Stat.sum(LinkerR1MultiMapped);
-        R2Mapped = Stat.sum(LinkerR2Mapped);
-        R2Unmapped = Stat.sum(LinkerR2Unmapped);
-        R2MultiMapped = Stat.sum(LinkerR2MultiMapped);
-        InputNum = Stat.sum(LinkerInputNum);
+        R1Mapped = StatUtil.sum(LinkerR1Mapped);
+        R1Unmapped = StatUtil.sum(LinkerR1Unmapped);
+        R1MultiMapped = StatUtil.sum(LinkerR1MultiMapped);
+        R2Mapped = StatUtil.sum(LinkerR2Mapped);
+        R2Unmapped = StatUtil.sum(LinkerR2Unmapped);
+        R2MultiMapped = StatUtil.sum(LinkerR2MultiMapped);
+        InputNum = StatUtil.sum(LinkerInputNum);
     }
 
     @Override

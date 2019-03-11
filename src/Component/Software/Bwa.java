@@ -1,30 +1,79 @@
 package Component.Software;
 
 
+import Component.File.CommonFile;
+import Component.tool.Tools;
+import Component.unit.Configure;
+
 import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 
 /**
  * Created by snowf on 2019/3/10.
  */
 
-public class Bwa extends AbstractSoftware {
-    Bwa(String exe) {
+public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
+    public Bwa(String exe) {
         super(exe);
     }
 
     @Override
     protected void Init() {
-
+        getVersion();
+        getPath();
     }
 
     @Override
-    protected float getVersion() {
-        return 0;
+    protected String getVersion() {
+        CommonFile temporaryFile = new CommonFile(Configure.OutPath + "/bwa.version.tmp");
+        try {
+            Tools.ExecuteCommandStr(Execution, null, new PrintWriter(temporaryFile));
+            ArrayList<char[]> tempLines = temporaryFile.Read();
+            for (char[] tempLine : tempLines) {
+                String[] s = String.valueOf(tempLine).split("\\s*:\\s*");
+                if (s[0].compareToIgnoreCase("Version") == 0) {
+                    Version = s[1];
+                    break;
+                }
+            }
+        } catch (IOException | InterruptedException e) {
+            Valid = false;
+        }
+        temporaryFile.delete();
+        return Version;
     }
 
     @Override
     protected File getPath() {
-        return new File(Execution);
+        CommonFile temporaryFile = new CommonFile(Configure.OutPath + "/bwa.path.tmp");
+        try {
+            Tools.ExecuteCommandStr("which " + Execution, new PrintWriter(temporaryFile), null);
+            ArrayList<char[]> tempLines = temporaryFile.Read();
+            Path = new File(String.valueOf(tempLines.get(0)));
+            Valid = true;
+            temporaryFile.delete();
+        } catch (IOException | InterruptedException e) {
+            temporaryFile.delete();
+            System.err.println("Error! can't locate " + Execution + "full path");
+            System.exit(1);
+        }
+        return Path;
+    }
+
+    /**
+     * Usage:   bwa index [options] <in.fasta>
+     * <p>
+     * Options: -a STR    BWT construction algorithm: bwtsw, is or rb2 [auto]
+     * -p STR    prefix of the index [same as fasta name]
+     * -b INT    block size for the bwtsw algorithm (effective with -a bwtsw) [10000000]
+     * -6        index files named as <in.fasta>.64.* instead of <in.fasta>.*
+     *
+     * @return command string
+     */
+    public String index(File fastaFile, File prefix) {
+        return Execution + " index -p " + prefix + " " + fastaFile;
     }
 
     /**
@@ -33,7 +82,7 @@ public class Bwa extends AbstractSoftware {
      *
      * @return command string
      */
-    public String mem(String index, File fastqFile, int thread) {
+    public String mem(File index, File fastqFile, int thread) {
         return Execution + " mem -t" + thread + " " + index + " " + fastqFile;
     }
 
@@ -45,11 +94,31 @@ public class Bwa extends AbstractSoftware {
      *
      * @return command string
      */
-    public String aln(String index, File fastqFile, File saiFile, int maxDiff, int thread) {
+    public String aln(File index, File fastqFile, File saiFile, int maxDiff, int thread) {
         return Execution + " aln -t " + thread + " -n " + maxDiff + " -f " + saiFile + " " + index + " " + fastqFile;
     }
 
-    public String samse(File samFile, String index, File saiFile, File fastqFile) {
+    /**
+     * Usage: bwa samse [-n max_occ] [-f out.sam] [-r RG_line] <prefix> <in.sai> <in.fq>
+     *
+     * @param samFile   out.sam
+     * @param index     prefix
+     * @param saiFile   in.sai
+     * @param fastqFile in.fq
+     * @return command string
+     */
+
+    public String samse(File samFile, File index, File saiFile, File fastqFile) {
         return Execution + " samse -f " + samFile + " " + index + " " + saiFile + " " + fastqFile;
+    }
+
+    @Override
+    public int compareTo(Bwa o) {
+        return 0;
+    }
+
+    @Override
+    public String toString() {
+        return Execution + "\tVersion: " + Version;
     }
 }

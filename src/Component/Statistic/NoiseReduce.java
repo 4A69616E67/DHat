@@ -24,6 +24,12 @@ public class NoiseReduce extends AbstractStat {
 
     @Override
     public String Show() {
+        UpDate();
+        StringBuilder show = new StringBuilder();
+        show.append("##=================================Noise reduce Statistic=======================================\n");
+        show.append("Alignment software:\t").append(" ").append("\n");
+        show.append("Minimum unique mapped quality:\t").append(" ").append("\n");
+        show.append("------------------------------------------------------------------------------------------------\n");
         return null;
     }
 

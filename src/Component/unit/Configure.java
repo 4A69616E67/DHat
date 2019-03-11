@@ -2,6 +2,7 @@ package Component.unit;
 
 
 import Component.File.FastqFile;
+import Component.Software.Bwa;
 import Component.tool.Tools;
 
 import java.io.*;
@@ -33,7 +34,7 @@ public class Configure {
     public static String Step = "-";
     //-----------------------------------------------------------------
     public static String Python = "python";
-    public static String Bwa = "";//bwa
+    public static Component.Software.Bwa Bwa;//bwa
     public static String Bowtie = "";//bowtie
     public static int MatchScore = 1;
     public static int MisMatchScore = -1;
@@ -240,7 +241,7 @@ public class Configure {
         AlignType = Advance.AlignType.Value != null ? Advance.AlignType.Value.toString().trim() : AlignType;
         AlignMisMatch = GetIntItem(Advance.AlignMisMatch.Value, AlignMisMatch);
         MinUniqueScore = GetIntItem(Advance.MinUniqueScore.Value, MinUniqueScore);
-        Bwa = Advance.BWA.Value.toString();
+        Bwa = new Bwa(Advance.BWA.Value.toString());
         Bowtie = Advance.Bowtie.Value.toString();
         Python = Advance.Python.Value.toString();
         DeBugLevel = Integer.parseInt(Advance.DeBugLevel.Value.toString());

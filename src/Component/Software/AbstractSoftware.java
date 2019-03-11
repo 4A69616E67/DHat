@@ -8,7 +8,7 @@ import java.io.File;
 
 public abstract class AbstractSoftware {
     protected File Path;
-    protected float Version;
+    protected String Version;
     protected String Execution;
     protected boolean Valid = false;
 
@@ -19,12 +19,12 @@ public abstract class AbstractSoftware {
 
     protected abstract void Init();
 
-    protected abstract float getVersion();
+    protected abstract String getVersion();
 
     protected abstract File getPath();
 
-    public float version() {
-        return Version;
+    public String version() {
+        return Version != null ? Version : getVersion();
     }
 
     public boolean isValid() {

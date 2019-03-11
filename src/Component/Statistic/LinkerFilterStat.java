@@ -63,17 +63,13 @@ public class LinkerFilterStat extends AbstractStat {
         show.append("##--------------------------------------------------------------------------------------------\n");
         show.append(InputFile.getName()).append("\t").append(new DecimalFormat("#,###").format(InputFile.getItemNum())).append("\t").append("-").append("\n");
         for (int i = 0; i < Linkers.length; i++) {
-            try {
-                show.append("Linker ").append(Linkers[i].getType()).append(":\t").append(Linkers[i].getSeq()).append("\n");
-                show.append("Linker matchable").append("\t").append(new DecimalFormat("#,###").format(LinkerMatchableNum[i])).append("\t").append(String.format("%.2f", (double) LinkerMatchableNum[i] / InputFile.getItemNum() * 100)).append("%").append("\n");
-                show.append("Left pair valid").append("\t").append(new DecimalFormat("#,###").format(LeftValidPairNum[i])).append("\t").append(String.format("%.2f", (double) LeftValidPairNum[i] / InputFile.getItemNum() * 100)).append("%").append("\t");
-                show.append("Add base to left pair").append("\t").append(new DecimalFormat("#,###").format(AddBaseToLeftPair[i])).append("\t").append(String.format("%.2f", (double) AddBaseToLeftPair[i] / InputFile.getItemNum() * 100)).append("%").append("\n");
-                show.append("Right pair valid").append("\t").append(new DecimalFormat("#,###").format(RightValidPairNum[i])).append("\t").append(String.format("%.2f", (double) RightValidPairNum[i] / InputFile.getItemNum() * 100)).append("%").append("\t");
-                show.append("Add base to right pair").append("\t").append(new DecimalFormat("#,###").format(AddBaseToRightPair[i])).append("\t").append(String.format("%.2f", (double) AddBaseToRightPair[i] / InputFile.getItemNum() * 100)).append("%").append("\n");
-                show.append("Valid reads pair").append("\t").append(new DecimalFormat("#,###").format(ValidPairNum[i])).append("\t").append(String.format("%.2f", (double) ValidPairNum[i] / InputFile.getItemNum() * 100)).append("%").append("\n");
-            } catch (IndexOutOfBoundsException e) {
-                break;
-            }
+            show.append("Linker ").append(Linkers[i].getType()).append(":\t").append(Linkers[i].getSeq()).append("\n");
+            show.append("Linker matchable").append("\t").append(new DecimalFormat("#,###").format(LinkerMatchableNum[i])).append("\t").append(String.format("%.2f", (double) LinkerMatchableNum[i] / InputFile.getItemNum() * 100)).append("%").append("\n");
+            show.append("Left pair valid").append("\t").append(new DecimalFormat("#,###").format(LeftValidPairNum[i])).append("\t").append(String.format("%.2f", (double) LeftValidPairNum[i] / InputFile.getItemNum() * 100)).append("%").append("\t");
+            show.append("Add base to left pair").append("\t").append(new DecimalFormat("#,###").format(AddBaseToLeftPair[i])).append("\t").append(String.format("%.2f", (double) AddBaseToLeftPair[i] / InputFile.getItemNum() * 100)).append("%").append("\n");
+            show.append("Right pair valid").append("\t").append(new DecimalFormat("#,###").format(RightValidPairNum[i])).append("\t").append(String.format("%.2f", (double) RightValidPairNum[i] / InputFile.getItemNum() * 100)).append("%").append("\t");
+            show.append("Add base to right pair").append("\t").append(new DecimalFormat("#,###").format(AddBaseToRightPair[i])).append("\t").append(String.format("%.2f", (double) AddBaseToRightPair[i] / InputFile.getItemNum() * 100)).append("%").append("\n");
+            show.append("Valid reads pair").append("\t").append(new DecimalFormat("#,###").format(ValidPairNum[i])).append("\t").append(String.format("%.2f", (double) ValidPairNum[i] / InputFile.getItemNum() * 100)).append("%").append("\n");
         }
         show.append("Total:\n");
         show.append("Linker matchable").append("\t").append(new DecimalFormat("#,###").format(AllLinkerMatchable)).append("\t").append(String.format("%.2f", (double) AllLinkerMatchable / InputFile.getItemNum() * 100)).append("%").append("\t");
@@ -90,18 +86,18 @@ public class LinkerFilterStat extends AbstractStat {
 
     @Override
     protected void UpDate() {
-        AllLinkerMatchable = Stat.sum(LinkerMatchableNum);
+        AllLinkerMatchable = StatUtil.sum(LinkerMatchableNum);
         if (LinkerUnmatchableNum == 0 && AllLinkerMatchable != 0) {
             LinkerUnmatchableNum = InputFile.getItemNum() - AllLinkerMatchable;
         }
         if (AdapterUnmatchableNum == 0 && AdapterMatchableNum != 0) {
             AdapterUnmatchableNum = InputFile.getItemNum() - AdapterMatchableNum;
         }
-        AllValidPair = Stat.sum(ValidPairNum);
-        AllValidLeftPair = Stat.sum(LeftValidPairNum);
-        AllValidRightPair = Stat.sum(RightValidPairNum);
-        AllLeftAddBase = Stat.sum(AddBaseToLeftPair);
-        AllRightAddBase = Stat.sum(AddBaseToRightPair);
+        AllValidPair = StatUtil.sum(ValidPairNum);
+        AllValidLeftPair = StatUtil.sum(LeftValidPairNum);
+        AllValidRightPair = StatUtil.sum(RightValidPairNum);
+        AllLeftAddBase = StatUtil.sum(AddBaseToLeftPair);
+        AllRightAddBase = StatUtil.sum(AddBaseToRightPair);
     }
 
     @Override
@@ -124,8 +120,8 @@ public class LinkerFilterStat extends AbstractStat {
         BufferedWriter outfile = f.WriteOpen();
         outfile.write("Score\tCount\n");
         int[] Keys = StringArrays.toInteger(LinkerMatchScoreDistribution.keySet().toArray(new String[0]));
-        int max = Stat.max(Keys);
-        int min = Stat.min(Keys);
+        int max = StatUtil.max(Keys);
+        int min = StatUtil.min(Keys);
         for (int i = min; i <= max; i++) {
             outfile.write(i + "\t");
             if (!LinkerMatchScoreDistribution.containsKey(String.valueOf(i))) {
@@ -155,8 +151,8 @@ public class LinkerFilterStat extends AbstractStat {
                     R2Keys[index] = k;
                     index++;
                 }
-                int max = Math.max(Stat.max(R1Keys), Stat.max(R2Keys));
-                int min = Math.min(Stat.min(R1Keys), Stat.min(R2Keys));
+                int max = Math.max(StatUtil.max(R1Keys), StatUtil.max(R2Keys));
+                int min = Math.min(StatUtil.min(R1Keys), StatUtil.min(R2Keys));
                 for (int j = min; j <= max; j++) {
                     outfile.write(j + "\t");
                     if (!ReadsLengthDistributionR1[i].containsKey(j)) {

@@ -1,13 +1,10 @@
 package Component.Statistic;
 
-import org.apache.commons.math3.util.MathArrays;
-import org.apache.commons.math3.util.MathUtils;
-
 /**
  * Created by 浩 on 2019/3/2.
  */
-public class Stat {
-    private Stat() {
+public class StatUtil {
+    private StatUtil() {
     }
 
     public static long sum(long[] l) {
