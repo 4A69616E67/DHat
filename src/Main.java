@@ -44,7 +44,6 @@ public class Main {
     private int LinkerLength;
     private boolean Iteration = true;
     private int Threads;
-    //    private ArrayList<String> Step = new ArrayList<>();
     private ArrayList<Thread> SThread = new ArrayList<>();//统计线程队列
     //===================================================================
     private int MinLinkerFilterQuality;
@@ -55,12 +54,11 @@ public class Main {
     private File SeProcessDir;//单端处理输出目录
     private File BedpeProcessDir;//bedpe处理输出目录
     private File MakeMatrixDir;//建立矩阵输出目录
-    //    private File TransLocationDir;//染色体易位输出目录
     private File ReportDir;//生成报告目录
     private Report Stat;
     private File OutPath;
     private int DeBugLevel;
-    private String Python = Configure.Python;
+    private Component.Software.Python Python = Configure.Python;
 
     private Main(String[] args) throws IOException {
         Options Argument = new Options();
@@ -245,7 +243,7 @@ public class Main {
                 CommonFile LinkerDisFile = new CommonFile(Stat.getDataDir() + "/LinkerScoreDis.data");
                 Opts.LFStat.WriteLinkerScoreDis(LinkerDisFile);
                 Configure.LinkerScoreDisPng = new File(Stat.getImageDir() + "/" + LinkerDisFile.getName().replace(".data", ".png"));
-                String ComLine = Python + " " + Opts.StatisticPlotFile + " -i " + LinkerDisFile + " -t bar -o " + Configure.LinkerScoreDisPng;
+                String ComLine = Python.Exe() + " " + Opts.StatisticPlotFile + " -i " + LinkerDisFile + " -t bar -o " + Configure.LinkerScoreDisPng;
                 Opts.CommandOutFile.Append(ComLine + "\n");
                 Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
                 CommonFile[] ReadsLenDisFile = new CommonFile[LinkerSeq.length];
@@ -256,7 +254,7 @@ public class Main {
                 Opts.LFStat.WriteReadsLengthDis(ReadsLenDisFile);
                 for (int i = 0; i < ReadsLenDisFile.length; i++) {
                     File PngFile = new File(Stat.getImageDir() + "/" + ReadsLenDisFile[i].getName().replace(".data", ".png"));
-                    ComLine = Python + " " + Opts.StatisticPlotFile + " -t bar -y Count --title " + LinkerSeq[i].getType() + " -i " + ReadsLenDisFile[i] + " -o " + PngFile;
+                    ComLine = Python.Exe() + " " + Opts.StatisticPlotFile + " -t bar -y Count --title " + LinkerSeq[i].getType() + " -i " + ReadsLenDisFile[i] + " -o " + PngFile;
                     Opts.CommandOutFile.Append(ComLine + "\n");
                     Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
                     Stat.ReadsLengthDisBase64[i] = Stat.GetBase64(PngFile);
@@ -311,6 +309,7 @@ public class Main {
             if (Opts.Step.Bed2BedPe.Execute) {
                 System.out.println(new Date() + ":\t" + R1SortBedFile[i].getName() + " " + R2SortBedFile[i].getName() + " to " + SeBedpeFile[i].getName());
                 SeBedpeFile[i].BedToBedpe(R1SortBedFile[i], R2SortBedFile[i]);//合并左右端bed文件，输出bedpe文件
+                Opts.NRStat.LinkerRawDataNum[i] = SeBedpeFile[i].getItemNum();
             }
             //==========================================================================================================
             Stat.UseLinker[i].UniqMapFileR1 = R1SortBedFile[i];
@@ -355,16 +354,30 @@ public class Main {
             findenzy.join();
             //==============================================BedpeFile Process====bedpe 处理=================================
             Thread[] LinkerProcess = new Thread[ValidLinkerSeq.length];//不同linker类型并行
+            BedpeProcess[] bedpe = new BedpeProcess[ValidLinkerSeq.length];//不同linker类型并行
             for (int i = 0; i < LinkerProcess.length; i++) {
-                LinkerProcess[i] = BedpeProcess(ValidLinkerSeq[i].getType(), SeBedpeFile[i], Math.max(1, Threads / ValidLinkerSeq.length));
+                bedpe[i] = new BedpeProcess(new File(BedpeProcessDir + "/" + ValidLinkerSeq[i].getType()), Prefix + "." + ValidLinkerSeq[i].getType(), Chromosomes, ChrEnzyFile, SeBedpeFile[i]);//bedpe文件处理类
+                bedpe[i].Threads = Math.max(1, Threads / LinkerProcess.length);//设置线程数
+                int finalI = i;
+                LinkerProcess[i] = new Thread(() -> {
+                    try {
+                        bedpe[finalI].Run();//运行
+                        Opts.NRStat.LinkerSelfLigationNum[finalI] = bedpe[finalI].getSelfLigationFile().getItemNum();
+                        Opts.NRStat.LinkerReLigationNum[finalI] = bedpe[finalI].getReLigationFile().getItemNum();
+                        Opts.NRStat.LinkerRepeatNum[finalI] = bedpe[finalI].getRepeatFile().getItemNum();
+                        Opts.NRStat.LinkerCleanNum[finalI] = bedpe[finalI].getFinalFile().getItemNum();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
                 LinkerProcess[i].start();
-                BedpeProcess Temp = new BedpeProcess(new File(BedpeProcessDir + "/" + ValidLinkerSeq[i].getType()), Prefix + "." + ValidLinkerSeq[i].getType(), Chromosomes, ChrEnzyFile, SeBedpeFile[i]);
-                FinalLinkerBedpe[i] = Temp.getFinalFile();
-                LinkerFinalSameCleanBedpeFile[i] = Temp.getSameNoDumpFile();
-                LinkerFinalDiffCleanBedpeFile[i] = Temp.getDiffNoDumpFile();
-                LinkerChrSameCleanBedpeFile[i] = Temp.getChrSameNoDumpFile();
+                FinalLinkerBedpe[i] = bedpe[i].getFinalFile();
+                LinkerFinalSameCleanBedpeFile[i] = bedpe[i].getSameNoDumpFile();
+                LinkerFinalDiffCleanBedpeFile[i] = bedpe[i].getDiffNoDumpFile();
+                LinkerChrSameCleanBedpeFile[i] = bedpe[i].getChrSameNoDumpFile();
             }
             Tools.ThreadsWait(LinkerProcess);
+            Opts.StatisticFile.Append(Opts.NRStat.Show() + "\n");
             Thread t1 = new Thread(() -> {
                 try {
                     SameBedpeFile.Merge(LinkerFinalSameCleanBedpeFile);
@@ -429,16 +442,16 @@ public class Main {
                 Stat.UseLinker[finalI].RawDiffBedpeNum = Temp.getDiffFile().getItemNum();
                 Stat.UseLinker[finalI].SameCleanNum = Temp.getSameNoDumpFile().getItemNum();
                 Stat.UseLinker[finalI].DiffCleanNum = Temp.getDiffNoDumpFile().getItemNum();
-                try {
-                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].SelfLigationFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].SelfLigationNum) + "\n");
-                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].RelLigationFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].RelLigationNum) + "\n");
-                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].SameValidFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].SameValidNum) + "\n");
-                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].SameCleanFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].SameCleanNum) + "\n");
-                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].RawDiffBedpeFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].RawDiffBedpeNum) + "\n");
-                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].DiffCleanFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].DiffCleanNum) + "\n");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].SelfLigationFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].SelfLigationNum) + "\n");
+//                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].RelLigationFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].RelLigationNum) + "\n");
+//                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].SameValidFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].SameValidNum) + "\n");
+//                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].SameCleanFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].SameCleanNum) + "\n");
+//                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].RawDiffBedpeFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].RawDiffBedpeNum) + "\n");
+//                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].DiffCleanFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].DiffCleanNum) + "\n");
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
             });
             STS[i].start();
             SThread.add(STS[i]);
@@ -465,7 +478,7 @@ public class Main {
                 File InterActionLengthDisData = new File(Stat.getDataDir() + "/InterActionLengthDistribution.data");
                 Statistic.PowerLaw(SameBedpeFile, 1000000, InterActionLengthDisData);
                 File InterActionLengthDisPng = new File(Stat.getImageDir() + "/" + InterActionLengthDisData.getName().replace(".data", ".png"));
-                String ComLine = Python + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterActionLengthDisData + " -o " + InterActionLengthDisPng;
+                String ComLine = Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterActionLengthDisData + " -o " + InterActionLengthDisPng;
                 Opts.CommandOutFile.Append(ComLine + "\n");
                 Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
                 Configure.InterActionDistanceDisPng = InterActionLengthDisPng;
@@ -704,6 +717,7 @@ public class Main {
                 BedpeProcess bedpe = new BedpeProcess(new File(BedpeProcessDir + "/" + UseLinker), Prefix + "." + UseLinker, Chromosomes, ChrEnzyFile, SeBedpeFile);//bedpe文件处理类
                 bedpe.Threads = threads;//设置线程数
                 bedpe.Run();//运行
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -821,7 +835,9 @@ public class Main {
         Opts.LFStat.Init();
         ValidLinkerSeq = new LinkerSequence[halfLinker.length];
         Opts.ALStat.Linkers = ValidLinkerSeq;
+        Opts.NRStat.Linkers = ValidLinkerSeq;
         Opts.ALStat.Init();
+        Opts.NRStat.Init();
         for (int i = 0; i < halfLinker.length; i++) {
             for (int j = 0; j < halfLinker.length; j++) {
                 if (i == j) {

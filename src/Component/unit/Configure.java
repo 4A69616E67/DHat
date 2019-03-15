@@ -3,6 +3,7 @@ package Component.unit;
 
 import Component.File.FastqFile;
 import Component.Software.Bwa;
+import Component.Software.Python;
 import Component.tool.Tools;
 
 import java.io.*;
@@ -33,7 +34,7 @@ public class Configure {
     public static int Thread = 8;
     public static String Step = "-";
     //-----------------------------------------------------------------
-    public static String Python = "python";
+    public static Component.Software.Python Python;
     public static Component.Software.Bwa Bwa;//bwa
     public static String Bowtie = "";//bowtie
     public static int MatchScore = 1;
@@ -243,7 +244,7 @@ public class Configure {
         MinUniqueScore = GetIntItem(Advance.MinUniqueScore.Value, MinUniqueScore);
         Bwa = new Bwa(Advance.BWA.Value.toString());
         Bowtie = Advance.Bowtie.Value.toString();
-        Python = Advance.Python.Value.toString();
+        Python = new Python(Advance.Python.Value.toString());
         DeBugLevel = Integer.parseInt(Advance.DeBugLevel.Value.toString());
     }
 

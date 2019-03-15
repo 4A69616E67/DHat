@@ -35,20 +35,21 @@ public class AlignmentStat extends AbstractStat {
             show.append("Linker \t").append(Linkers[i].getType()).append(":\t").append(Linkers[i].getSeq()).append("\n");
             show.append("Input:\t").append(new DecimalFormat("#,###").format(LinkerInputNum[i])).append("\n");
             show.append("R1:\t").append("UniqueMapped: ").append(new DecimalFormat("#,###").format(LinkerR1Mapped[i])).append(" ").append(String.format("%.2f", (double) LinkerR1Mapped[i] / LinkerInputNum[i] * 100)).append("%").append("\t");
-            show.append("Unmapped: ").append(new DecimalFormat("#,###").format(LinkerR1Unmapped[i])).append(" ").append(String.format("%.2f", (double) LinkerR1Unmapped[i] / LinkerInputNum[i] * 100)).append("\t");
-            show.append("MultiMapped: ").append(new DecimalFormat("#,###").format(LinkerR1MultiMapped[i])).append(" ").append(String.format("%.2f", (double) LinkerR1MultiMapped[i] / LinkerInputNum[i] * 100)).append("\n");
+            show.append("Unmapped: ").append(new DecimalFormat("#,###").format(LinkerR1Unmapped[i])).append(" ").append(String.format("%.2f", (double) LinkerR1Unmapped[i] / LinkerInputNum[i] * 100)).append("%").append("\t");
+            show.append("MultiMapped: ").append(new DecimalFormat("#,###").format(LinkerR1MultiMapped[i])).append(" ").append(String.format("%.2f", (double) LinkerR1MultiMapped[i] / LinkerInputNum[i] * 100)).append("%").append("\n");
             show.append("R2:\t").append("UniqueMapped: ").append(new DecimalFormat("#,###").format(LinkerR2Mapped[i])).append(" ").append(String.format("%.2f", (double) LinkerR2Mapped[i] / LinkerInputNum[i] * 100)).append("%").append("\t");
-            show.append("Unmapped: ").append(new DecimalFormat("#,###").format(LinkerR2Unmapped[i])).append(" ").append(String.format("%.2f", (double) LinkerR2Unmapped[i] / LinkerInputNum[i] * 100)).append("\t");
-            show.append("MultiMapped: ").append(new DecimalFormat("#,###").format(LinkerR2MultiMapped[i])).append(" ").append(String.format("%.2f", (double) LinkerR2MultiMapped[i] / LinkerInputNum[i] * 100)).append("\n");
+            show.append("Unmapped: ").append(new DecimalFormat("#,###").format(LinkerR2Unmapped[i])).append(" ").append(String.format("%.2f", (double) LinkerR2Unmapped[i] / LinkerInputNum[i] * 100)).append("%").append("\t");
+            show.append("MultiMapped: ").append(new DecimalFormat("#,###").format(LinkerR2MultiMapped[i])).append(" ").append(String.format("%.2f", (double) LinkerR2MultiMapped[i] / LinkerInputNum[i] * 100)).append("%").append("\n");
+            show.append("\n");
         }
         show.append("Total:\n");
         show.append("Input:\t").append(new DecimalFormat("#,###").format(InputNum)).append("\n");
         show.append("R1:\t").append("UniqueMapped: ").append(new DecimalFormat("#,###").format(R1Mapped)).append(" ").append(String.format("%.2f", (double) R1Mapped / InputNum * 100)).append("%").append("\t");
-        show.append("Unmapped: ").append(new DecimalFormat("#,###").format(R1Unmapped)).append(" ").append(String.format("%.2f", (double) R1Unmapped / InputNum * 100)).append("\t");
-        show.append("MultiMapped: ").append(new DecimalFormat("#,###").format(R1MultiMapped)).append(" ").append(String.format("%.2f", (double) R1MultiMapped / InputNum * 100)).append("\n");
+        show.append("Unmapped: ").append(new DecimalFormat("#,###").format(R1Unmapped)).append(" ").append(String.format("%.2f", (double) R1Unmapped / InputNum * 100)).append("%").append("\t");
+        show.append("MultiMapped: ").append(new DecimalFormat("#,###").format(R1MultiMapped)).append(" ").append(String.format("%.2f", (double) R1MultiMapped / InputNum * 100)).append("%").append("\n");
         show.append("R2:\t").append("UniqueMapped: ").append(new DecimalFormat("#,###").format(R2Mapped)).append(" ").append(String.format("%.2f", (double) R2Mapped / InputNum * 100)).append("%").append("\t");
-        show.append("Unmapped: ").append(new DecimalFormat("#,###").format(R2Unmapped)).append(" ").append(String.format("%.2f", (double) R2Unmapped / InputNum * 100)).append("\t");
-        show.append("MultiMapped: ").append(new DecimalFormat("#,###").format(R2MultiMapped)).append(" ").append(String.format("%.2f", (double) R2MultiMapped / InputNum * 100)).append("\n");
+        show.append("Unmapped: ").append(new DecimalFormat("#,###").format(R2Unmapped)).append(" ").append(String.format("%.2f", (double) R2Unmapped / InputNum * 100)).append("%").append("\t");
+        show.append("MultiMapped: ").append(new DecimalFormat("#,###").format(R2MultiMapped)).append(" ").append(String.format("%.2f", (double) R2MultiMapped / InputNum * 100)).append("%").append("\n");
 
         return show.toString();
     }

@@ -203,7 +203,6 @@ public class SeProcess {
             if (ReadsType == Opts.FileFormat.ShortReads) {
                 File SaiFile = new File(fastqFile + ".sai");
                 CommandStr = Configure.Bwa.aln(IndexPrefix, fastqFile, SaiFile, MisMatchNum, Threads);
-//                CommandStr = Configure.Bwa + " aln -t " + Threads + " -n " + MisMatchNum + " -f " + SaiFile + " " + IndexPrefix + " " + FastqFile;
                 Opts.CommandOutFile.Append(CommandStr + "\n");
                 if (Configure.DeBugLevel < 1) {
                     Tools.ExecuteCommandStr(CommandStr);//执行命令行
@@ -212,7 +211,6 @@ public class SeProcess {
                 }
                 System.out.println(new Date() + "\tsai to sam\t" + fastqFile.getName());
                 CommandStr = Configure.Bwa.samse(samFile, IndexPrefix, SaiFile, fastqFile);
-//                CommandStr = Configure.Bwa + " samse -f " + samFile + " " + IndexPrefix + " " + SaiFile + " " + fastqFile;
                 Opts.CommandOutFile.Append(CommandStr + "\n");
                 if (Configure.DeBugLevel < 1) {
                     Tools.ExecuteCommandStr(CommandStr, null, null);//执行命令行
@@ -225,7 +223,6 @@ public class SeProcess {
                 }
             } else if (ReadsType == Opts.FileFormat.LongReads) {
                 CommandStr = Configure.Bwa.mem(IndexPrefix, fastqFile, Threads);
-//                CommandStr = Configure.Bwa + " mem -t " + Threads + " " + IndexPrefix + " " + fastqFile;
                 Opts.CommandOutFile.Append(CommandStr + "\n");
                 PrintWriter sam = new PrintWriter(samFile);
                 if (Configure.DeBugLevel < 1) {

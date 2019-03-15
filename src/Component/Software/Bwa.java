@@ -45,23 +45,6 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
         return Version;
     }
 
-    @Override
-    protected File getPath() {
-        CommonFile temporaryFile = new CommonFile(Configure.OutPath + "/bwa.path.tmp");
-        try {
-            Tools.ExecuteCommandStr("which " + Execution, new PrintWriter(temporaryFile), null);
-            ArrayList<char[]> tempLines = temporaryFile.Read();
-            Path = new File(String.valueOf(tempLines.get(0)));
-            Valid = true;
-            temporaryFile.delete();
-        } catch (IOException | InterruptedException e) {
-            temporaryFile.delete();
-            System.err.println("Error! can't locate " + Execution + "full path");
-            System.exit(1);
-        }
-        return Path;
-    }
-
     /**
      * Usage:   bwa index [options] <in.fasta>
      * <p>
@@ -115,10 +98,5 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
     @Override
     public int compareTo(Bwa o) {
         return 0;
-    }
-
-    @Override
-    public String toString() {
-        return Execution + "\tVersion: " + Version;
     }
 }

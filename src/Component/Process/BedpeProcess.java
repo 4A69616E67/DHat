@@ -510,6 +510,10 @@ public class BedpeProcess {
         return ValidFile;
     }
 
+    public Component.File.BedpeFile getRepeatFile() {
+        return RepeatFile;
+    }
+
     public BedpeFile getSameFile() {
         return SameFile;
     }
