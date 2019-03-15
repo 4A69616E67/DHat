@@ -91,13 +91,11 @@
             <properties>
               <model>
                 <item value="PreProcess"/>
-                <item value="DivideLinker"/>
                 <item value="SeProcess"/>
                 <item value="Bed2BedPe"/>
                 <item value="BedPeProcess"/>
                 <item value="BedPe2Inter"/>
                 <item value="MakeMatrix"/>
-                <item value="TransLocationDetection"/>
               </model>
             </properties>
           </component>

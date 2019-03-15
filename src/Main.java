@@ -318,15 +318,10 @@ public class Main {
             int finalI = i;
             ST = new Thread(() -> {
                 Stat.UseLinker[finalI].FastqNumR1 = (double) Stat.UseLinker[finalI].FastqFileR1.getItemNum();
-//                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].FastqFileR1.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].FastqNumR1) + "\n");
                 Stat.UseLinker[finalI].FastqNumR2 = (double) Stat.UseLinker[finalI].FastqFileR2.getItemNum();
-//                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].FastqFileR2.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].FastqNumR2) + "\n");
                 Stat.UseLinker[finalI].UniqMapNumR1 = Stat.UseLinker[finalI].UniqMapFileR1.getItemNum();
-//                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].UniqMapFileR1.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].UniqMapNumR1) + "\n");
                 Stat.UseLinker[finalI].UniqMapNumR2 = Stat.UseLinker[finalI].UniqMapFileR2.getItemNum();
-//                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].UniqMapFileR2.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].UniqMapNumR2) + "\n");
                 Stat.UseLinker[finalI].RawBedpeNum = Stat.UseLinker[finalI].RawBedpeFile.getItemNum();
-//                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].RawBedpeFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].RawBedpeNum) + "\n");
             });
             ST.start();
             SThread.add(ST);
@@ -442,16 +437,6 @@ public class Main {
                 Stat.UseLinker[finalI].RawDiffBedpeNum = Temp.getDiffFile().getItemNum();
                 Stat.UseLinker[finalI].SameCleanNum = Temp.getSameNoDumpFile().getItemNum();
                 Stat.UseLinker[finalI].DiffCleanNum = Temp.getDiffNoDumpFile().getItemNum();
-//                try {
-//                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].SelfLigationFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].SelfLigationNum) + "\n");
-//                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].RelLigationFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].RelLigationNum) + "\n");
-//                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].SameValidFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].SameValidNum) + "\n");
-//                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].SameCleanFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].SameCleanNum) + "\n");
-//                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].RawDiffBedpeFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].RawDiffBedpeNum) + "\n");
-//                    Opts.StatisticFile.Append(Stat.UseLinker[finalI].DiffCleanFile.getName() + ":\t" + new DecimalFormat("#,###").format(Stat.UseLinker[finalI].DiffCleanNum) + "\n");
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
             });
             STS[i].start();
             SThread.add(STS[i]);

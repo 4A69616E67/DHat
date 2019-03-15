@@ -1,6 +1,8 @@
 package Bin;
 
 import Component.File.FastqFile;
+import Component.Software.Bwa;
+import Component.Software.Python;
 import Component.tool.Tools;
 import Component.unit.Chromosome;
 import Component.unit.Configure;
@@ -8,9 +10,9 @@ import Component.unit.Configure;
 import javax.swing.*;
 import java.awt.event.*;
 import java.io.File;
+
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 class Config extends JDialog {
     private JPanel contentPane;
@@ -33,7 +35,7 @@ class Config extends JDialog {
     private JTextField TextField_AdapterSeq;
     private JTextField TextField_Resolution;
     private JTextField TextField_DrawRes;
-    private JTextField TextField_DetectRes;
+    //    private JTextField TextField_DetectRes;
     private JTextField TextField_Thread;
     private JTextField TextField_MatchScore;
     private JTextField TextField_MisMatchScore;
@@ -48,6 +50,10 @@ class Config extends JDialog {
     private JTextField TextField_DebugLevel;
     private JLabel Label_Bottom;
     private JCheckBox CheckBox_IterationAlign;
+    private JTextField textField_bwa;
+    private JLabel bwa;
+    private JTextField textField_python;
+    private JLabel python;
 
     public Config() {
         setContentPane(contentPane);
@@ -139,7 +145,7 @@ class Config extends JDialog {
         TextField_Thread.setText(String.valueOf(Configure.Thread));
         TextField_Resolution.setText(Tools.ArraysToString(Configure.Resolution));
         TextField_DrawRes.setText(Tools.ArraysToString(Configure.DrawResolution));
-        TextField_DetectRes.setText(String.valueOf(Configure.DetectResolution));
+//        TextField_DetectRes.setText(String.valueOf(Configure.DetectResolution));
         TextField_MatchScore.setText(String.valueOf(Configure.MatchScore));
         TextField_MisMatchScore.setText(String.valueOf(Configure.MisMatchScore));
         TextField_InDelScore.setText(String.valueOf(Configure.InDelScore));
@@ -152,6 +158,8 @@ class Config extends JDialog {
         TextField_AlignThread.setText(String.valueOf(Configure.AlignThread));
         CheckBox_IterationAlign.setSelected(Configure.Iteration);
         TextField_DebugLevel.setText(String.valueOf(Configure.DeBugLevel));
+        textField_bwa.setText(Configure.Bwa == null ? "" : Configure.Bwa.Exe());
+        textField_python.setText(Configure.Python == null ? "" : Configure.Python.Exe());
     }
 
     private File getFile() {
@@ -188,7 +196,7 @@ class Config extends JDialog {
             Configure.Thread = Configure.GetIntItem(TextField_Thread.getText().trim(), Configure.Thread);
             Configure.Resolution = Configure.GetIntArray(TextField_Resolution.getText().trim(), Configure.Resolution);
             Configure.DrawResolution = Configure.GetIntArray(TextField_DrawRes.getText().trim(), Configure.DrawResolution);
-            Configure.DetectResolution = Configure.GetIntItem(TextField_DetectRes.getText().trim(), Configure.DetectResolution);
+//            Configure.DetectResolution = Configure.GetIntItem(TextField_DetectRes.getText().trim(), Configure.DetectResolution);
         } else if (tabbedPane1.getSelectedIndex() == 1) {
             Configure.MatchScore = Configure.GetIntItem(TextField_MatchScore.getText().trim(), Configure.MatchScore);
             Configure.MisMatchScore = Configure.GetIntItem(TextField_MisMatchScore.getText().trim(), Configure.MisMatchScore);
@@ -202,6 +210,8 @@ class Config extends JDialog {
             Configure.AlignThread = Configure.GetIntItem(TextField_AlignThread.getText().trim(), Configure.AlignThread);
             Configure.Iteration = CheckBox_IterationAlign.isSelected();
             Configure.DeBugLevel = Configure.GetIntItem(TextField_DebugLevel.getText().trim(), Configure.DeBugLevel);
+            Configure.Bwa = new Bwa(textField_bwa.getText().trim());
+            Configure.Python = new Python(textField_python.getText().trim());
         }
         Configure.Update();
     }
