@@ -71,7 +71,7 @@ public class Configure {
     }
 
     private enum Optional {
-        OutPath("OutPath", Configure.OutPath), Prefix("Prefix", Configure.Prefix), Index("Index", Configure.Index), Chromosomes("Chromosomes", Tools.ArraysToString(Configure.Chromosome)), AdapterSeq("AdapterSeq", Tools.ArraysToString(Configure.AdapterSeq)), Resolutions("Resolutions", Tools.ArraysToString(Configure.Resolution)), DrawResolution("DrawResolution", Tools.ArraysToString(Configure.DrawResolution)), DetectResolution("DetectRes", Configure.DetectResolution), Thread("Thread", Configure.Thread), Step("Step", Configure.Step);
+        OutPath("OutPath", Configure.OutPath), Prefix("Prefix", Configure.Prefix), Index("Index", Configure.Index), Chromosomes("Chromosomes", Tools.ArraysToString(Configure.Chromosome)), AdapterSeq("AdapterSeq", Tools.ArraysToString(Configure.AdapterSeq)), Resolutions("Resolutions", Tools.ArraysToString(Configure.Resolution)), DrawResolutions("DrawResolutions", Tools.ArraysToString(Configure.DrawResolution)), DetectResolution("DetectRes", Configure.DetectResolution), Thread("Thread", Configure.Thread), Step("Step", Configure.Step);
         private String Key;
         public Object Value;
 
@@ -187,7 +187,7 @@ public class Configure {
         Optional.Chromosomes.Value = Tools.ArraysToString(Chromosome);
         Optional.AdapterSeq.Value = Tools.ArraysToString(AdapterSeq);
         Optional.Resolutions.Value = Tools.ArraysToString(Resolution);
-        Optional.DrawResolution.Value = Tools.ArraysToString(DrawResolution);
+        Optional.DrawResolutions.Value = Tools.ArraysToString(DrawResolution);
         Optional.DetectResolution.Value = DetectResolution;
         Optional.Thread.Value = Thread;
         Optional.Step.Value = Step;
@@ -226,7 +226,7 @@ public class Configure {
         }
         AdapterSeq = Optional.AdapterSeq.Value != null ? Optional.AdapterSeq.Value.toString().trim().split("\\s+") : AdapterSeq;
         Resolution = GetIntArray(Optional.Resolutions.Value, Resolution);
-        DrawResolution = GetIntArray(Optional.DrawResolution.Value, DrawResolution);
+        DrawResolution = GetIntArray(Optional.DrawResolutions.Value, DrawResolution);
         DetectResolution = GetIntItem(Optional.DetectResolution.Value, DetectResolution);
         Thread = GetIntItem(Optional.Thread.Value, Thread);
         Step = Optional.Step.Value != null ? Optional.Step.Value.toString() : Step;

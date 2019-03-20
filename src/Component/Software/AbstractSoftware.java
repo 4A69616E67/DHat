@@ -14,8 +14,8 @@ import java.util.ArrayList;
  */
 
 public abstract class AbstractSoftware {
-    protected File Path;
-    protected String Version;
+    protected File Path = new File("");
+    protected String Version = "";
     protected String Execution;
     protected boolean Valid = false;
 

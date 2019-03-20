@@ -19,8 +19,12 @@ public class Python extends AbstractSoftware {
 
     @Override
     protected void Init() {
-        getPath();
-        getVersion();
+        if (Execution.trim().equals("")) {
+            System.err.println("[python]\tNo execute file");
+        } else {
+            getPath();
+            getVersion();
+        }
     }
 
     @Override

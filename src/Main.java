@@ -42,7 +42,7 @@ public class Main {
     private int MaxReadsLength;
     private int[] Resolution, DrawResolution;
     private int LinkerLength;
-    private boolean Iteration = true;
+    private boolean Iteration = false;
     private int Threads;
     private ArrayList<Thread> SThread = new ArrayList<>();//统计线程队列
     //===================================================================
@@ -71,7 +71,7 @@ public class Main {
         Argument.addOption(Option.builder("s").longOpt("step").hasArgs().argName("string").desc("same as \"Step\" in configure file").build());//运行步骤
         Argument.addOption(Option.builder("t").longOpt("thread").hasArg().argName("int").desc("number of threads").build());//线程数
         Argument.addOption(Option.builder("D").longOpt("Debug").hasArg().argName("int").desc("Debug Level (default " + DeBugLevel + ")").build());
-        Argument.addOption(Option.builder("pbs").hasArg(false).desc("running bug pbs").build());
+        Argument.addOption(Option.builder("pbs").hasArg(false).desc("running by pbs").build());
         final String helpHeader = "Version: " + Opts.Version + "\nAuthor: " + Opts.Author + "\nContact: " + Opts.Email;
         final String helpFooter = "Note: use \"java -jar " + Opts.JarFile.getName() + " install\" when you first use!\n      JVM can get " + String.format("%.2f", Opts.MaxMemory / Math.pow(10, 9)) + "G memory";
         if (args.length == 0) {
