@@ -25,7 +25,7 @@ public class Opts {
      * 断点枚举类
      */
     public enum Step {
-        PreProcess("PreProcess"), SeProcess("SeProcess"), Bed2BedPe("Bed2BedPe"), BedPeProcess("BedPeProcess"), BedPe2Inter("BedPe2Inter"), MakeMatrix("MakeMatrix"), CreateIndex("Index"), FindEnzymeFragment("Fragment");
+        PreProcess("PreProcess"), SeProcess("Alignment"), Bed2BedPe("Bed2BedPe"), BedPeProcess("NoiseReduce"), BedPe2Inter("BedPe2Inter"), MakeMatrix("MakeMatrix"), CreateIndex("Index"), FindEnzymeFragment("Fragment");
 
         private String Str;
         public boolean Execute = false;//是否需要执行
@@ -45,7 +45,7 @@ public class Opts {
     }
 
     public enum OutDir {
-        PreDir("01.PreProcess"), SeDir("02.Alignment"), BedpeDir("03.NoiseReduce"), MatrixDir("04.MakeMatrix"), EnzyFragDir("0a.EnzymeFragment"), IndexDir("0b.Index"), ReportDir("05.Report");
+        PreDir("01.PreProcess"), SeDir("02.Alignment"), BedpeDir("03.NoiseReduce"), MatrixDir("04.MakeMatrix"), ReportDir("05.Report"), EnzyFragDir("0a.EnzymeFragment"), IndexDir("0b.Index");
 
         private String Str;
 

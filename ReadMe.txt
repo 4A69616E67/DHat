@@ -23,7 +23,7 @@ HalfLinker = GTCGGAGAACCAGTAGCT
 GenomeFile = Hg19.clean.fna
 #------------------------------optional parameters---------------------------
 OutPath = ./
-Prefix = DLO_Out
+Prefix = out
 Index = Hg19
 Chromosomes =
 AdapterSeq =
@@ -79,12 +79,11 @@ DeBugLevel          Int         0 means remain base output, 1 means more output,
 
 //if we set ReadsType "Short", we will align with "bwa aln",and if set "Long",we will align with "bwa mem"
 
-//Step include "PreProcess" "SeProcess" "Bed2BedPe" "BedPeProcess" "BedPe2Inter" "MakeMatrix"
+//Step include "PreProcess" "Alignment" "Bed2BedPe" "NoiseReduce" "BedPe2Inter" "MakeMatrix"
 //If we want to run from "Bed2BedPe" to "MakeMatrix", we can set "Bed2BedPe - MakeMatrix"
-//If we only want to run from "SeProcess" to end, we can set "SeProcess -"
+//If we only want to run from "Alignment" to end, we can set "SeProcess -"
 //If we want to run all, we can set "-"
 
 #=========================Other Script=================
-java -cp DLO-HIC-AnalysisTools.jar Utils.PetCluster
 java -cp DLO-HIC-AnalysisTools.jar Utils.CreateMatrix
 java -cp DLO-HIC-AnalysisTools.jar Bin.Guide    (need visual interface)
