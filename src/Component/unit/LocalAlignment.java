@@ -63,31 +63,13 @@ public class LocalAlignment {
             if (Seq1[MinI - 1] == Seq2[MinJ - 1] && ScoreMatrix[MinI][MinJ] == ScoreMatrix[MinI - 1][MinJ - 1] + MatchScore) {
                 MinI--;
                 MinJ--;
-//                if (ScoreMatrix[MinI][MinJ] <= 0) {
-//                    MinI++;
-//                    MinJ++;
-//                    break;
-//                }
             } else if (ScoreMatrix[MinI][MinJ] == ScoreMatrix[MinI - 1][MinJ - 1] + MismatchScore) {
                 MinI--;
                 MinJ--;
-//                if (ScoreMatrix[MinI][MinJ] <= 0) {
-//                    MinI++;
-//                    MinJ++;
-//                    break;
-//                }
             } else if (ScoreMatrix[MinI][MinJ] == ScoreMatrix[MinI - 1][MinJ] + IndelScore) {
                 MinI--;
-//                if (ScoreMatrix[MinI][MinJ] <= 0) {
-//                    MinI++;
-//                    break;
-//                }
             } else if (ScoreMatrix[MinI][MinJ] == ScoreMatrix[MinI][MinJ - 1] + IndelScore) {
                 MinJ--;
-//                if (ScoreMatrix[MinI][MinJ] <= 0) {
-//                    MinJ++;
-//                    break;
-//                }
             } else {
                 MinI--;
                 MinJ--;

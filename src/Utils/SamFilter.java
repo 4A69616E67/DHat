@@ -1,5 +1,7 @@
 package Utils;
 
+import Component.File.AbstractFile;
+import Component.File.SamFile;
 import Component.tool.Tools;
 import Component.unit.Opts;
 import org.apache.commons.cli.*;
@@ -8,29 +10,30 @@ import java.io.*;
 import java.util.Date;
 
 public class SamFilter {
-    private File InputSamFile, OutPath = new File("./");
-    private File UniqSamFile, UnmapSamFile, MultiSamFile;
+    private SamFile InputSamFile;
+    File OutPath = new File("./");
+    private SamFile UniqSamFile, UnmapSamFile, MultiSamFile;
     private String Prefix = "SamFilter";
     private Integer MinQuality = 20;
     private Integer Threads = 1;
 
-    public SamFilter(File inputSamFile) {
+    public SamFilter(SamFile inputSamFile) {
         this(inputSamFile, "SamFilter");
     }
 
-    public SamFilter(File inputSamFile, String prefix) {
+    public SamFilter(SamFile inputSamFile, String prefix) {
         this(inputSamFile, new File("./"), prefix);
     }
 
-    public SamFilter(File inputSamFile, File outPath, String prefix) {
+    public SamFilter(SamFile inputSamFile, File outPath, String prefix) {
         this(inputSamFile, outPath, prefix, 20);
     }
 
-    public SamFilter(File inputSamFile, File outPath, String prefix, Integer minQuality) {
+    public SamFilter(SamFile inputSamFile, File outPath, String prefix, Integer minQuality) {
         this(inputSamFile, outPath, prefix, minQuality, 1);
     }
 
-    public SamFilter(File inputSamFile, File outPath, String prefix, Integer minQuality, Integer threads) {
+    public SamFilter(SamFile inputSamFile, File outPath, String prefix, Integer minQuality, Integer threads) {
         InputSamFile = inputSamFile;
         OutPath = outPath;
         Prefix = prefix;
@@ -51,7 +54,7 @@ public class SamFilter {
             System.exit(1);
         }
         CommandLine ComLine = new DefaultParser().parse(Argument, args);
-        InputSamFile = Opts.GetFileOpt(ComLine, "i", null);
+        InputSamFile = new SamFile(Opts.GetStringOpt(ComLine, "i", null));
         OutPath = Opts.GetFileOpt(ComLine, "o", OutPath);
         Prefix = Opts.GetStringOpt(ComLine, "p", Prefix);
         MinQuality = Opts.GetIntOpt(ComLine, "q", MinQuality);
@@ -74,13 +77,13 @@ public class SamFilter {
             System.err.println(SamFilter.class.getName() + "\tError! Can't create output directory:\t" + OutPath);
             System.exit(1);
         }
-        UniqSamFile = new File(OutPath + "/" + Prefix + ".uniq.sam");
-        UnmapSamFile = new File(OutPath + "/" + Prefix + ".unmap.sam");
-        MultiSamFile = new File(OutPath + "/" + Prefix + ".multi.sam");
+        UniqSamFile = new SamFile(OutPath + "/" + Prefix + ".uniq.sam");
+        UnmapSamFile = new SamFile(OutPath + "/" + Prefix + ".unmap.sam");
+        MultiSamFile = new SamFile(OutPath + "/" + Prefix + ".multi.sam");
     }
 
-    public static long[] Execute(File SamFile, File UniqSamFile, File UnMapSamFile, File MultiSamFile, int MinQuality, int Threads) throws IOException {
-        long[] Count = new long[]{0, 0, 0};
+    public static void Execute(AbstractFile SamFile, AbstractFile UniqSamFile, AbstractFile UnMapSamFile, AbstractFile MultiSamFile, int MinQuality, int Threads) throws IOException {
+//        long[] Count = new long[]{0, 0, 0};//{uniq,numapped,multimapped}
         BufferedReader sam_read = new BufferedReader(new FileReader(SamFile));
         BufferedWriter uniq_write = new BufferedWriter(new FileWriter(UniqSamFile));
         BufferedWriter unmap_write = new BufferedWriter(new FileWriter(UnMapSamFile));
@@ -99,17 +102,20 @@ public class SamFilter {
                         }
                         if (Integer.parseInt(str[4]) >= MinQuality) {
                             synchronized (uniq_write) {
-                                Count[0]++;
+                                UniqSamFile.ItemNum++;
+//                                Count[0]++;
                                 uniq_write.write(line + "\n");
                             }
                         } else if (str[2].equals("*")) {
                             synchronized (unmap_write) {
-                                Count[1]++;
+                                UnMapSamFile.ItemNum++;
+//                                Count[1]++;
                                 unmap_write.write(line + "\n");
                             }
                         } else {
                             synchronized (multi_write) {
-                                Count[2]++;
+                                MultiSamFile.ItemNum++;
+//                                Count[2]++;
                                 multi_write.write(line + "\n");
                             }
                         }
@@ -126,7 +132,7 @@ public class SamFilter {
         unmap_write.close();
         multi_write.close();
         System.out.println(new Date() + "\tEnd to sam filter\t" + SamFile);
-        return Count;
+//        return Count;
     }
 
     public void Run() throws IOException {

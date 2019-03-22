@@ -4,9 +4,9 @@ import Component.unit.*;
 
 import java.io.*;
 import java.util.ArrayList;
+
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 public class FileTool {
 
@@ -72,8 +72,9 @@ public class FileTool {
         writer.close();
     }
 
-    public static void MergeSamFile(File[] InFile, File MergeFile) throws IOException {
+    public static void MergeSamFile(AbstractFile[] InFile, AbstractFile MergeFile) throws IOException {
         BufferedWriter out = new BufferedWriter(new FileWriter(MergeFile));
+        MergeFile.ItemNum = 0;
         String line;
         BufferedReader gethead = new BufferedReader(new FileReader(InFile[0]));
         while ((line = gethead.readLine()) != null && line.matches("^@.*")) {
@@ -87,6 +88,7 @@ public class FileTool {
                     continue;
                 }
                 out.write(line + "\n");
+                MergeFile.ItemNum++;
             }
             in.close();
         }

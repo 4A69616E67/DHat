@@ -38,10 +38,10 @@ public class SeProcess {
     private BedFile SortBedFile;//排序后的bed文件
 
     //================================================================
-    private long RawNum;
-    private long UniqueMappedNum;
-    private long MultiMappedNum;
-    private long UnMappedNum;
+//    private long RawNum;
+//    private long UniqueMappedNum;
+//    private long MultiMappedNum;
+//    private long UnMappedNum;
 
 
     public SeProcess(FastqFile fastqfile, File index, int mismatch, int minquality, File outpath, String prefix, Opts.FileFormat readstype) throws IOException {
@@ -120,7 +120,6 @@ public class SeProcess {
         if (Configure.DeBugLevel < 1) {
             BedFile.delete();
         }
-//        Tools.RemoveEmptyFile(OutPath);//不能放在这里
     }
 
     public static void main(String[] args) throws IOException, InterruptedException, ParseException {
@@ -277,7 +276,7 @@ public class SeProcess {
         }
         fasta_write.close();
         //--------------------------------------------------------------------------------------------------------------
-        File TempSamFile = new File(IterationDir + "/" + Prefix + ".iteration" + Num + ".sam.temp");
+        SamFile TempSamFile = new SamFile(IterationDir + "/" + Prefix + ".iteration" + Num + ".sam.temp");
         try {
             Align(FastaFile, TempSamFile, ReadsType);// align
             SamFilter.Execute(TempSamFile, UniqSamFile, UnMapSamFile, MultiSamFile, MinQuality, Threads);//filter
@@ -352,6 +351,14 @@ public class SeProcess {
 
     public SamFile getUniqSamFile() {
         return UniqSamFile;
+    }
+
+    public SamFile getMultiSamFile() {
+        return MultiSamFile;
+    }
+
+    public SamFile getUnMapSamFile() {
+        return UnMapSamFile;
     }
 
     public BedFile getSortBedFile() {

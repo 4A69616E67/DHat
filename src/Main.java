@@ -292,8 +292,14 @@ public class Main {
                 if (IndexPrefix == null || IndexPrefix.getName().equals("")) {
                     CreateIndex(GenomeFile);
                 }
-                SeProcess(UseLinkerFasqFileR1[i], UseLinkerFasqFileR1[i].getName().replace(".fastq", ""));
-                SeProcess(UseLinkerFasqFileR2[i], UseLinkerFasqFileR2[i].getName().replace(".fastq", ""));
+                SamFile[] r1 = SeProcess(UseLinkerFasqFileR1[i], UseLinkerFasqFileR1[i].getName().replace(".fastq", ""));
+                SamFile[] r2 = SeProcess(UseLinkerFasqFileR2[i], UseLinkerFasqFileR2[i].getName().replace(".fastq", ""));
+                Opts.ALStat.LinkerR1Mapped[i] = r1[0].getItemNum();
+                Opts.ALStat.LinkerR1MultiMapped[i] = r1[1].getItemNum();
+                Opts.ALStat.LinkerR1Unmapped[i] = r1[2].getItemNum();
+                Opts.ALStat.LinkerR2Mapped[i] = r2[0].getItemNum();
+                Opts.ALStat.LinkerR2MultiMapped[i] = r2[1].getItemNum();
+                Opts.ALStat.LinkerR2Unmapped[i] = r2[2].getItemNum();
             }
         }
         //=============================================获取排序好的bed文件===============================================
@@ -303,8 +309,8 @@ public class Main {
         for (int i = 0; i < ValidLinkerSeq.length; i++) {
             R1SortBedFile[i] = new SeProcess(UseLinkerFasqFileR1[i], IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR1[i].getName().replace(".fastq", ""), ReadsType).getSortBedFile();
             R2SortBedFile[i] = new SeProcess(UseLinkerFasqFileR2[i], IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR2[i].getName().replace(".fastq", ""), ReadsType).getSortBedFile();
-            Opts.ALStat.LinkerR1Mapped[i] = R1SortBedFile[i].getItemNum();
-            Opts.ALStat.LinkerR2Mapped[i] = R2SortBedFile[i].getItemNum();
+//            Opts.ALStat.LinkerR1Mapped[i] = R1SortBedFile[i].getItemNum();
+//            Opts.ALStat.LinkerR2Mapped[i] = R2SortBedFile[i].getItemNum();
             SeBedpeFile[i] = new BedpeFile(SeProcessDir + "/" + Prefix + "." + ValidLinkerSeq[i].getType() + ".bedpe");
             if (Opts.Step.Bed2BedPe.Execute) {
                 System.out.println(new Date() + "\t" + R1SortBedFile[i].getName() + " " + R2SortBedFile[i].getName() + " to " + SeBedpeFile[i].getName());
@@ -622,8 +628,10 @@ public class Main {
         });
     }
 
-
-    private void SeProcess(FastqFile fastqFile, String Prefix) throws IOException, InterruptedException {
+    /**
+     * @return unique, multi, unmapped
+     */
+    private SamFile[] SeProcess(FastqFile fastqFile, String Prefix) throws IOException, InterruptedException {
         if (fastqFile.ItemNum <= 0) {
             fastqFile.ItemNum = fastqFile.getItemNum();
         }
@@ -633,9 +641,13 @@ public class Main {
         SeProcess se = new SeProcess(fastqFile, IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, Prefix, ReadsType);
         SamFile SamFile = se.getSamFile();
         SamFile UniqSamFile = se.getUniqSamFile();
+        SamFile MultiSamFile = se.getMultiSamFile();
+        SamFile UnSamFile = se.getUnMapSamFile();
         BedFile SortBedFile = se.getSortBedFile();
         SamFile[] SplitSamFile = new SamFile[SplitFastqFile.size()];
         SamFile[] SplitFilterSamFile = new SamFile[SplitFastqFile.size()];
+        SamFile[] SplitMultiSamFile = new SamFile[SplitFastqFile.size()];
+        SamFile[] SplitUnSamFile = new SamFile[SplitFastqFile.size()];
         BedFile[] SplitSortBedFile = new BedFile[SplitFastqFile.size()];
         Thread[] t2 = new Thread[Threads];
         int[] Index = new int[]{0};
@@ -655,11 +667,12 @@ public class Main {
                     }
                     try {
                         SeProcess ssp = new SeProcess(InFile, IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, Prefix + ".split" + finalI, ReadsType);//单端处理类
-//                            ssp.Threads = 1;//设置线程数
                         ssp.setIteration(Iteration);
                         ssp.Run();
                         SplitSamFile[finalI] = ssp.getSamFile();
                         SplitFilterSamFile[finalI] = ssp.getUniqSamFile();
+                        SplitMultiSamFile[finalI] = ssp.getMultiSamFile();
+                        SplitUnSamFile[finalI] = ssp.getUnMapSamFile();
                         SplitSortBedFile[finalI] = ssp.getSortBedFile();
                     } catch (IOException | InterruptedException e) {
                         e.printStackTrace();
@@ -674,10 +687,12 @@ public class Main {
                 AbstractFile.delete(s);
             }
         }
-        new Thread(() -> {
+        Thread t4 = new Thread(() -> {
             try {
                 FileTool.MergeSamFile(SplitSamFile, SamFile);
                 FileTool.MergeSamFile(SplitFilterSamFile, UniqSamFile);
+                FileTool.MergeSamFile(SplitMultiSamFile, MultiSamFile);
+                FileTool.MergeSamFile(SplitUnSamFile, UnSamFile);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -686,9 +701,12 @@ public class Main {
                     AbstractFile.delete(SplitFastqFile.get(i));
                     AbstractFile.delete(SplitSamFile[i]);
                     AbstractFile.delete(SplitFilterSamFile[i]);
+                    AbstractFile.delete(SplitMultiSamFile[i]);
+                    AbstractFile.delete(SplitUnSamFile[i]);
                 }
             }
-        }).start();
+        });
+        t4.start();
         Thread t3 = new Thread(() -> {
             try {
                 SortBedFile.MergeSortFile(SplitSortBedFile);
@@ -703,6 +721,8 @@ public class Main {
         });
         t3.start();
         t3.join();
+        t4.join();
+        return new SamFile[]{UniqSamFile, MultiSamFile, UnSamFile};
     }
 
     private Thread BedpeProcess(String UseLinker, BedpeFile SeBedpeFile, int threads) {
