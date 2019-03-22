@@ -200,6 +200,7 @@ public class SeProcess {
         String CommandStr;
         System.out.println(new Date() + "\tBegin to align\t" + fastqFile.getName());
         if (Configure.Bwa != null && Configure.Bwa.isValid()) {
+            Opts.ALStat.AlignmentSoftware = Configure.Bwa;
             if (ReadsType == Opts.FileFormat.ShortReads) {
                 File SaiFile = new File(fastqFile + ".sai");
                 CommandStr = Configure.Bwa.aln(IndexPrefix, fastqFile, SaiFile, MisMatchNum, Threads);

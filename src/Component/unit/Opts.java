@@ -4,6 +4,7 @@ import Component.File.CommonFile;
 import Component.Statistic.AlignmentStat;
 import Component.Statistic.LinkerFilterStat;
 import Component.Statistic.NoiseReduce;
+import Component.Statistic.OverviewStat;
 import org.apache.commons.cli.CommandLine;
 
 import java.io.File;
@@ -180,6 +181,7 @@ public class Opts {
     public static final LinkerFilterStat LFStat = new LinkerFilterStat();
     public static final AlignmentStat ALStat = new AlignmentStat();
     public static final NoiseReduce NRStat = new NoiseReduce();
+    public static final OverviewStat OVStat = new OverviewStat();
 
 }
 

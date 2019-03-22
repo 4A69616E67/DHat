@@ -195,7 +195,7 @@ public class PreProcess extends AbstractProcess {
             t[i].start();
         }
         Tools.ThreadsWait(t);
-        Opts.LFStat.InputFile.ItemNum = FastqFile.ItemNum;
+        Opts.OVStat.RawDataNum = Opts.LFStat.InputFile.ItemNum = FastqFile.ItemNum;
         for (int j = 0; j < Linkers.length; j++) {
             FastqR1File[j].ItemNum = Opts.LFStat.ValidPairNum[j];
             FastqR2File[j].ItemNum = Opts.LFStat.ValidPairNum[j];

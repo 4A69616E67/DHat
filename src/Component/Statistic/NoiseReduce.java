@@ -1,6 +1,7 @@
 package Component.Statistic;
 
 import Component.unit.LinkerSequence;
+import Component.unit.Opts;
 
 import java.text.DecimalFormat;
 import java.util.HashMap;
@@ -50,11 +51,11 @@ public class NoiseReduce extends AbstractStat {
 
     @Override
     protected void UpDate() {
-        RawDataNum = StatUtil.sum(LinkerRawDataNum);
+        Opts.OVStat.UniqueMappedNum = RawDataNum = StatUtil.sum(LinkerRawDataNum);
         SelfLigationNum = StatUtil.sum(LinkerSelfLigationNum);
         ReLigationNum = StatUtil.sum(LinkerReLigationNum);
         RepeatNum = StatUtil.sum(LinkerRepeatNum);
-        CleanNum = StatUtil.sum(LinkerCleanNum);
+        Opts.OVStat.CleanNum = CleanNum = StatUtil.sum(LinkerCleanNum);
     }
 
     @Override

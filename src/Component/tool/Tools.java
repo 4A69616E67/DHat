@@ -174,7 +174,7 @@ public class Tools {
 
     public static int ExecuteCommandStr(String CommandStr, PrintWriter Out, PrintWriter Error) throws IOException, InterruptedException {
         int ExitValue;
-        System.out.println(new Date() + "\t" + CommandStr);
+//        System.out.println(new Date() + "\t" + CommandStr);
         Process P = Runtime.getRuntime().exec(CommandStr);
         Thread OutThread = new Thread(() -> {
             try {

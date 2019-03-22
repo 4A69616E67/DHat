@@ -13,6 +13,7 @@ scipy               install by "pip install scipy"
 
 recommend install "AnaConda" and then you can install all of above tools by "conda install XXXX" (exclude python)
 //mafft and bwa can install by "conda install bwa/mafft" (if you install AnaConda before)
+//if no use please try "conda install -c bioconda  mafft/bwa"
 
 =====================ConfigFile: Such as follow====================
 

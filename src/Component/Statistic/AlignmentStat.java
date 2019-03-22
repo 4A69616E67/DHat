@@ -1,6 +1,8 @@
 package Component.Statistic;
 
+import Component.Software.AbstractSoftware;
 import Component.unit.LinkerSequence;
+import Component.unit.Opts;
 
 import java.text.DecimalFormat;
 
@@ -8,15 +10,15 @@ import java.text.DecimalFormat;
  * Created by 浩 on 2019/3/2.
  */
 public class AlignmentStat extends AbstractStat {
+    private long InputNum;
     public LinkerSequence[] Linkers = new LinkerSequence[0];
     public long[] LinkerInputNum = new long[0];
     public int Threshold;
-    public String AlignmentSoftware;
+    public AbstractSoftware AlignmentSoftware;
     public long[] LinkerR1Mapped = new long[0], LinkerR1Unmapped = new long[0], LinkerR1MultiMapped = new long[0];
     public long[] LinkerR2Mapped = new long[0], LinkerR2Unmapped = new long[0], LinkerR2MultiMapped = new long[0];
     private long R1Mapped, R1Unmapped, R1MultiMapped;
     private long R2Mapped, R2Unmapped, R2MultiMapped;
-    private long InputNum;
 
     @Override
     public void Stat() {
@@ -62,7 +64,7 @@ public class AlignmentStat extends AbstractStat {
         R2Mapped = StatUtil.sum(LinkerR2Mapped);
         R2Unmapped = StatUtil.sum(LinkerR2Unmapped);
         R2MultiMapped = StatUtil.sum(LinkerR2MultiMapped);
-        InputNum = StatUtil.sum(LinkerInputNum);
+        Opts.OVStat.AlignmentNum = InputNum = StatUtil.sum(LinkerInputNum);
     }
 
     @Override
