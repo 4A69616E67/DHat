@@ -34,7 +34,7 @@ public class NoiseReduce extends AbstractStat {
             show.append("Linker ").append(Linkers[i].getType()).append(":\t").append(Linkers[i].getSeq()).append("\n");
             show.append("Raw data").append("\t").append(new DecimalFormat("#,###").format(LinkerRawDataNum[i])).append("\n");
             show.append("Self-ligation").append("\t").append(new DecimalFormat("#,###").format(LinkerSelfLigationNum[i])).append("\t").append(String.format("%.2f", (double) LinkerSelfLigationNum[i] / LinkerRawDataNum[i] * 100)).append("%").append("\t");
-            show.append("Rel-ligation").append("\t").append(new DecimalFormat("#,###").format(LinkerReLigationNum[i])).append("\t").append(String.format("%.2f", (double) LinkerReLigationNum[i] / LinkerRawDataNum[i] * 100)).append("%").append("\t");
+            show.append("Re-ligation").append("\t").append(new DecimalFormat("#,###").format(LinkerReLigationNum[i])).append("\t").append(String.format("%.2f", (double) LinkerReLigationNum[i] / LinkerRawDataNum[i] * 100)).append("%").append("\t");
             show.append("Repeat").append("\t").append(new DecimalFormat("#,###").format(LinkerRepeatNum[i])).append("\t").append(String.format("%.2f", (double) LinkerRepeatNum[i] / LinkerRawDataNum[i] * 100)).append("%").append("\n");
             show.append("Clean data").append("\t").append(new DecimalFormat("#,###").format(LinkerCleanNum[i])).append("\t").append(String.format("%.2f", (double) LinkerCleanNum[i] / LinkerRawDataNum[i] * 100)).append("%").append("\n");
             show.append("\n");
@@ -42,7 +42,7 @@ public class NoiseReduce extends AbstractStat {
         show.append("Total:\n");
         show.append("Raw data").append("\t").append(new DecimalFormat("#,###").format(RawDataNum)).append("\n");
         show.append("Self-ligation").append("\t").append(new DecimalFormat("#,###").format(SelfLigationNum)).append("\t").append(String.format("%.2f", (double) SelfLigationNum / RawDataNum * 100)).append("%").append("\t");
-        show.append("Rel-ligation").append("\t").append(new DecimalFormat("#,###").format(ReLigationNum)).append("\t").append(String.format("%.2f", (double) ReLigationNum / RawDataNum * 100)).append("%").append("\t");
+        show.append("Re-ligation").append("\t").append(new DecimalFormat("#,###").format(ReLigationNum)).append("\t").append(String.format("%.2f", (double) ReLigationNum / RawDataNum * 100)).append("%").append("\t");
         show.append("Repeat").append("\t").append(new DecimalFormat("#,###").format(RepeatNum)).append("\t").append(String.format("%.2f", (double) RepeatNum / RawDataNum * 100)).append("%").append("\n");
         show.append("Clean data").append("\t").append(new DecimalFormat("#,###").format(CleanNum)).append("\t").append(String.format("%.2f", (double) CleanNum / RawDataNum * 100)).append("%").append("\n");
         show.append("\n");
