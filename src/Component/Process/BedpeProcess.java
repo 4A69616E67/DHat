@@ -312,6 +312,16 @@ public class BedpeProcess {
             String[] chr = new String[]{str[0], str[3]};
             Region[] position = new Region[]{new Region(Integer.parseInt(str[1]), Integer.parseInt(str[2])), new Region(Integer.parseInt(str[4]), Integer.parseInt(str[5]))};
             FragSite[] index = new FragSite[position.length];
+            //-------------------------------------------------
+            for (int i = 0; i < position.length; i++) {
+                if (EnySiteList.get(chr[i]) == null) {
+                    index = null;
+                    break;
+                }
+            }
+            if (index == null) {
+                continue;
+            }
             //-----------------------二分法查找-----------------
             for (int i = 0; i < position.length; i++) {
                 index[i] = Location(EnySiteList.get(chr[i]), position[i]);
@@ -364,6 +374,9 @@ public class BedpeProcess {
      * @param site search site
      */
     private FragSite Location(ArrayList<Region> list, Region site) {
+        if (list == null) {
+            return null;
+        }
         int i = 0, j = list.size();
         int MinDis = Integer.MAX_VALUE, MinIndex = 0, dis, p = 0;
         Region item;

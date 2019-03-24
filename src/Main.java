@@ -99,8 +99,10 @@ public class Main {
             Configure.Prefix = ComLine.getOptionValue("p");
         if (ComLine.hasOption("o"))
             Configure.OutPath = new File(ComLine.getOptionValue("o"));
-        if (ComLine.hasOption("s"))
+        if (ComLine.hasOption("s")) {
             Configure.Step = String.join(" ", ComLine.getOptionValues("s"));
+            Opts.StepCheck(Configure.Step);
+        }
         if (ComLine.hasOption("t"))
             Configure.Thread = Integer.parseInt(ComLine.getOptionValue("t"));
         if (ComLine.hasOption("r"))
@@ -135,6 +137,7 @@ public class Main {
 //        MemoryUsage memoryUsage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
 //        long maxMemorySize = memoryUsage.getMax();
 //        long usedMemorySize = memoryUsage.getUsed();
+        Opts.StepCheck("NoiseReduce - ");
 
         //================================================初始化========================================================
         if (args.length >= 1 && args[0].equals("install")) {
