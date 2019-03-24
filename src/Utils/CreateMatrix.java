@@ -13,6 +13,7 @@ import java.util.*;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.RealMatrix;
 
 public class CreateMatrix {
     private BedpeFile BedpeFile;
@@ -207,6 +208,7 @@ public class CreateMatrix {
             }
         }
         BufferedReader infile = new BufferedReader(new FileReader(BedpeFile));
+        int[] DataIndex = IndexParse(BedpeFile);
         Thread[] Process = new Thread[Threads];
         //----------------------------------------------------------------------------
         for (int i = 0; i < Threads; i++) {
@@ -214,18 +216,20 @@ public class CreateMatrix {
                 try {
                     String line;
                     String[] str;
-                    int[] DataIndex = IndexParse(BedpeFile);
                     while ((line = infile.readLine()) != null) {
                         str = line.split("\\s+");
                         ChrRegion left = new ChrRegion(new String[]{str[DataIndex[0]], str[DataIndex[1]], str[DataIndex[2]]});
                         ChrRegion right = new ChrRegion(new String[]{str[DataIndex[3]], str[DataIndex[4]], str[DataIndex[5]]});
-                        if (left.IsBelong(reg1) && right.IsBelong(reg2)) {
+                        int[] index1 = Bedpe2Index(InterMatrix, reg1, reg2, left, right, Resolution);
+                        if (index1[0] >= 0) {
                             synchronized (InterMatrix) {
-                                InterMatrix.addToEntry((left.region.Start - reg1.region.Start) / Resolution, (right.region.Start - reg2.region.Start) / Resolution, 1);
+                                InterMatrix.addToEntry(index1[0], index1[1], 1);
                             }
-                        } else if (right.IsBelong(reg1) && left.IsBelong(reg2)) {
+                        }
+                        int[] index2 = Bedpe2Index(InterMatrix, reg1, reg2, right, left, Resolution);
+                        if (index2[0] >= 0 && index2[0] != index1[0]) {
                             synchronized (InterMatrix) {
-                                InterMatrix.addToEntry((right.region.Start - reg1.region.Start) / Resolution, (left.region.Start - reg2.region.Start) / Resolution, 1);
+                                InterMatrix.addToEntry(index2[0], index2[1], 1);
                             }
                         }
                     }
@@ -241,13 +245,22 @@ public class CreateMatrix {
         //--------------------------------------------------------
         //打印矩阵
         Tools.PrintMatrix(InterMatrix, DenseMatrixFile, SpareMatrixFile);
-        System.out.println(new Date() + "\tEnd to creat interaction matrix");
+        System.out.println(new Date() + "\tEnd to create interaction matrix");
         //--------------------------------------------------------------------
         BufferedWriter outfile = new BufferedWriter(new FileWriter(RegionFile));
         outfile.write(reg1.toString() + "\n");
         outfile.write(reg2.toString() + "\n");
         outfile.close();
         return InterMatrix;
+    }
+
+    public static int[] Bedpe2Index(RealMatrix matrix, ChrRegion reg1, ChrRegion reg2, ChrRegion left, ChrRegion right, int resolution) {
+        int[] index = new int[]{-1, -1};
+        if (left.IsBelong(reg1) && right.IsBelong(reg2)) {
+            index[0] = (left.region.Start - reg1.region.Start) / resolution;
+            index[1] = (right.region.Start - reg2.region.Start) / resolution;
+        }
+        return index;
     }
 
     public ArrayList<Array2DRowRealMatrix> Run(List<InterAction> list) throws IOException {

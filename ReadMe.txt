@@ -29,7 +29,7 @@ Index = Hg19
 Chromosomes =
 AdapterSeq =
 Resolutions = 1000000
-DrawResolution = 1000000
+DrawResolutions = 1000000
 Thread = 4
 Step = -
 #------------------------------advance parameters---------------------------
