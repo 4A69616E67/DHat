@@ -1,16 +1,15 @@
 ## Introduction
----
+
 **DHat** is an efficient and using easily tool, it intergrate **[linker filtering]()**, **[alignment]()**, **[noise reduce]()** and **[matrix building]()**.
 
 
 
-**[install](#install)**
-**[usage](#usage)**
+**[install](#Install)**  
+**[usage](#Usage)**
+## Install
 
-## install
----
 Before you use **DHat** you would better install some dependent tools.
-Please ensure your server can connect to network.
+Please ensure your server can connect to network.  
 Install **[Anaconda (Python 2.7 version)](https://www.anaconda.com/distribution/)**
 ```
 $ wget https://repo.anaconda.com/archive/Anaconda2-2018.12-Linux-x86_64.sh
@@ -26,13 +25,15 @@ Install Python moudle
 $ pip install matplotlib
 $ pip install scipy
 ```
-Download and install **[JRE](https://www.oracle.com/technetwork/java/javase/downloads/server-jre8-downloads-2133154.html)** (necessary)
+Download and install **[JRE](https://www.oracle.com/technetwork/java/javase/downloads/server-jre8-downloads-2133154.html)** (necessary)  
+**I am not sure the `wget` command can work well, you would better download JRE from webpage and then upload to server**
 ```
-# I am not sure the following command can work well, you would better download JRE from webpage and then upload to server
 $ wget https://download.oracle.com/otn-pub/java/jdk/8u201-b09/42970487e3af4f5aa5bca3f542482c60/jre-8u201-linux-x64.tar.gz
 $ tar -zxf server-jre-8u201-linux-x64.tar.gz
 $ export PATH=jre1.8.0_201/bin/:$PATH
-# If you don't want to execute the last command after each connect server, you can append this command to your file named ".barsh_profile" or use the following command
+```
+**If you don't want to execute the last command after you connect server each time, you can append this command to your file named ".barsh_profile" or use the following command**
+```
 $ echo 'export PATH=jre1.8.0_201/bin/:$PATH' >> ~/.bash_profile
 ```
 By now, we have installed all dependence, then you can download DHat.jar from this page.
@@ -41,8 +42,8 @@ Then, install **DHat**
 $ java -jar DHat.jar install
 ```
 ## Usage
----
-**Usage**: java -jar DHat.jar [options]
+
+**Usage**: java -jar DHat.jar [options], you can get the all information of command options by `java -jar DHat`
 ```
 -i          <file>     Input file (FASTQ format)
 -o,--out    <dir>      Output directory (must be exist)
@@ -50,7 +51,7 @@ $ java -jar DHat.jar install
 -conf       <file>     Configure file
 -adv        <file>     Advanced configure file
 -r,--res    <ints>     Resolutions (separated by spaces)
--s,--step    <strings>  Section your want to run (separated by spaces)
+-s,--step   <strings>  Section you want to running (separated by spaces)
 -t,--thread <int>      Number of threads
 -D,--Debug  <int>      Debug Level (default 0)
 -pbs                   running by pbs
@@ -59,11 +60,8 @@ $ java -jar DHat.jar install
 ```
 $ java -jar DHat.jar -conf <configure file>
 ```
-If you want to get more information about options, please execute:
-```
-$ java -jar DHat.jar
-```
-1. <p style="color:gray" id=SetConfigure>Set the confugure file</p>
+
+1. Set the configure file
 
     After install **DHat**, there are two new directory: ***Script*** and ***Resource***. The ***Script*** folder include some python script, ***Resource*** folder include a template of configure file.
 
@@ -81,7 +79,7 @@ $ java -jar DHat.jar
     ```
     ![](resource/images/configure.png)
 
-1. <p style="color:gray">Save your set and execute <strong>DHat</strong></p>
+1. Save your set and execute **DHat**
 
     ```
     $ java -jar DHat.jar -conf test.conf > log.txt 2> err.txt
