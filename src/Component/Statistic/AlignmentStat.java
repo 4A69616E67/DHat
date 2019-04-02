@@ -4,6 +4,7 @@ import Component.Software.AbstractSoftware;
 import Component.unit.LinkerSequence;
 import Component.unit.Opts;
 
+import java.io.File;
 import java.text.DecimalFormat;
 
 /**
@@ -15,10 +16,14 @@ public class AlignmentStat extends AbstractStat {
     public long[] LinkerInputNum = new long[0];
     public int Threshold;
     public AbstractSoftware AlignmentSoftware;
+    public File GenomeFile;
+    public File GenomeIndex;
+    public File OutDir;
     public long[] LinkerR1Mapped = new long[0], LinkerR1Unmapped = new long[0], LinkerR1MultiMapped = new long[0];
     public long[] LinkerR2Mapped = new long[0], LinkerR2Unmapped = new long[0], LinkerR2MultiMapped = new long[0];
     private long R1Mapped, R1Unmapped, R1MultiMapped;
     private long R2Mapped, R2Unmapped, R2MultiMapped;
+
 
     @Override
     public void Stat() {
@@ -30,8 +35,11 @@ public class AlignmentStat extends AbstractStat {
         UpDate();
         StringBuilder show = new StringBuilder();
         show.append("##===================================Alignment Statistic========================================\n");
-        show.append("Alignment software:\t").append(AlignmentSoftware).append("\n");
+        show.append("Alignment software: ").append(AlignmentSoftware).append("\n");
+        show.append("Genome file: \t").append(GenomeFile).append("\n");
+        show.append("Genome index:\t").append(GenomeIndex).append("\n");
         show.append("Minimum unique mapped quality:\t").append(Threshold).append("\n");
+        show.append("Output directory:\t").append(OutDir).append("\n");
         show.append("------------------------------------------------------------------------------------------------\n");
         for (int i = 0; i < Linkers.length; i++) {
             show.append("Linker \t").append(Linkers[i].getType()).append(":\t").append(Linkers[i].getSeq()).append("\n");

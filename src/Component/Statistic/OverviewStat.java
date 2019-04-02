@@ -1,5 +1,6 @@
 package Component.Statistic;
 
+import java.io.File;
 import java.text.DecimalFormat;
 
 /**
@@ -7,6 +8,8 @@ import java.text.DecimalFormat;
  */
 
 public class OverviewStat extends AbstractStat {
+    public String Prefix;
+    public File OutDir;
     public long RawDataNum;
     public long AlignmentNum;
     public long UniqueMappedNum;
@@ -26,16 +29,20 @@ public class OverviewStat extends AbstractStat {
     public String Show() {
         //show.append( ).append("\t").append(new DecimalFormat("#,###").format( )).append("\t").append(String.format("%.2f", *100)).append("%").append("\n");
         UpDate();
-        String show = "##====================================Overview===================================================\n" +
-                "Raw data:      \t" + new DecimalFormat("#,###").format(RawDataNum) + "\n" +
-                "Alignment data:\t" + new DecimalFormat("#,###").format(AlignmentNum) + "\t" + String.format("%.2f", (double) AlignmentNum / RawDataNum * 100) + "%" + "\n" +
-                "Unique mapped: \t" + new DecimalFormat("#,###").format(UniqueMappedNum) + "\t" + String.format("%.2f", (double) UniqueMappedNum / RawDataNum * 100) + "%" + "\n" +
-                "Clean data:    \t" + new DecimalFormat("#,###").format(CleanNum) + "\t" + String.format("%.2f", (double) CleanNum / RawDataNum * 100) + "%" + "\n" +
-                "Inter-action:  \t" + new DecimalFormat("#,###").format(InterActionNum) + "\t" + String.format("%.2f", (double) InterActionNum / CleanNum * 100) + "%" + "\t" +
-                "Intra-action:  \t" + new DecimalFormat("#,###").format(IntraActionNum) + "\t" + String.format("%.2f", (double) IntraActionNum / CleanNum * 100) + "%" + "\n" +
-                "Short range(<" + RangeThreshold + "):\t" + new DecimalFormat("#,###").format(ShortRange) + "\t" + String.format("%.2f", (double) ShortRange / IntraActionNum * 100) + "%" + "\t" +
-                "Long range(>=" + RangeThreshold + "):\t" + new DecimalFormat("#,###").format(LongRange) + "\t" + String.format("%.2f", (double) LongRange / IntraActionNum * 100) + "%" + "\n";
-        return show;
+        StringBuilder show = new StringBuilder();
+        show.append("##====================================Overview=================================================##\n");
+        show.append("Out directory:\t").append(OutDir).append("\n");
+        show.append("Out prefix:   \t").append(Prefix).append("\n");
+        show.append("-------------------------------------------------------------------------------------------------\n");
+        show.append("Raw data:      \t").append(new DecimalFormat("#,###").format(RawDataNum)).append("\n");
+        show.append("Alignment data:\t").append(new DecimalFormat("#,###").format(AlignmentNum)).append("\t").append(String.format("%.2f", (double) AlignmentNum / RawDataNum * 100)).append("%").append("\n");
+        show.append("Unique mapped: \t").append(new DecimalFormat("#,###").format(UniqueMappedNum)).append("\t").append(String.format("%.2f", (double) UniqueMappedNum / RawDataNum * 100)).append("%").append("\n");
+        show.append("Clean data:    \t").append(new DecimalFormat("#,###").format(CleanNum)).append("\t").append(String.format("%.2f", (double) CleanNum / RawDataNum * 100)).append("%").append("\n");
+        show.append("Inter-action:  \t").append(new DecimalFormat("#,###").format(InterActionNum)).append("\t").append(String.format("%.2f", (double) InterActionNum / CleanNum * 100)).append("%").append("\t");
+        show.append("Intra-action:  \t").append(new DecimalFormat("#,###").format(IntraActionNum)).append("\t").append(String.format("%.2f", (double) IntraActionNum / CleanNum * 100)).append("%").append("\n");
+        show.append("Short range(<").append(RangeThreshold).append("):\t").append(new DecimalFormat("#,###").format(ShortRange)).append("\t").append(String.format("%.2f", (double) ShortRange / IntraActionNum * 100)).append("%").append("\t");
+        show.append("Long range(>=").append(RangeThreshold).append("):\t").append(new DecimalFormat("#,###").format(LongRange)).append("\t").append(String.format("%.2f", (double) LongRange / IntraActionNum * 100)).append("%").append("\n");
+        return show.toString();
     }
 
     @Override

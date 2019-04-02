@@ -7,6 +7,7 @@ import Component.unit.LinkerSequence;
 import Component.unit.StringArrays;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.HashMap;
@@ -17,8 +18,11 @@ import java.util.HashMap;
 
 public class LinkerFilterStat extends AbstractStat {
     public LinkerSequence[] Linkers = new LinkerSequence[0];
+    public String[] HalfLinkers;
+    public String[] Adapters;
     public int Threshold;
     public String EnzymeCuttingSite = "";
+    public File OutDir;
 
     //--------------------------------------------------------------------
     public CommonFile InputFile;
@@ -58,10 +62,13 @@ public class LinkerFilterStat extends AbstractStat {
         StringBuilder show = new StringBuilder();
         show.append("##================================Linker filter statistic=====================================\n");
         show.append("Enzyme cutting site:\t").append(EnzymeCuttingSite).append("\n");
+        show.append("Half-Linkers:\t").append(String.join(" ", HalfLinkers)).append("\n");
+        show.append("Adapters:\t").append(String.join(" ", Adapters)).append("\n");
         show.append("Match score: ").append(Configure.MatchScore).append("\tMismatch score: ").append(Configure.MisMatchScore).append("\tInsert & Delete score: ").append(Configure.InDelScore).append("\n");
         show.append("Linker mapping minimum quality:\t").append(Threshold).append("\n");
+        show.append("Output directory:\t").append(OutDir).append("\n");
         show.append("##--------------------------------------------------------------------------------------------\n");
-        show.append(InputFile.getName()).append("\t").append(new DecimalFormat("#,###").format(InputFile.getItemNum())).append("\t").append("-").append("\n");
+        show.append("Input:").append("\t").append(new DecimalFormat("#,###").format(InputFile.getItemNum())).append("\t").append("-").append("\n");
         show.append("\n");
         for (int i = 0; i < Linkers.length; i++) {
             show.append("Linker ").append(Linkers[i].getType()).append(":\t").append(Linkers[i].getSeq()).append("\n");

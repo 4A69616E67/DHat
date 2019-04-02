@@ -3,6 +3,7 @@ package Component.Statistic;
 import Component.unit.LinkerSequence;
 import Component.unit.Opts;
 
+import java.io.File;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 
@@ -15,6 +16,7 @@ public class NoiseReduce extends AbstractStat {
     public long[] LinkerRawDataNum, LinkerSelfLigationNum, LinkerReLigationNum, LinkerRepeatNum, LinkerCleanNum;
     public long RawDataNum, SelfLigationNum, ReLigationNum, RepeatNum, CleanNum;
     public HashMap<Integer, Integer> InteractionRangeDistribution = new HashMap<>();
+    public File OutDir;
 
     @Override
 
@@ -28,7 +30,7 @@ public class NoiseReduce extends AbstractStat {
         UpDate();
         StringBuilder show = new StringBuilder();
         show.append("##=================================Noise reduce Statistic=======================================\n");
-        show.append(" \t").append(" ").append("\n");
+        show.append("Output directory:\t").append(OutDir).append("\n");
         show.append("------------------------------------------------------------------------------------------------\n");
         for (int i = 0; i < Linkers.length; i++) {
             show.append("Linker ").append(Linkers[i].getType()).append(":\t").append(Linkers[i].getSeq()).append("\n");

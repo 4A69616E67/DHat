@@ -4,7 +4,7 @@
 
 
 
-**[install](#Install)**  
+**[install](#Install)**   
 **[usage](#Usage)**
 ## Install
 

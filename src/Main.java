@@ -58,7 +58,6 @@ public class Main {
     private Report Stat;
     private File OutPath;
     private int DeBugLevel;
-    private Component.Software.Python Python = Configure.Python;
 
     private Main(String[] args) throws IOException {
         Options Argument = new Options();
@@ -175,31 +174,6 @@ public class Main {
         FastqFile[] LinkerFastqFileR1, UseLinkerFasqFileR1 = new FastqFile[ValidLinkerSeq.length];
         FastqFile[] LinkerFastqFileR2, UseLinkerFasqFileR2 = new FastqFile[ValidLinkerSeq.length];
         //==============================================================================================================
-        Stat.RunTime.StartTime = DateFormat.getDateTimeInstance().format(new Date());
-        Stat.ComInfor.HalfLinkerA = LinkerA;
-        Stat.ComInfor.HalfLinkerB = LinkerB;
-        Stat.ComInfor.MatchScore = MatchScore;
-        Stat.ComInfor.MisMatchScore = MisMatchScore;
-        Stat.ComInfor.InDelScore = InDelScore;
-        Stat.ComInfor.Restriction = Restriction;
-        Stat.ComInfor.IndexPrefix = IndexPrefix;
-        Stat.MinUniqueScore = MinUniqueScore;
-        Stat.ComInfor.MaxReadsLen = MaxReadsLength;
-        Stat.ComInfor.Resolution = Resolution;
-        Stat.ComInfor.Thread = Threads;
-        Stat.LinkerInit(LinkerSeq.length);
-        Stat.LinkerClassInit(ValidLinkerSeq.length);
-        Stat.PreDir = PreProcessDir;
-        Stat.SeDir = SeProcessDir;
-        Stat.BedpeDir = BedpeProcessDir;
-        Stat.MatrixDir = MakeMatrixDir;
-        for (Component.unit.Chromosome Chromosome : Chromosomes) {
-            Stat.Chromosome.add(Chromosome.Name);
-        }
-        for (int i = 0; i < ValidLinkerSeq.length; i++) {
-            Stat.UseLinker[i].LinkerType = ValidLinkerSeq[i].getType();
-            Stat.UseLinker[i].SeProcessOutDir = SeProcessDir;
-        }
         //==============================================================================================================
         AbstractFile.delete(Opts.CommandOutFile);
         AbstractFile.delete(Opts.StatisticFile);
@@ -226,52 +200,40 @@ public class Main {
                 }
                 //将Adapter序列输出到文件中
                 FileUtils.write(AdapterFile, String.join("\n", AdapterSeq), StandardCharsets.UTF_8);
-                Stat.AdapterSequence = String.join(" ", AdapterSeq);
+                Opts.LFStat.Adapters = AdapterSeq;
             }
             //-----------------------------------------------------------------------------
             preprocess.run();//运行预处理部分
             //----------------------------------------------------------------------
-            Stat.RawDataReadsNum = InputFile.getItemNum();
-            Opts.StatisticFile.Append(InputFile.getName() + ":\t" + new DecimalFormat("#,###").format(InputFile.ItemNum) + "\n");
             Opts.StatisticFile.Append(Opts.LFStat.Show() + "\n");
-            for (int i = 0; i < LinkerSeq.length; i++) {
-                Stat.Linkers[i].Name = LinkerSeq[i].getType();
-                Stat.Linkers[i].Num = Opts.LFStat.LinkerMatchableNum[i];
+            //--------------------------------------------draw statistic figure-----------------------------------------
+            CommonFile LinkerDisFile = new CommonFile(Stat.getDataDir() + "/LinkerScoreDis.data");
+            Opts.LFStat.WriteLinkerScoreDis(LinkerDisFile);
+            Configure.LinkerScoreDisPng = new File(Stat.getImageDir() + "/" + LinkerDisFile.getName().replace(".data", ".png"));
+            String ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -i " + LinkerDisFile + " -t bar -o " + Configure.LinkerScoreDisPng;
+            Opts.CommandOutFile.Append(ComLine + "\n");
+            Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
+            CommonFile[] ReadsLenDisFile = new CommonFile[LinkerSeq.length];
+            Stat.ReadsLengthDisBase64 = new String[LinkerSeq.length];
+            for (int i = 0; i < ReadsLenDisFile.length; i++) {
+                ReadsLenDisFile[i] = new CommonFile(Stat.getDataDir() + "/" + Prefix + "." + LinkerSeq[i].getType() + ".reads_length_distribution.data");
+            }
+            Opts.LFStat.WriteReadsLengthDis(ReadsLenDisFile);
+            for (int i = 0; i < ReadsLenDisFile.length; i++) {
+                File PngFile = new File(Stat.getImageDir() + "/" + ReadsLenDisFile[i].getName().replace(".data", ".png"));
+                ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t bar -y Count --title " + LinkerSeq[i].getType() + " -i " + ReadsLenDisFile[i] + " -o " + PngFile;
+                Opts.CommandOutFile.Append(ComLine + "\n");
+                Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
+                Stat.ReadsLengthDisBase64[i] = Stat.GetBase64(PngFile);
             }
         }
         File PastFile = preprocess.getLinkerFilterOutFile();//获取past文件位置
         //=================================================统计信息=====================================================
-        ST = new Thread(() -> {
-            try {
-                CommonFile LinkerDisFile = new CommonFile(Stat.getDataDir() + "/LinkerScoreDis.data");
-                Opts.LFStat.WriteLinkerScoreDis(LinkerDisFile);
-                Configure.LinkerScoreDisPng = new File(Stat.getImageDir() + "/" + LinkerDisFile.getName().replace(".data", ".png"));
-                String ComLine = Python.Exe() + " " + Opts.StatisticPlotFile + " -i " + LinkerDisFile + " -t bar -o " + Configure.LinkerScoreDisPng;
-                Opts.CommandOutFile.Append(ComLine + "\n");
-                Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
-                CommonFile[] ReadsLenDisFile = new CommonFile[LinkerSeq.length];
-                Stat.ReadsLengthDisBase64 = new String[LinkerSeq.length];
-                for (int i = 0; i < ReadsLenDisFile.length; i++) {
-                    ReadsLenDisFile[i] = new CommonFile(Stat.getDataDir() + "/" + Prefix + "." + LinkerSeq[i].getType() + ".reads_length_distribution.data");
-                }
-                Opts.LFStat.WriteReadsLengthDis(ReadsLenDisFile);
-                for (int i = 0; i < ReadsLenDisFile.length; i++) {
-                    File PngFile = new File(Stat.getImageDir() + "/" + ReadsLenDisFile[i].getName().replace(".data", ".png"));
-                    ComLine = Python.Exe() + " " + Opts.StatisticPlotFile + " -t bar -y Count --title " + LinkerSeq[i].getType() + " -i " + ReadsLenDisFile[i] + " -o " + PngFile;
-                    Opts.CommandOutFile.Append(ComLine + "\n");
-                    Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
-                    Stat.ReadsLengthDisBase64[i] = Stat.GetBase64(PngFile);
-                }
-            } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
-            }
-        });
-        ST.start();
-        SThread.add(ST);
+
         //==============================================================================================================
         LinkerFastqFileR1 = preprocess.getFastqR1File();
         LinkerFastqFileR2 = preprocess.getFastqR2File();
-        Stat.ReadsLengthDisBase64 = new String[LinkerSeq.length];
+//        Stat.ReadsLengthDisBase64 = new String[LinkerSeq.length];
         //==============================================================================================================
         for (int i = 0; i < ValidLinkerSeq.length; i++) {
             for (int j = 0; j < LinkerSeq.length; j++) {
@@ -279,8 +241,6 @@ public class Main {
                     UseLinkerFasqFileR1[i] = LinkerFastqFileR1[j];
                     UseLinkerFasqFileR2[i] = LinkerFastqFileR2[j];
                     Opts.ALStat.LinkerInputNum[i] = UseLinkerFasqFileR1[i].getItemNum();
-                    Stat.UseLinker[i].FastqFileR1 = UseLinkerFasqFileR1[i];
-                    Stat.UseLinker[i].FastqFileR2 = UseLinkerFasqFileR2[i];
                 }
             }
         }
@@ -295,6 +255,7 @@ public class Main {
                 if (IndexPrefix == null || IndexPrefix.getName().equals("")) {
                     CreateIndex(GenomeFile);
                 }
+                Opts.ALStat.GenomeIndex = IndexPrefix;
                 SamFile[] r1 = SeProcess(UseLinkerFasqFileR1[i], UseLinkerFasqFileR1[i].getName().replace(".fastq", ""));
                 SamFile[] r2 = SeProcess(UseLinkerFasqFileR2[i], UseLinkerFasqFileR2[i].getName().replace(".fastq", ""));
                 Opts.ALStat.LinkerR1Mapped[i] = r1[0].getItemNum();
@@ -321,16 +282,16 @@ public class Main {
                 Opts.NRStat.LinkerRawDataNum[i] = SeBedpeFile[i].getItemNum();
             }
             //==========================================================================================================
-            Stat.UseLinker[i].UniqMapFileR1 = R1SortBedFile[i];
-            Stat.UseLinker[i].UniqMapFileR2 = R2SortBedFile[i];
-            Stat.UseLinker[i].RawBedpeFile = SeBedpeFile[i];
+//            Stat.UseLinker[i].UniqMapFileR1 = R1SortBedFile[i];
+//            Stat.UseLinker[i].UniqMapFileR2 = R2SortBedFile[i];
+//            Stat.UseLinker[i].RawBedpeFile = SeBedpeFile[i];
             int finalI = i;
             ST = new Thread(() -> {
-                Stat.UseLinker[finalI].FastqNumR1 = (double) Stat.UseLinker[finalI].FastqFileR1.getItemNum();
-                Stat.UseLinker[finalI].FastqNumR2 = (double) Stat.UseLinker[finalI].FastqFileR2.getItemNum();
-                Stat.UseLinker[finalI].UniqMapNumR1 = Stat.UseLinker[finalI].UniqMapFileR1.getItemNum();
-                Stat.UseLinker[finalI].UniqMapNumR2 = Stat.UseLinker[finalI].UniqMapFileR2.getItemNum();
-                Stat.UseLinker[finalI].RawBedpeNum = Stat.UseLinker[finalI].RawBedpeFile.getItemNum();
+//                Stat.UseLinker[finalI].FastqNumR1 = (double) Stat.UseLinker[finalI].FastqFileR1.getItemNum();
+//                Stat.UseLinker[finalI].FastqNumR2 = (double) Stat.UseLinker[finalI].FastqFileR2.getItemNum();
+//                Stat.UseLinker[finalI].UniqMapNumR1 = Stat.UseLinker[finalI].UniqMapFileR1.getItemNum();
+//                Stat.UseLinker[finalI].UniqMapNumR2 = Stat.UseLinker[finalI].UniqMapFileR2.getItemNum();
+//                Stat.UseLinker[finalI].RawBedpeNum = Stat.UseLinker[finalI].RawBedpeFile.getItemNum();
             });
             ST.start();
             SThread.add(ST);
@@ -436,22 +397,22 @@ public class Main {
             int finalI = i;
             STS[i] = new Thread(() -> {
 //                BedpeProcess bedpe = new BedpeProcess(new File(BedpeProcessDir + "/" + ValidLinkerSeq[finalI].getType()), Prefix + "." + ValidLinkerSeq[finalI].getType(), Chromosomes, ChrEnzyFile, SeBedpeFile[finalI]);
-                Stat.UseLinker[finalI].BedpeProcessOutDir = new File(BedpeProcessDir + "/" + ValidLinkerSeq[finalI].getType());
-                Stat.UseLinker[finalI].SelfLigationFile = bedpe[finalI].getSelfLigationFile();
-                Stat.UseLinker[finalI].RelLigationFile = bedpe[finalI].getReLigationFile();
-                Stat.UseLinker[finalI].SameValidFile = bedpe[finalI].getValidFile();
-                Stat.UseLinker[finalI].RawSameBedpeFile = bedpe[finalI].getSameFile();
-                Stat.UseLinker[finalI].RawDiffBedpeFile = bedpe[finalI].getDiffFile();
-                Stat.UseLinker[finalI].SameCleanFile = bedpe[finalI].getSameNoDumpFile();
-                Stat.UseLinker[finalI].DiffCleanFile = bedpe[finalI].getDiffNoDumpFile();
-                Stat.UseLinker[finalI].MergeCleanFile = bedpe[finalI].getFinalFile();
-                Stat.UseLinker[finalI].SelfLigationNum = bedpe[finalI].getSelfLigationFile().getItemNum();
-                Stat.UseLinker[finalI].RelLigationNum = bedpe[finalI].getReLigationFile().getItemNum();
-                Stat.UseLinker[finalI].SameValidNum = bedpe[finalI].getValidFile().getItemNum();
-                Stat.UseLinker[finalI].RawSameBedpeNum = Stat.UseLinker[finalI].SelfLigationNum + Stat.UseLinker[finalI].RelLigationNum + Stat.UseLinker[finalI].SameValidNum;
-                Stat.UseLinker[finalI].RawDiffBedpeNum = bedpe[finalI].getDiffFile().getItemNum();
-                Stat.UseLinker[finalI].SameCleanNum = bedpe[finalI].getSameNoDumpFile().getItemNum();
-                Stat.UseLinker[finalI].DiffCleanNum = bedpe[finalI].getDiffNoDumpFile().getItemNum();
+//                Stat.UseLinker[finalI].BedpeProcessOutDir = new File(BedpeProcessDir + "/" + ValidLinkerSeq[finalI].getType());
+//                Stat.UseLinker[finalI].SelfLigationFile = bedpe[finalI].getSelfLigationFile();
+//                Stat.UseLinker[finalI].RelLigationFile = bedpe[finalI].getReLigationFile();
+//                Stat.UseLinker[finalI].SameValidFile = bedpe[finalI].getValidFile();
+//                Stat.UseLinker[finalI].RawSameBedpeFile = bedpe[finalI].getSameFile();
+//                Stat.UseLinker[finalI].RawDiffBedpeFile = bedpe[finalI].getDiffFile();
+//                Stat.UseLinker[finalI].SameCleanFile = bedpe[finalI].getSameNoDumpFile();
+//                Stat.UseLinker[finalI].DiffCleanFile = bedpe[finalI].getDiffNoDumpFile();
+//                Stat.UseLinker[finalI].MergeCleanFile = bedpe[finalI].getFinalFile();
+//                Stat.UseLinker[finalI].SelfLigationNum = Opts.NRStat.LinkerSelfLigationNum[finalI];
+//                Stat.UseLinker[finalI].RelLigationNum = Opts.NRStat.LinkerReLigationNum[finalI];
+////                Stat.UseLinker[finalI].SameValidNum = Opts.NRStat.;
+//                Stat.UseLinker[finalI].RawSameBedpeNum = Stat.UseLinker[finalI].SelfLigationNum + Stat.UseLinker[finalI].RelLigationNum + Stat.UseLinker[finalI].SameValidNum;
+//                Stat.UseLinker[finalI].RawDiffBedpeNum = bedpe[finalI].getDiffFile().getItemNum();
+//                Stat.UseLinker[finalI].SameCleanNum = bedpe[finalI].getSameNoDumpFile().getItemNum();
+//                Stat.UseLinker[finalI].DiffCleanNum = bedpe[finalI].getDiffNoDumpFile().getItemNum();
             });
             STS[i].start();
             SThread.add(STS[i]);
@@ -465,27 +426,27 @@ public class Main {
         //==============================================================================================================
         ST = new Thread(() -> {
             try {
-                Stat.InterAction.FinalBedpeFile = new BedpeFile(FinalBedpeFile);
-                Stat.InterAction.FinalBedpeNum = Stat.InterAction.FinalBedpeFile.getItemNum();
-                Stat.InterAction.IntraActionNum = new BedpeFile(SameBedpeFile).getItemNum();
-                Stat.InterAction.InterActionNum = Stat.InterAction.FinalBedpeNum - Stat.InterAction.IntraActionNum;
-                if (Stat.ComInfor.Restriction.replace("^", "").length() <= 4) {
+//                Stat.InterAction.FinalBedpeFile = new BedpeFile(FinalBedpeFile);
+//                Stat.InterAction.FinalBedpeNum = Stat.InterAction.FinalBedpeFile.getItemNum();
+//                Stat.InterAction.IntraActionNum = new BedpeFile(SameBedpeFile).getItemNum();
+//                Stat.InterAction.InterActionNum = Stat.InterAction.FinalBedpeNum - Stat.InterAction.IntraActionNum;
+                if (Opts.LFStat.EnzymeCuttingSite.replace("^", "").length() <= 4) {
                     Opts.OVStat.RangeThreshold = 5000;
-                    Stat.InterAction.ShortRegionNum = SameBedpeFile.DistanceCount(0, 5000, 1);
+                    Opts.OVStat.ShortRange = SameBedpeFile.DistanceCount(0, 5000, 1);
                 } else {
                     Opts.OVStat.RangeThreshold = 20000;
-                    Stat.InterAction.ShortRegionNum = SameBedpeFile.DistanceCount(0, 20000, 1);
+                    Opts.OVStat.ShortRange = SameBedpeFile.DistanceCount(0, 20000, 1);
                 }
-                Opts.OVStat.ShortRange = (long) Stat.InterAction.ShortRegionNum;
-                Stat.InterAction.LongRegionNum = Stat.InterAction.IntraActionNum - Stat.InterAction.ShortRegionNum;
-                File InterActionLengthDisData = new File(Stat.getDataDir() + "/InterActionLengthDistribution.data");
-                Statistic.PowerLaw(SameBedpeFile, 1000000, InterActionLengthDisData);
-                File InterActionLengthDisPng = new File(Stat.getImageDir() + "/" + InterActionLengthDisData.getName().replace(".data", ".png"));
-                String ComLine = Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterActionLengthDisData + " -o " + InterActionLengthDisPng;
-                Opts.CommandOutFile.Append(ComLine + "\n");
-                Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
-                Configure.InterActionDistanceDisPng = InterActionLengthDisPng;
-            } catch (IOException | InterruptedException e) {
+//                Opts.OVStat.ShortRange = (long) Stat.InterAction.ShortRegionNum;
+//                Stat.InterAction.LongRegionNum = Stat.InterAction.IntraActionNum - Stat.InterAction.ShortRegionNum;
+//                File InterActionLengthDisData = new File(Stat.getDataDir() + "/InterActionLengthDistribution.data");
+//                Statistic.PowerLaw(SameBedpeFile, 1000000, InterActionLengthDisData);
+//                File InterActionLengthDisPng = new File(Stat.getImageDir() + "/" + InterActionLengthDisData.getName().replace(".data", ".png"));
+//                String ComLine = Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterActionLengthDisData + " -o " + InterActionLengthDisPng;
+//                Opts.CommandOutFile.Append(ComLine + "\n");
+//                Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
+//                Configure.InterActionDistanceDisPng = InterActionLengthDisPng;
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         });
@@ -541,15 +502,15 @@ public class Main {
         }
         //==============================================================================================================
         ST = new Thread(() -> {
-            Stat.HeatMapInit(DrawResolution.length);
-            for (int i = 0; i < DrawResolution.length; i++) {
-                Stat.DrawHeatMap[i].Resolution = DrawResolution[i];
-                try {
-                    Stat.DrawHeatMap[i].Figure = Stat.GetBase64(new File(MakeMatrixDir + "/img_" + Tools.UnitTrans(DrawResolution[i], "B", "M") + "M/" + Prefix + ".interaction." + Tools.UnitTrans(DrawResolution[i], "B", "M") + "M.png"));
-                } catch (IOException e) {
-                    Stat.DrawHeatMap[i].Figure = "";
-                }
-            }
+//            Stat.HeatMapInit(DrawResolution.length);
+//            for (int i = 0; i < DrawResolution.length; i++) {
+//                Stat.DrawHeatMap[i].Resolution = DrawResolution[i];
+//                try {
+//                    Stat.DrawHeatMap[i].Figure = Stat.GetBase64(new File(MakeMatrixDir + "/img_" + Tools.UnitTrans(DrawResolution[i], "B", "M") + "M/" + Prefix + ".interaction." + Tools.UnitTrans(DrawResolution[i], "B", "M") + "M.png"));
+//                } catch (IOException e) {
+//                    Stat.DrawHeatMap[i].Figure = "";
+//                }
+//            }
         });
         ST.start();
         SThread.add(ST);
@@ -572,8 +533,8 @@ public class Main {
             t.join();
         }
         Opts.StatisticFile.Append(Opts.OVStat.Show() + "\n");
-        Stat.Show();
-        Stat.ReportHtml(new File(ReportDir + "/Test.index.html"));
+//        Stat.Show();
+//        Stat.ReportHtml(new File(ReportDir + "/Test.index.html"));
         Tools.RemoveEmptyFile(OutPath);
     }
 
@@ -753,10 +714,9 @@ public class Main {
         //----------------------------------------必要参数赋值-----------------------------------------------------------
         String[] tempstrs;
         InputFile = Configure.InputFile;
-        GenomeFile = Configure.GenomeFile;
-        Restriction = Configure.Restriction;
-        Opts.LFStat.EnzymeCuttingSite = Restriction;
-        String[] halfLinker = Configure.HalfLinker;
+        GenomeFile = Opts.ALStat.GenomeFile = Configure.GenomeFile;
+        Restriction = Opts.LFStat.EnzymeCuttingSite = Configure.Restriction;
+        String[] halfLinker = Opts.LFStat.HalfLinkers = Configure.HalfLinker;
         LinkerA = halfLinker[0];
         LinkerLength = LinkerA.length();
         if (halfLinker.length > 1) {
@@ -766,9 +726,9 @@ public class Main {
             LinkerLength += LinkerA.length();
         }
         //-----------------------------------------可选参数赋值----------------------------------------------------------
-        OutPath = Configure.OutPath;
-        Prefix = Configure.Prefix;
-        Resolution = Configure.Resolution;
+        OutPath = Opts.OVStat.OutDir = Configure.OutPath;
+        Prefix = Opts.OVStat.Prefix = Configure.Prefix;
+        Resolution = Opts.MMStat.Resolutions = Configure.Resolution;
         Threads = Configure.Thread;
         DrawResolution = Configure.DrawResolution;
 //        Step.addAll(Arrays.asList(Configure.Step.trim().split("\\s+")));
@@ -789,7 +749,7 @@ public class Main {
         ChrEnzyFile = new CommonFile[Chromosomes.length];
 
         //-------------------------------------------高级参数赋值--------------------------------------------------------
-        Python = Configure.Python;
+//        Python = Configure.Python;
         MatchScore = Configure.MatchScore;
         MisMatchScore = Configure.MisMatchScore;
         InDelScore = Configure.InDelScore;
@@ -806,8 +766,7 @@ public class Main {
         } else {
             System.err.println("Error reads type " + Configure.AlignType);
         }
-        Opts.ALStat.Threshold = MinUniqueScore;
-        Configure.MinUniqueScore = MinUniqueScore;
+        Configure.MinUniqueScore = Opts.ALStat.Threshold = MinUniqueScore;
         if (Configure.MinLinkerLen == 0) {
             Configure.MinLinkerLen = (int) (LinkerLength * 0.9);
         }
@@ -826,10 +785,10 @@ public class Main {
             System.exit(1);
         }
         //=======================================================================;
-        PreProcessDir = new File(OutPath + "/" + Opts.OutDir.PreDir);
-        SeProcessDir = new File(OutPath + "/" + Opts.OutDir.SeDir);
-        BedpeProcessDir = new File(OutPath + "/" + Opts.OutDir.BedpeDir);
-        MakeMatrixDir = new File(OutPath + "/" + Opts.OutDir.MatrixDir);
+        PreProcessDir = Opts.LFStat.OutDir = new File(OutPath + "/" + Opts.OutDir.PreDir);
+        SeProcessDir = Opts.ALStat.OutDir = new File(OutPath + "/" + Opts.OutDir.SeDir);
+        BedpeProcessDir = Opts.NRStat.OutDir = new File(OutPath + "/" + Opts.OutDir.BedpeDir);
+        MakeMatrixDir = Opts.MMStat.OutDir = new File(OutPath + "/" + Opts.OutDir.MatrixDir);
         ReportDir = new File(OutPath + "/" + Opts.OutDir.ReportDir);
         EnzyPath = new File(OutPath + "/" + Opts.OutDir.EnzyFragDir);
         Opts.Step.FindEnzymeFragment.Execute = true;
@@ -851,8 +810,7 @@ public class Main {
         Opts.LFStat.Linkers = LinkerSeq;
         Opts.LFStat.Init();
         ValidLinkerSeq = new LinkerSequence[halfLinker.length];
-        Opts.ALStat.Linkers = ValidLinkerSeq;
-        Opts.NRStat.Linkers = ValidLinkerSeq;
+        Opts.NRStat.Linkers = Opts.ALStat.Linkers = ValidLinkerSeq;
         Opts.ALStat.Init();
         Opts.NRStat.Init();
         for (int i = 0; i < halfLinker.length; i++) {
