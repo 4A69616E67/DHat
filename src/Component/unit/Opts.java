@@ -23,7 +23,7 @@ public class Opts {
      * 断点枚举类
      */
     public enum Step {
-        PreProcess("PreProcess"), SeProcess("Alignment"), Bed2BedPe("Bed2BedPe"), BedPeProcess("NoiseReduce"), BedPe2Inter("BedPe2Inter"), MakeMatrix("MakeMatrix"), CreateIndex("Index"), FindEnzymeFragment("Fragment");
+        PreProcess("PreProcess"), SeProcess("Alignment"), Bed2BedPe("Bed2BedPe"), BedPeProcess("NoiseReduce"), BedPe2Inter("BedPe2Inter"), MakeMatrix("MakeMatrix"), CreateIndex("Index"), FindEnzymeFragment("Fragment"), Statistic("Stat");
 
         private String Str;
         public boolean Execute = false;//是否需要执行

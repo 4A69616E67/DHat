@@ -7,7 +7,7 @@ package Component.Statistic;
 public abstract class AbstractStat {
 
 
-    public abstract void Stat();
+    public abstract void Stat() throws Exception;
 
     public abstract String Show();
 

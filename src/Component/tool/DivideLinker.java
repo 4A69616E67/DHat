@@ -86,11 +86,9 @@ public class DivideLinker {
             R1FastqFile[i] = new File(Prefix + "." + LinkerList[i].getType() + ".R1.fastq");
             R2FastqFile[i] = new File(Prefix + "." + LinkerList[i].getType() + ".R2.fastq");
         }
-        int[] length = new int[]{Restriction.indexOf("^"), Restriction.replace("^", "").length() - Restriction.indexOf("^")};
-        MatchSeq[0] = Restriction.replace("^", "").substring(0, Math.max(length[0], length[1]));
-        MatchSeq[1] = Restriction.replace("^", "").substring(Math.min(length[0], length[1]));
-        AppendSeq[0] = Restriction.replace("^", "").substring(Math.max(length[0], length[1]));
-        AppendSeq[1] = Restriction.replace("^", "").substring(0, Math.min(length[0], length[1]));
+        String[] result = RestrictionParse(Restriction);
+        MatchSeq = new String[]{result[0], result[2]};
+        AppendSeq = new String[]{result[1], result[3]};
         switch (Phred) {
             case Phred33:
                 AppendQuality[0] = AppendSeq[0].replaceAll(".", "I");
@@ -104,6 +102,15 @@ public class DivideLinker {
                 System.err.println("Error Phred:\t" + Phred);
                 System.exit(1);
         }
+    }
+
+    public static String[] RestrictionParse(String restriction) {
+        int[] length = new int[]{restriction.indexOf("^"), restriction.replace("^", "").length() - restriction.indexOf("^")};
+        String MatchSeq1 = restriction.replace("^", "").substring(0, Math.max(length[0], length[1]));
+        String MatchSeq2 = restriction.replace("^", "").substring(Math.min(length[0], length[1]));
+        String AppendSeq1 = restriction.replace("^", "").substring(Math.max(length[0], length[1]));
+        String AppendSeq2 = restriction.replace("^", "").substring(0, Math.min(length[0], length[1]));
+        return new String[]{MatchSeq1, AppendSeq1, MatchSeq2, AppendSeq2};
     }
 
     public void Run() throws IOException {
@@ -286,8 +293,8 @@ public class DivideLinker {
             synchronized (Opts.LFStat) {
                 Opts.LFStat.AddBaseToRightPair[index]++;
             }
-                ReadsSeq = AppendSeq + ReadsSeq;
-                Quality = AppendQuality + Quality;
+            ReadsSeq = AppendSeq + ReadsSeq;
+            Quality = AppendQuality + Quality;
         }
         synchronized (Opts.LFStat.ReadsLengthDistributionR2[index]) {
             Opts.LFStat.RightValidPairNum[index]++;

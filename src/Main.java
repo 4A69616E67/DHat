@@ -229,7 +229,13 @@ public class Main {
         }
         File PastFile = preprocess.getLinkerFilterOutFile();//获取past文件位置
         //=================================================统计信息=====================================================
+        if (Opts.Step.Statistic.Execute) {
+            System.out.println(new Date() + " [statistic]:\tStart Linker filter statistic");
+            Opts.LFStat.InputFile = new CommonFile(PastFile);
+            Opts.LFStat.Stat(Configure.Thread);
+            Opts.StatisticFile.Append(Opts.LFStat.Show() + "\n");
 
+        }
         //==============================================================================================================
         LinkerFastqFileR1 = preprocess.getFastqR1File();
         LinkerFastqFileR2 = preprocess.getFastqR2File();
@@ -500,6 +506,7 @@ public class Main {
                 }
             }
         }
+        Opts.StatisticFile.Append(Opts.MMStat.Show() + "\n");
         //==============================================================================================================
         ST = new Thread(() -> {
 //            Stat.HeatMapInit(DrawResolution.length);
@@ -753,7 +760,7 @@ public class Main {
         MatchScore = Configure.MatchScore;
         MisMatchScore = Configure.MisMatchScore;
         InDelScore = Configure.InDelScore;
-        MaxReadsLength = Configure.MaxReadsLen;
+        MaxReadsLength = Opts.LFStat.MaxReadsLen = Configure.MaxReadsLen;
         AlignMisMatch = Configure.AlignMisMatch;
         Iteration = Configure.Iteration;
         ReadsType = Configure.AlignType.compareToIgnoreCase("Short") == 0 ? Opts.FileFormat.ShortReads : Configure.AlignType.compareToIgnoreCase("Long") == 0 ? Opts.FileFormat.LongReads : Opts.FileFormat.ErrorFormat;

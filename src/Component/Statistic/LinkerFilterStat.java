@@ -2,14 +2,17 @@ package Component.Statistic;
 
 import Component.File.AbstractFile;
 import Component.File.CommonFile;
-import Component.unit.Configure;
-import Component.unit.LinkerSequence;
-import Component.unit.StringArrays;
+import Component.Process.PreProcess;
+import Component.tool.DivideLinker;
+import Component.tool.LinkerFiltering;
+import Component.tool.Tools;
+import Component.unit.*;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.Date;
 import java.util.HashMap;
 
 /**
@@ -18,11 +21,13 @@ import java.util.HashMap;
 
 public class LinkerFilterStat extends AbstractStat {
     public LinkerSequence[] Linkers = new LinkerSequence[0];
-    public String[] HalfLinkers;
-    public String[] Adapters;
+    public String[] HalfLinkers = new String[]{""};
+    public String[] Adapters = new String[]{""};
     public int Threshold;
     public String EnzymeCuttingSite = "";
+    public int MaxReadsLen;
     public File OutDir;
+    private String[] lock = new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
 
     //--------------------------------------------------------------------
     public CommonFile InputFile;
@@ -47,12 +52,76 @@ public class LinkerFilterStat extends AbstractStat {
 
     public int ThreadNum;
 
-    public LinkerFilterStat() {
+    public void Stat(int thread) throws IOException {
+        if (thread <= 0) {
+            thread = 1;
+        }
+        Init();
+        InputFile.ReadOpen();
+        Thread[] t = new Thread[thread];
+        for (int i = 0; i < t.length; i++) {
+            t[i] = new Thread(() -> {
+                try {
+                    StatBody();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            t[i].start();
+        }
+        Tools.ThreadsWait(t);
     }
 
     @Override
-    public void Stat() {
+    public void Stat() throws IOException {
+        Init();
+        InputFile.ReadOpen();
+        StatBody();
+    }
 
+    private void StatBody() throws IOException {
+        String[] Lines, Str;
+        String[] result = DivideLinker.RestrictionParse(EnzymeCuttingSite);
+        String[] MatchSeq = new String[]{result[0], result[2]};
+        String[] AppendSeq = new String[]{result[1], result[3]};
+        String[] AppendQuality = new String[]{"I", "I"};
+        while ((Lines = InputFile.ReadItemLine()) != null) {
+            Str = Lines[0].split("\\t");
+            synchronized (lock[0]) {
+                if (!LinkerMatchScoreDistribution.containsKey(Str[6])) {
+                    LinkerMatchScoreDistribution.put(Str[6], new int[]{0});
+                }
+                LinkerMatchScoreDistribution.get(Str[6])[0]++;
+            }
+            if (!Str[4].equals("*")) {
+                synchronized (lock[1]) {
+                    AdapterMatchableNum++;
+                }
+            }
+            if (Integer.parseInt(Str[6]) >= Threshold) {
+                for (int j = 0; j < Linkers.length; j++) {
+                    if (Str[5].equals(Linkers[j].getType())) {
+                        synchronized (Linkers[j]) {
+                            LinkerMatchableNum[j]++;
+                        }
+                        FastqItem[] fastq_string = DivideLinker.Execute(Str, MatchSeq, AppendSeq, AppendQuality, MaxReadsLen, DivideLinker.Format.All, j);
+                        if (fastq_string[0] != null && fastq_string[1] != null) {
+                            synchronized (Linkers[j]) {
+                                ValidPairNum[j]++;
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+            synchronized (lock[2]) {
+                InputFile.ItemNum++;
+                if (InputFile.ItemNum % 1000000 == 0) {
+                    System.out.println(new Date() + " [Linker filter statistic]:\t" + InputFile.ItemNum / 1000000 + " Million has been statistic");
+                }
+            }
+
+        }
     }
 
     @Override
@@ -95,6 +164,7 @@ public class LinkerFilterStat extends AbstractStat {
 
     @Override
     protected void UpDate() {
+        InputFile.getItemNum();
         AllLinkerMatchable = StatUtil.sum(LinkerMatchableNum);
         if (LinkerUnmatchableNum == 0 && AllLinkerMatchable != 0) {
             LinkerUnmatchableNum = InputFile.getItemNum() - AllLinkerMatchable;
