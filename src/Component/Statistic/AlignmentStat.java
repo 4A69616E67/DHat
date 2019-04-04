@@ -1,5 +1,6 @@
 package Component.Statistic;
 
+import Component.File.AbstractFile;
 import Component.File.BedpeFile;
 import Component.File.FastqFile;
 import Component.File.SamFile;
@@ -53,80 +54,47 @@ public class AlignmentStat extends AbstractStat {
     }
 
     public void Stat(int thread) {
-        Thread[] t = new Thread[8];
-        t[0] = new Thread(() -> {
-            for (int i = 0; i < Linkers.length; i++) {
-                if (Opts.LFStat.ValidPairNum == null || Opts.LFStat.ValidPairNum[i] <= 0) {
-                    System.out.println(new Date() + "[Alignment statistic]:\tCalculate item number, file name: " + InputFile[i].getName());
-                    LinkerInputNum[i] = InputFile[i].getItemNum();
-                }
-            }
-        });
-        t[1] = new Thread(() -> {
-            for (int i = 0; i < Linkers.length; i++) {
-                System.out.println(new Date() + "[Alignment statistic]:\tCalculate item number, file name: " + UniqueSamFile1[i].getName());
-                LinkerR1Mapped[i] = UniqueSamFile1[i].getItemNum();
-            }
-        });
-        t[2] = new Thread(() -> {
-            for (int i = 0; i < Linkers.length; i++) {
-                System.out.println(new Date() + "[Alignment statistic]:\tCalculate item number, file name: " + UnmappedSamFile1[i].getName());
-                LinkerR1Unmapped[i] = UnmappedSamFile1[i].getItemNum();
-            }
-        });
-        t[3] = new Thread(() -> {
-            for (int i = 0; i < Linkers.length; i++) {
-                System.out.println(new Date() + "[Alignment statistic]:\tCalculate item number, file name: " + MultiSamFile1[i].getName());
-                LinkerR1MultiMapped[i] = MultiSamFile1[i].getItemNum();
-            }
-        });
-        t[4] = new Thread(() -> {
-            for (int i = 0; i < Linkers.length; i++) {
-                System.out.println(new Date() + "[Alignment statistic]:\tCalculate item number, file name: " + UniqueSamFile2[i].getName());
-                LinkerR2Mapped[i] = UniqueSamFile2[i].getItemNum();
-            }
-        });
-        t[5] = new Thread(() -> {
-            for (int i = 0; i < Linkers.length; i++) {
-                System.out.println(new Date() + "[Alignment statistic]:\tCalculate item number, file name: " + UnmappedSamFile2[i].getName());
-                LinkerR2Unmapped[i] = UnmappedSamFile2[i].getItemNum();
-            }
-        });
-        t[6] = new Thread(() -> {
-            for (int i = 0; i < Linkers.length; i++) {
-                System.out.println(new Date() + "[Alignment statistic]:\tCalculate item number, file name: " + MultiSamFile2[i].getName());
-                LinkerR2MultiMapped[i] = MultiSamFile2[i].getItemNum();
-            }
-        });
-        t[7] = new Thread(() -> {
-            for (int i = 0; i < Linkers.length; i++) {
-                System.out.println(new Date() + "[Alignment statistic]:\tCalculate item number, file name: " + BedPeFile[i].getName());
-                MergeNum[i] = BedPeFile[i].getItemNum();
-            }
-        });
-        LinkedList<Thread> list = new LinkedList<>(Arrays.asList(t));
-        t = new Thread[thread];
+        LinkedList<AbstractFile> list = new LinkedList<>();
+        for (int i = 0; i < Linkers.length; i++) {
+            list.add(InputFile[i]);
+            list.add(UniqueSamFile1[i]);
+            list.add(UnmappedSamFile1[i]);
+            list.add(MultiSamFile1[i]);
+            list.add(UniqueSamFile2[i]);
+            list.add(UnmappedSamFile2[i]);
+            list.add(MultiSamFile2[i]);
+            list.add(BedPeFile[i]);
+        }
+        Thread[] t = new Thread[thread];
+        int[] index = new int[]{0};
         for (int i = 0; i < t.length; i++) {
             t[i] = new Thread(() -> {
-                Thread a;
+                AbstractFile temp;
                 while (true) {
-                    synchronized (list) {
-                        if (list.size() <= 0) {
+                    synchronized (t) {
+                        if (index[0] >= list.size()) {
                             break;
                         }
-                        a = list.remove(0);
+                        temp = list.get(index[0]);
+                        index[0]++;
                     }
-                    a.start();
-                    try {
-                        a.join();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                    System.out.println(new Date() + " [Alignment statistic]:\tCalculate item number, file name: " + temp.getName());
+                    temp.getItemNum();
                 }
             });
             t[i].start();
         }
         Tools.ThreadsWait(t);
+        for (int i = 0; i < Linkers.length; i++) {
+            LinkerInputNum[i] = list.removeFirst().getItemNum();
+            LinkerR1Mapped[i] = list.removeFirst().getItemNum();
+            LinkerR1Unmapped[i] = list.removeFirst().getItemNum();
+            LinkerR1MultiMapped[i] = list.removeFirst().getItemNum();
+            LinkerR2Mapped[i] = list.removeFirst().getItemNum();
+            LinkerR2Unmapped[i] = list.removeFirst().getItemNum();
+            LinkerR2MultiMapped[i] = list.removeFirst().getItemNum();
+            MergeNum[i] = list.removeFirst().getItemNum();
+        }
     }
 
     @Override

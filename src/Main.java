@@ -296,6 +296,7 @@ public class Main {
                 Opts.ALStat.MultiSamFile2[i] = se.getMultiSamFile();
                 Opts.ALStat.UnmappedSamFile2[i] = se.getUnMapSamFile();
                 Opts.ALStat.BedPeFile[i] = new BedpeFile(SeBedpeFile[i]);
+                Opts.NRStat.InputFile[i] = Opts.ALStat.BedPeFile[i];
             }
             Opts.ALStat.Stat(Configure.Thread);
         }
@@ -349,7 +350,6 @@ public class Main {
                 LinkerChrSameCleanBedpeFile[i] = bedpe[i].getChrSameNoDumpFile();
             }
             Tools.ThreadsWait(LinkerProcess);
-            Opts.StatisticFile.Append(Opts.NRStat.Show() + "\n");
             Thread t1 = new Thread(() -> {
                 try {
                     SameBedpeFile.Merge(LinkerFinalSameCleanBedpeFile);
@@ -395,31 +395,16 @@ public class Main {
             t4.join();
             //==============================================================================================================
         }
-        STS = new Thread[ValidLinkerSeq.length];
-        for (int i = 0; i < ValidLinkerSeq.length; i++) {
-            int finalI = i;
-            STS[i] = new Thread(() -> {
-//                BedpeProcess bedpe = new BedpeProcess(new File(BedpeProcessDir + "/" + ValidLinkerSeq[finalI].getType()), Prefix + "." + ValidLinkerSeq[finalI].getType(), Chromosomes, ChrEnzyFile, SeBedpeFile[finalI]);
-//                Stat.UseLinker[finalI].BedpeProcessOutDir = new File(BedpeProcessDir + "/" + ValidLinkerSeq[finalI].getType());
-//                Stat.UseLinker[finalI].SelfLigationFile = bedpe[finalI].getSelfLigationFile();
-//                Stat.UseLinker[finalI].RelLigationFile = bedpe[finalI].getReLigationFile();
-//                Stat.UseLinker[finalI].SameValidFile = bedpe[finalI].getValidFile();
-//                Stat.UseLinker[finalI].RawSameBedpeFile = bedpe[finalI].getSameFile();
-//                Stat.UseLinker[finalI].RawDiffBedpeFile = bedpe[finalI].getDiffFile();
-//                Stat.UseLinker[finalI].SameCleanFile = bedpe[finalI].getSameNoDumpFile();
-//                Stat.UseLinker[finalI].DiffCleanFile = bedpe[finalI].getDiffNoDumpFile();
-//                Stat.UseLinker[finalI].MergeCleanFile = bedpe[finalI].getFinalFile();
-//                Stat.UseLinker[finalI].SelfLigationNum = Opts.NRStat.LinkerSelfLigationNum[finalI];
-//                Stat.UseLinker[finalI].RelLigationNum = Opts.NRStat.LinkerReLigationNum[finalI];
-////                Stat.UseLinker[finalI].SameValidNum = Opts.NRStat.;
-//                Stat.UseLinker[finalI].RawSameBedpeNum = Stat.UseLinker[finalI].SelfLigationNum + Stat.UseLinker[finalI].RelLigationNum + Stat.UseLinker[finalI].SameValidNum;
-//                Stat.UseLinker[finalI].RawDiffBedpeNum = bedpe[finalI].getDiffFile().getItemNum();
-//                Stat.UseLinker[finalI].SameCleanNum = bedpe[finalI].getSameNoDumpFile().getItemNum();
-//                Stat.UseLinker[finalI].DiffCleanNum = bedpe[finalI].getDiffNoDumpFile().getItemNum();
-            });
-            STS[i].start();
-            SThread.add(STS[i]);
+        if (Opts.Step.Statistic.Execute) {
+            for (int i = 0; i < ValidLinkerSeq.length; i++) {
+                Opts.NRStat.SelfLigationFile[i] = bedpe[i].getSelfLigationFile();
+                Opts.NRStat.ReLigationFile[i] = bedpe[i].getReLigationFile();
+                Opts.NRStat.RepeatFile[i] = bedpe[i].getRepeatFile();
+                Opts.NRStat.CleanFile[i] = bedpe[i].getFinalFile();
+            }
+            Opts.NRStat.Stat(Configure.Thread);
         }
+        Opts.StatisticFile.Append(Opts.NRStat.Show() + "\n");
         //=================================================BedpeFile To Inter===========================================
 
         //--------------------------------------------------------------------------------------------------------------
