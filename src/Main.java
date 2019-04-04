@@ -152,8 +152,8 @@ public class Main {
                 System.out.println("Extract " + Opts.ResourceDir + "/" + f);
                 FileTool.ExtractFile("/resource/" + f, new File(Opts.ResourceDir + "/" + f));
             }
-            System.out.println("Extract " + Opts.JarFile.getParent() + "/ReadMe.txt");
-            FileTool.ExtractFile(Opts.ReadMeFile.getPath(), new File(Opts.JarFile.getParent() + "/ReadMe.txt"));
+            System.out.println("Extract " + Opts.JarFile.getParent() + "/ReadMe.md");
+            FileTool.ExtractFile(Opts.ReadMeFile.getPath(), new File(Opts.JarFile.getParent() + "/ReadMe.md"));
             System.out.println("Install finish!");
             System.exit(0);
         }
@@ -206,26 +206,6 @@ public class Main {
             preprocess.run();//运行预处理部分
             //----------------------------------------------------------------------
             Opts.StatisticFile.Append(Opts.LFStat.Show() + "\n");
-            //--------------------------------------------draw statistic figure-----------------------------------------
-            CommonFile LinkerDisFile = new CommonFile(Stat.getDataDir() + "/LinkerScoreDis.data");
-            Opts.LFStat.WriteLinkerScoreDis(LinkerDisFile);
-            Configure.LinkerScoreDisPng = new File(Stat.getImageDir() + "/" + LinkerDisFile.getName().replace(".data", ".png"));
-            String ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -i " + LinkerDisFile + " -t bar -o " + Configure.LinkerScoreDisPng;
-            Opts.CommandOutFile.Append(ComLine + "\n");
-            Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
-            CommonFile[] ReadsLenDisFile = new CommonFile[LinkerSeq.length];
-            Stat.ReadsLengthDisBase64 = new String[LinkerSeq.length];
-            for (int i = 0; i < ReadsLenDisFile.length; i++) {
-                ReadsLenDisFile[i] = new CommonFile(Stat.getDataDir() + "/" + Prefix + "." + LinkerSeq[i].getType() + ".reads_length_distribution.data");
-            }
-            Opts.LFStat.WriteReadsLengthDis(ReadsLenDisFile);
-            for (int i = 0; i < ReadsLenDisFile.length; i++) {
-                File PngFile = new File(Stat.getImageDir() + "/" + ReadsLenDisFile[i].getName().replace(".data", ".png"));
-                ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t bar -y Count --title " + LinkerSeq[i].getType() + " -i " + ReadsLenDisFile[i] + " -o " + PngFile;
-                Opts.CommandOutFile.Append(ComLine + "\n");
-                Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
-                Stat.ReadsLengthDisBase64[i] = Stat.GetBase64(PngFile);
-            }
         }
         File PastFile = preprocess.getLinkerFilterOutFile();//获取past文件位置
         //=================================================统计信息=====================================================
@@ -234,7 +214,26 @@ public class Main {
             Opts.LFStat.InputFile = new CommonFile(PastFile);
             Opts.LFStat.Stat(Configure.Thread);
             Opts.StatisticFile.Append(Opts.LFStat.Show() + "\n");
-
+        }
+        //--------------------------------------------draw statistic figure---------------------------------------------
+        CommonFile LinkerDisFile = new CommonFile(Stat.getDataDir() + "/LinkerScoreDis.data");
+        Opts.LFStat.WriteLinkerScoreDis(LinkerDisFile);
+        Configure.LinkerScoreDisPng = new File(Stat.getImageDir() + "/" + LinkerDisFile.getName().replace(".data", ".png"));
+        String ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -i " + LinkerDisFile + " -t bar -o " + Configure.LinkerScoreDisPng;
+        Opts.CommandOutFile.Append(ComLine + "\n");
+        Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
+        CommonFile[] ReadsLenDisFile = new CommonFile[LinkerSeq.length];
+        Stat.ReadsLengthDisBase64 = new String[LinkerSeq.length];
+        for (int i = 0; i < ReadsLenDisFile.length; i++) {
+            ReadsLenDisFile[i] = new CommonFile(Stat.getDataDir() + "/" + Prefix + "." + LinkerSeq[i].getType() + ".reads_length_distribution.data");
+        }
+        Opts.LFStat.WriteReadsLengthDis(ReadsLenDisFile);
+        for (int i = 0; i < ReadsLenDisFile.length; i++) {
+            File PngFile = new File(Stat.getImageDir() + "/" + ReadsLenDisFile[i].getName().replace(".data", ".png"));
+            ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t bar -y Count --title " + LinkerSeq[i].getType() + " -i " + ReadsLenDisFile[i] + " -o " + PngFile;
+            Opts.CommandOutFile.Append(ComLine + "\n");
+            Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
+            Stat.ReadsLengthDisBase64[i] = Stat.GetBase64(PngFile);
         }
         //==============================================================================================================
         LinkerFastqFileR1 = preprocess.getFastqR1File();
@@ -254,6 +253,14 @@ public class Main {
         Date seTime = new Date();
         System.err.println("Linker filter: " + preTime + " - " + seTime);
         //--------------------------------------------------------------------------------------------------------------
+        BedFile[] R1SortBedFile = new BedFile[ValidLinkerSeq.length];
+        BedFile[] R2SortBedFile = new BedFile[ValidLinkerSeq.length];
+        BedpeFile[] SeBedpeFile = new BedpeFile[ValidLinkerSeq.length];
+        for (int i = 0; i < ValidLinkerSeq.length; i++) {
+            R1SortBedFile[i] = new SeProcess(UseLinkerFasqFileR1[i], IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR1[i].getName().replace(".fastq", ""), ReadsType).getSortBedFile();
+            R2SortBedFile[i] = new SeProcess(UseLinkerFasqFileR2[i], IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR2[i].getName().replace(".fastq", ""), ReadsType).getSortBedFile();
+            SeBedpeFile[i] = new BedpeFile(SeProcessDir + "/" + Prefix + "." + ValidLinkerSeq[i].getType() + ".bedpe");
+        }
         if (Opts.Step.SeProcess.Execute) {
             for (int i = 0; i < ValidLinkerSeq.length; i++) {
                 System.out.println(new Date() + "\tStart Alignment");
@@ -270,37 +277,27 @@ public class Main {
                 Opts.ALStat.LinkerR2Mapped[i] = r2[0].getItemNum();
                 Opts.ALStat.LinkerR2MultiMapped[i] = r2[1].getItemNum();
                 Opts.ALStat.LinkerR2Unmapped[i] = r2[2].getItemNum();
-            }
-        }
-        //=============================================获取排序好的bed文件===============================================
-        BedFile[] R1SortBedFile = new BedFile[ValidLinkerSeq.length];
-        BedFile[] R2SortBedFile = new BedFile[ValidLinkerSeq.length];
-        BedpeFile[] SeBedpeFile = new BedpeFile[ValidLinkerSeq.length];
-        for (int i = 0; i < ValidLinkerSeq.length; i++) {
-            R1SortBedFile[i] = new SeProcess(UseLinkerFasqFileR1[i], IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR1[i].getName().replace(".fastq", ""), ReadsType).getSortBedFile();
-            R2SortBedFile[i] = new SeProcess(UseLinkerFasqFileR2[i], IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR2[i].getName().replace(".fastq", ""), ReadsType).getSortBedFile();
-//            Opts.ALStat.LinkerR1Mapped[i] = R1SortBedFile[i].getItemNum();
-//            Opts.ALStat.LinkerR2Mapped[i] = R2SortBedFile[i].getItemNum();
-            SeBedpeFile[i] = new BedpeFile(SeProcessDir + "/" + Prefix + "." + ValidLinkerSeq[i].getType() + ".bedpe");
-            if (Opts.Step.Bed2BedPe.Execute) {
                 System.out.println(new Date() + "\t" + R1SortBedFile[i].getName() + " " + R2SortBedFile[i].getName() + " to " + SeBedpeFile[i].getName());
                 SeBedpeFile[i].BedToBedpe(R1SortBedFile[i], R2SortBedFile[i]);//合并左右端bed文件，输出bedpe文件
+                Opts.ALStat.MergeNum[i] = SeBedpeFile[i].getItemNum();
                 Opts.NRStat.LinkerRawDataNum[i] = SeBedpeFile[i].getItemNum();
             }
-            //==========================================================================================================
-//            Stat.UseLinker[i].UniqMapFileR1 = R1SortBedFile[i];
-//            Stat.UseLinker[i].UniqMapFileR2 = R2SortBedFile[i];
-//            Stat.UseLinker[i].RawBedpeFile = SeBedpeFile[i];
-            int finalI = i;
-            ST = new Thread(() -> {
-//                Stat.UseLinker[finalI].FastqNumR1 = (double) Stat.UseLinker[finalI].FastqFileR1.getItemNum();
-//                Stat.UseLinker[finalI].FastqNumR2 = (double) Stat.UseLinker[finalI].FastqFileR2.getItemNum();
-//                Stat.UseLinker[finalI].UniqMapNumR1 = Stat.UseLinker[finalI].UniqMapFileR1.getItemNum();
-//                Stat.UseLinker[finalI].UniqMapNumR2 = Stat.UseLinker[finalI].UniqMapFileR2.getItemNum();
-//                Stat.UseLinker[finalI].RawBedpeNum = Stat.UseLinker[finalI].RawBedpeFile.getItemNum();
-            });
-            ST.start();
-            SThread.add(ST);
+        }
+        if (Opts.Step.Statistic.Execute) {
+            System.out.println(new Date() + " [statistic]:\tStart alignment statistic");
+            for (int i = 0; i < Opts.ALStat.Linkers.length; i++) {
+                Opts.ALStat.InputFile[i] = new FastqFile(UseLinkerFasqFileR1[i]);
+                SeProcess se = new SeProcess(UseLinkerFasqFileR1[i], IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR1[i].getName().replace(".fastq", ""), ReadsType);
+                Opts.ALStat.UniqueSamFile1[i] = se.getUniqSamFile();
+                Opts.ALStat.MultiSamFile1[i] = se.getMultiSamFile();
+                Opts.ALStat.UnmappedSamFile1[i] = se.getUnMapSamFile();
+                se = new SeProcess(UseLinkerFasqFileR2[i], IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR2[i].getName().replace(".fastq", ""), ReadsType);
+                Opts.ALStat.UniqueSamFile2[i] = se.getUniqSamFile();
+                Opts.ALStat.MultiSamFile2[i] = se.getMultiSamFile();
+                Opts.ALStat.UnmappedSamFile2[i] = se.getUnMapSamFile();
+                Opts.ALStat.BedPeFile[i] = new BedpeFile(SeBedpeFile[i]);
+            }
+            Opts.ALStat.Stat(Configure.Thread);
         }
         Opts.StatisticFile.Append(Opts.ALStat.Show() + "\n");
         //=======================================bedpe process init=====================================================

@@ -19,9 +19,9 @@ public class MakeMatrixStat extends AbstractStat {
     public String Show() {
         UpDate();
         StringBuilder show = new StringBuilder();
-        show.append("##==========================Make matrix===========================##\n");
+        show.append("============================================Make matrix=========================================\n");
         show.append("Output directory:\t").append(OutDir).append("\n");
-        show.append("--------------------------------------------------------------------\n");
+        show.append("------------------------------------------------------------------------------------------------\n");
         return show.toString();
     }
 
