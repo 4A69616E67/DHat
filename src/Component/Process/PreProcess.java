@@ -166,7 +166,8 @@ public class PreProcess extends AbstractProcess {
                                 fastq_string = DivideLinker.Execute(filter_result, MatchSeq, AppendSeq, AppendQuality, MaxReadsLen, DivideLinker.Format.All, j);
                                 if (fastq_string[0] != null && fastq_string[1] != null) {
                                     synchronized (Linkers[j]) {
-                                        Opts.LFStat.ValidPairNum[j]++;
+                                        FastqR1File[j].ItemNum++;
+                                        FastqR2File[j].ItemNum++;
                                         try {
                                             writer1[j].write(fastq_string[0].toString() + "\n");
                                             writer2[j].write(fastq_string[1].toString() + "\n");
@@ -195,10 +196,8 @@ public class PreProcess extends AbstractProcess {
             t[i].start();
         }
         Tools.ThreadsWait(t);
-        Opts.OVStat.RawDataNum = Opts.LFStat.InputFile.ItemNum = FastqFile.ItemNum;
         for (int j = 0; j < Linkers.length; j++) {
-            FastqR1File[j].ItemNum = Opts.LFStat.ValidPairNum[j];
-            FastqR2File[j].ItemNum = Opts.LFStat.ValidPairNum[j];
+            Opts.LFStat.ValidPairNum[j] = FastqR1File[j].ItemNum;
         }
         writer.close();
         for (int i = 0; i < Linkers.length; i++) {

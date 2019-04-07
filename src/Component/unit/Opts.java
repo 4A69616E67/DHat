@@ -168,7 +168,7 @@ public class Opts {
     public static final File JqueryJs = new File("/resource/jquery.min.js");
     public static final File ScriptJs = new File("/resource/script.js");
     public static final File TemplateReportHtml = new File("/resource/Report.html");
-    public static final File ReadMeFile = new File("/resource/ReadMe.txt");
+    public static final File ReadMeFile = new File("/resource/ReadMe.md");
     public static final Float Version = 1.0F;
     public static final String Author = "Snowflakes";
     public static final String Email = "john-jh@foxmail.com";

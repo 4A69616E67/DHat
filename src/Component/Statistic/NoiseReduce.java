@@ -101,11 +101,11 @@ public class NoiseReduce extends AbstractStat {
 
     @Override
     protected void UpDate() {
-        Opts.OVStat.UniqueMappedNum = RawDataNum = StatUtil.sum(LinkerRawDataNum);
+        RawDataNum = StatUtil.sum(LinkerRawDataNum);
         SelfLigationNum = StatUtil.sum(LinkerSelfLigationNum);
         ReLigationNum = StatUtil.sum(LinkerReLigationNum);
         RepeatNum = StatUtil.sum(LinkerRepeatNum);
-        Opts.OVStat.CleanNum = CleanNum = StatUtil.sum(LinkerCleanNum);
+        CleanNum = StatUtil.sum(LinkerCleanNum);
     }
 
     @Override

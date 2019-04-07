@@ -458,10 +458,11 @@ public class BedpeProcess {
         System.out.println(new Date() + "\tEnd to remove repeat\t" + InFile.getName());
     }//OK
 
-    private void BedpeToSameAndDiff(File BedpeFile, File SameBedpeFile, File DiffBedpeFile) throws IOException {
+    private void BedpeToSameAndDiff(BedpeFile BedpeFile, BedpeFile SameBedpeFile, BedpeFile DiffBedpeFile) throws IOException {
         BufferedReader BedpeRead = new BufferedReader(new FileReader(BedpeFile));
         BufferedWriter SameBedpeWrite = new BufferedWriter(new FileWriter(SameBedpeFile));
         BufferedWriter DiffBedpeWrite = new BufferedWriter(new FileWriter(DiffBedpeFile));
+        BedpeFile.ItemNum = SameBedpeFile.ItemNum = DiffBedpeFile.ItemNum = 0;
         Thread[] process = new Thread[Threads];
         System.out.println(new Date() + "\tBegin to Seperate bedpe file\t" + BedpeFile.getName());
         for (int i = 0; i < Threads; i++) {
@@ -475,11 +476,15 @@ public class BedpeProcess {
                             //---------------------------取相同染色体上的交互-----------------------
                             synchronized (SameBedpeWrite) {
                                 SameBedpeWrite.write(line + "\n");
+                                SameBedpeFile.ItemNum++;
+                                BedpeFile.ItemNum++;
                             }
                         } else {
                             //--------------------------取不同染色体上的交互----------------------
                             synchronized (DiffBedpeWrite) {
                                 DiffBedpeWrite.write(line + "\n");
+                                DiffBedpeFile.ItemNum++;
+                                BedpeFile.ItemNum++;
                             }
                         }
                     }

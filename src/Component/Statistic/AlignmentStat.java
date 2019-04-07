@@ -135,7 +135,7 @@ public class AlignmentStat extends AbstractStat {
 
     @Override
     protected void UpDate() {
-        Opts.OVStat.AlignmentNum = InputNum = StatUtil.sum(LinkerInputNum);
+        InputNum = StatUtil.sum(LinkerInputNum);
     }
 
     @Override

@@ -1,5 +1,7 @@
 package Component.Statistic;
 
+import Component.unit.Opts;
+
 import java.io.File;
 import java.text.DecimalFormat;
 
@@ -47,6 +49,10 @@ public class OverviewStat extends AbstractStat {
 
     @Override
     protected void UpDate() {
+        RawDataNum = Opts.LFStat.InputNum;
+        AlignmentNum = StatUtil.sum(Opts.ALStat.LinkerInputNum);
+        UniqueMappedNum = StatUtil.sum(Opts.ALStat.MergeNum);
+        CleanNum = StatUtil.sum(Opts.NRStat.LinkerCleanNum);
         LongRange = IntraActionNum - ShortRange;
     }
 

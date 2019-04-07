@@ -14,7 +14,7 @@
       <element id="extracted-dir" path="$PROJECT_DIR$/src/Libraries/Thymeleaf/attoparser-2.0.4.RELEASE.jar" path-in-jar="/" />
       <element id="directory" name="resource">
         <element id="dir-copy" path="$PROJECT_DIR$/resource" />
-        <element id="file-copy" path="$PROJECT_DIR$/ReadMe.txt" />
+        <element id="file-copy" path="$PROJECT_DIR$/ReadMe.md" />
       </element>
       <element id="extracted-dir" path="$PROJECT_DIR$/src/Libraries/Thymeleaf/log4j-1.2.17.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/src/Libraries/Thymeleaf/slf4j-api-1.7.25.jar" path-in-jar="/" />

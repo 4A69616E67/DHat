@@ -152,8 +152,8 @@ public class Main {
                 System.out.println("Extract " + Opts.ResourceDir + "/" + f);
                 FileTool.ExtractFile("/resource/" + f, new File(Opts.ResourceDir + "/" + f));
             }
-            System.out.println("Extract " + Opts.JarFile.getParent() + "/ReadMe.md");
-            FileTool.ExtractFile(Opts.ReadMeFile.getPath(), new File(Opts.JarFile.getParent() + "/ReadMe.md"));
+            System.out.println("Extract " + Opts.JarFile.getParent() + "/" + Opts.ReadMeFile.getName());
+            FileTool.ExtractFile(Opts.ReadMeFile.getPath(), new File(Opts.JarFile.getParent() + "/" + Opts.ReadMeFile.getName()));
             System.out.println("Install finish!");
             System.exit(0);
         }
@@ -205,7 +205,6 @@ public class Main {
             //-----------------------------------------------------------------------------
             preprocess.run();//运行预处理部分
             //----------------------------------------------------------------------
-            Opts.StatisticFile.Append(Opts.LFStat.Show() + "\n");
         }
         File PastFile = preprocess.getLinkerFilterOutFile();//获取past文件位置
         //=================================================统计信息=====================================================
@@ -213,8 +212,8 @@ public class Main {
             System.out.println(new Date() + " [statistic]:\tStart Linker filter statistic");
             Opts.LFStat.InputFile = new CommonFile(PastFile);
             Opts.LFStat.Stat(Configure.Thread);
-            Opts.StatisticFile.Append(Opts.LFStat.Show() + "\n");
         }
+        Opts.StatisticFile.Append(Opts.LFStat.Show() + "\n");
         //--------------------------------------------draw statistic figure---------------------------------------------
         CommonFile LinkerDisFile = new CommonFile(Stat.getDataDir() + "/LinkerScoreDis.data");
         Opts.LFStat.WriteLinkerScoreDis(LinkerDisFile);
@@ -245,7 +244,7 @@ public class Main {
                 if (LinkerSeq[j].getType().equals(ValidLinkerSeq[i].getType())) {
                     UseLinkerFasqFileR1[i] = LinkerFastqFileR1[j];
                     UseLinkerFasqFileR2[i] = LinkerFastqFileR2[j];
-                    Opts.ALStat.LinkerInputNum[i] = UseLinkerFasqFileR1[i].getItemNum();
+                    Opts.ALStat.InputFile[i] = UseLinkerFasqFileR1[i];
                 }
             }
         }
@@ -260,6 +259,7 @@ public class Main {
             R1SortBedFile[i] = new SeProcess(UseLinkerFasqFileR1[i], IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR1[i].getName().replace(".fastq", ""), ReadsType).getSortBedFile();
             R2SortBedFile[i] = new SeProcess(UseLinkerFasqFileR2[i], IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR2[i].getName().replace(".fastq", ""), ReadsType).getSortBedFile();
             SeBedpeFile[i] = new BedpeFile(SeProcessDir + "/" + Prefix + "." + ValidLinkerSeq[i].getType() + ".bedpe");
+            Opts.NRStat.InputFile[i] = SeBedpeFile[i];
         }
         if (Opts.Step.SeProcess.Execute) {
             for (int i = 0; i < ValidLinkerSeq.length; i++) {
@@ -271,6 +271,7 @@ public class Main {
                 Opts.ALStat.GenomeIndex = IndexPrefix;
                 SamFile[] r1 = SeProcess(UseLinkerFasqFileR1[i], UseLinkerFasqFileR1[i].getName().replace(".fastq", ""));
                 SamFile[] r2 = SeProcess(UseLinkerFasqFileR2[i], UseLinkerFasqFileR2[i].getName().replace(".fastq", ""));
+                Opts.ALStat.LinkerInputNum[i] = UseLinkerFasqFileR1[i].getItemNum();
                 Opts.ALStat.LinkerR1Mapped[i] = r1[0].getItemNum();
                 Opts.ALStat.LinkerR1MultiMapped[i] = r1[1].getItemNum();
                 Opts.ALStat.LinkerR1Unmapped[i] = r1[2].getItemNum();
@@ -280,7 +281,6 @@ public class Main {
                 System.out.println(new Date() + "\t" + R1SortBedFile[i].getName() + " " + R2SortBedFile[i].getName() + " to " + SeBedpeFile[i].getName());
                 SeBedpeFile[i].BedToBedpe(R1SortBedFile[i], R2SortBedFile[i]);//合并左右端bed文件，输出bedpe文件
                 Opts.ALStat.MergeNum[i] = SeBedpeFile[i].getItemNum();
-                Opts.NRStat.LinkerRawDataNum[i] = SeBedpeFile[i].getItemNum();
             }
         }
         if (Opts.Step.Statistic.Execute) {
@@ -335,6 +335,7 @@ public class Main {
                 LinkerProcess[i] = new Thread(() -> {
                     try {
                         bedpe[finalI].Run();//运行
+                        Opts.NRStat.LinkerRawDataNum[finalI] = SeBedpeFile[finalI].getItemNum();
                         Opts.NRStat.LinkerSelfLigationNum[finalI] = bedpe[finalI].getSelfLigationFile().getItemNum();
                         Opts.NRStat.LinkerReLigationNum[finalI] = bedpe[finalI].getReLigationFile().getItemNum();
                         Opts.NRStat.LinkerRepeatNum[finalI] = bedpe[finalI].getRepeatFile().getItemNum();
