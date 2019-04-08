@@ -703,7 +703,7 @@ public class Main {
         }
         //----------------------------------------必要参数赋值-----------------------------------------------------------
         String[] tempstrs;
-        InputFile = Configure.InputFile;
+        InputFile = Opts.OVStat.InputFile = Configure.InputFile;
         GenomeFile = Opts.ALStat.GenomeFile = Configure.GenomeFile;
         Restriction = Opts.LFStat.EnzymeCuttingSite = Configure.Restriction;
         String[] halfLinker = Opts.LFStat.HalfLinkers = Configure.HalfLinker;
@@ -717,6 +717,8 @@ public class Main {
         }
         //-----------------------------------------可选参数赋值----------------------------------------------------------
         OutPath = Opts.OVStat.OutDir = Configure.OutPath;
+        Opts.CommandOutFile = new CommonFile(Configure.OutPath + "/" + Opts.CommandOutFile.getName());
+        Opts.StatisticFile = new CommonFile(Configure.OutPath + "/" + Opts.StatisticFile.getName());
         Prefix = Opts.OVStat.Prefix = Configure.Prefix;
         Resolution = Opts.MMStat.Resolutions = Configure.Resolution;
         Threads = Configure.Thread;

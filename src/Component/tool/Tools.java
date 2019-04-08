@@ -17,6 +17,18 @@ public class Tools {
 
     }
 
+    public static int[] CreateMultiIndex(int length) {
+        return CreateMultiIndex(0, length);
+    }
+
+    public static int[] CreateMultiIndex(int start, int length) {
+        int[] index = new int[length];
+        for (int i = 0; i < length; i++) {
+            index[i] = start + i;
+        }
+        return index;
+    }
+
     public static void ThreadsWait(Thread[] T) {
         for (Thread t : T) {
             try {

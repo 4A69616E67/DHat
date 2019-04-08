@@ -1,5 +1,6 @@
 package Component.Statistic;
 
+import Component.File.FastqFile;
 import Component.unit.Opts;
 
 import java.io.File;
@@ -10,6 +11,7 @@ import java.text.DecimalFormat;
  */
 
 public class OverviewStat extends AbstractStat {
+    public FastqFile InputFile;
     public String Prefix;
     public File OutDir;
     public long RawDataNum;
@@ -33,6 +35,7 @@ public class OverviewStat extends AbstractStat {
         UpDate();
         StringBuilder show = new StringBuilder();
         show.append("##====================================Overview=================================================##\n");
+        show.append("Input file:   \t").append(InputFile).append("\n");
         show.append("Out directory:\t").append(OutDir).append("\n");
         show.append("Out prefix:   \t").append(Prefix).append("\n");
         show.append("-------------------------------------------------------------------------------------------------\n");

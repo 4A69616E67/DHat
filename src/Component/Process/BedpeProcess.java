@@ -198,6 +198,7 @@ public class BedpeProcess {
                                 break;
                             case 4:
                                 FragmentLocationFile.Merge(ChrFragLocationFile);//合并定位的交互片段
+                                FragmentLocationFile.Append(FragmentDiffFile);
                                 break;
                             case 5:
                                 RepeatFile.Merge(ChrSameRepetaFile);//合并重复片段
@@ -267,7 +268,7 @@ public class BedpeProcess {
         DiffFile = new BedpeFile(OutPath + "/" + Prefix + ".diff.bedpe");
         FragmentDiffFile = new BedpeFile(OutPath + "/" + Prefix + ".diff.frag.bedpe");
         SelfLigationFile = new BedpeFile(LigationDir + "/" + Prefix + ".self.bedpe");
-        ReLigationFile = new BedpeFile(LigationDir + "/" + Prefix + ".rel.bedpe");
+        ReLigationFile = new BedpeFile(LigationDir + "/" + Prefix + ".re.bedpe");
         ValidFile = new BedpeFile(LigationDir + "/" + Prefix + ".valid.bedpe");
         FragmentLocationFile = new BedpeFile(LigationDir + "/" + Prefix + ".enzy.bedpe");
         ChrSameFile = new BedpeFile[Chromosomes.length];
@@ -278,7 +279,7 @@ public class BedpeProcess {
         for (int j = 0; j < Chromosomes.length; j++) {
             ChrFragLocationFile[j] = new BedpeFile(MiddleDir + "/" + Prefix + "." + Chromosomes[j].Name + ".enzy.bedpe");
             ChrLigationFile[0][j] = new BedpeFile(MiddleDir + "/" + Prefix + "." + Chromosomes[j].Name + ".self.bedpe");
-            ChrLigationFile[1][j] = new BedpeFile(MiddleDir + "/" + Prefix + "." + Chromosomes[j].Name + ".rel.bedpe");
+            ChrLigationFile[1][j] = new BedpeFile(MiddleDir + "/" + Prefix + "." + Chromosomes[j].Name + ".re.bedpe");
             ChrLigationFile[2][j] = new BedpeFile(MiddleDir + "/" + Prefix + "." + Chromosomes[j].Name + ".valid.bedpe");
             ChrSameNoDumpFile[j] = new BedpeFile(FinalDir + "/" + Prefix + "." + Chromosomes[j].Name + ".same.clean.bedpe");
             ChrSameRepetaFile[j] = new BedpeFile(FinalDir + "/" + Prefix + "." + Chromosomes[j].Name + ".same.repeat.bedpe");
@@ -344,7 +345,7 @@ public class BedpeProcess {
         BufferedWriter selffile = new BufferedWriter(new FileWriter(SelfFile));
         BufferedWriter religfile = new BufferedWriter(new FileWriter(ReligFile));
         BufferedWriter valifile = new BufferedWriter(new FileWriter(ValidFile));
-        System.out.println(new Date() + "\tBegin to seperate ligation\t" + InFile.getName());
+        System.out.println(new Date() + "\tBegin to separate ligation\t" + InFile.getName());
         String line;
         String[] str;
         FragSite[] fss = new FragSite[2];
@@ -430,7 +431,7 @@ public class BedpeProcess {
         ArrayList<String[]> TempList = new ArrayList<>();
         String line;
         String[] Str;
-        System.out.println(new Date() + "\tStart to remove repeat\t" + InFile.getName());
+        System.out.println(new Date() + "\tStart remove repeat\t" + InFile.getName());
         while ((line = infile.readLine()) != null) {
             Str = line.split("\\s+");
             boolean flag = false;
@@ -455,7 +456,7 @@ public class BedpeProcess {
         infile.close();
         clean_file.close();
         repeat_file.close();
-        System.out.println(new Date() + "\tEnd to remove repeat\t" + InFile.getName());
+        System.out.println(new Date() + "\tRemove repeat finish\t" + InFile.getName());
     }//OK
 
     private void BedpeToSameAndDiff(BedpeFile BedpeFile, BedpeFile SameBedpeFile, BedpeFile DiffBedpeFile) throws IOException {
@@ -464,7 +465,7 @@ public class BedpeProcess {
         BufferedWriter DiffBedpeWrite = new BufferedWriter(new FileWriter(DiffBedpeFile));
         BedpeFile.ItemNum = SameBedpeFile.ItemNum = DiffBedpeFile.ItemNum = 0;
         Thread[] process = new Thread[Threads];
-        System.out.println(new Date() + "\tBegin to Seperate bedpe file\t" + BedpeFile.getName());
+        System.out.println(new Date() + "\tBegin Separate bedpe file\t" + BedpeFile.getName());
         for (int i = 0; i < Threads; i++) {
             process[i] = new Thread(() -> {
                 String line;
