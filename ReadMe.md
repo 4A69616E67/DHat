@@ -13,7 +13,7 @@ Please ensure your server can connect to network.
 Install **[Anaconda (Python 2.7 version)](https://www.anaconda.com/distribution/)**
 ```
 $ wget https://repo.anaconda.com/archive/Anaconda2-2018.12-Linux-x86_64.sh
-$ bash -p ~/ ./Anaconda2-2018.12-Linux-x86_64.sh
+$ bash ./Anaconda2-2018.12-Linux-x86_64.sh -p ~/
 ```
 Install **[mafft](https://mafft.cbrc.jp/alignment/software/)** and **[bwa](http://bio-bwa.sourceforge.net/)**
 ```

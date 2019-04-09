@@ -2,7 +2,6 @@ package Component.Process;
 
 import Component.File.CommonFile;
 import Component.File.FastqFile;
-import Component.File.FileTool;
 import Component.tool.DivideLinker;
 import Component.tool.LinkerFiltering;
 import Component.tool.Tools;
@@ -205,6 +204,7 @@ public class PreProcess extends AbstractProcess {
             writer2[i].close();
         }
         System.out.println(new Date() + "\t" + FastqFile.ItemNum + " reads processed in total.");
+        Opts.LFStat.InputNum = FastqFile.ItemNum;
         EndTime = new Date();
         return 0;
     }

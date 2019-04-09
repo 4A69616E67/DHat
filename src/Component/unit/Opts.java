@@ -158,6 +158,7 @@ public class Opts {
     public static final File ResourceDir = new File(JarFile.getParent() + "/Resource");//资源文件存放的位置
     public static CommonFile CommandOutFile = new CommonFile(Configure.OutPath + "/Command.log");
     public static CommonFile StatisticFile = new CommonFile(Configure.OutPath + "/Statistic.txt");
+    public static CommonFile ResourceStatFile = new CommonFile(Configure.OutPath + "/JVM_stat.txt");
     public static final String[] ResourceFile = new String[]{"default.conf", "default_adv.conf"};
     public static final String[] ScriptFile = new String[]{"PlotHeatMap.py", "StatisticPlot.py", "RegionPlot.py"};
     public static final CommonFile ConfigFile = new CommonFile(ResourceDir + "/" + ResourceFile[0]);
@@ -177,9 +178,10 @@ public class Opts {
     //==================================================================================================================
     public static final LinkerFilterStat LFStat = new LinkerFilterStat();
     public static final AlignmentStat ALStat = new AlignmentStat();
-    public static final NoiseReduce NRStat = new NoiseReduce();
+    public static final NoiseReduceStat NRStat = new NoiseReduceStat();
     public static final MakeMatrixStat MMStat = new MakeMatrixStat();
     public static final OverviewStat OVStat = new OverviewStat();
+    public static final ResourceStat RSStat = new ResourceStat();
 
 }
 

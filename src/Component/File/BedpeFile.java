@@ -218,4 +218,37 @@ public class BedpeFile extends AbstractFile<BedpeItem> {
         ReadClose();
         return Count[0];
     }
+
+    public long[] RangeCount(Region ShortRange, Region LongRange, int thread) throws IOException {
+        ItemNum = 0;
+        thread = thread > 0 ? thread : 1;
+        long[] Count = new long[2];
+        ReadOpen();
+        Thread[] t = new Thread[thread];
+        for (int i = 0; i < t.length; i++) {
+            t[i] = new Thread(() -> {
+                try {
+                    BedpeItem item;
+                    while ((item = ReadItem()) != null) {
+                        if (ShortRange.IsContain(item.getLocation().Distance())) {
+                            synchronized (ShortRange) {
+                                Count[0]++;
+                            }
+                        } else if (LongRange.IsContain(item.getLocation().Distance())) {
+                            synchronized (LongRange) {
+                                Count[1]++;
+                            }
+                        }
+                        ItemNum++;
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            t[i].start();
+        }
+        Tools.ThreadsWait(t);
+        ReadClose();
+        return Count;
+    }
 }

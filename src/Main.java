@@ -1,9 +1,7 @@
 import java.io.*;
-//import java.lang.management.ManagementFactory;
-//import java.lang.management.MemoryUsage;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryUsage;
 import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
-import java.text.DecimalFormat;
 import java.util.*;
 
 import Bin.*;
@@ -110,7 +108,7 @@ public class Main {
             Configure.DeBugLevel = Integer.parseInt(ComLine.getOptionValue("D"));
         if (ComLine.hasOption("pbs")) {
             try {
-                String comline = "java -jar " + Opts.JarFile + " " + String.join(" ", args).replace("-pbs", "");
+                String comline = "java -Xmx" + (int) Math.ceil(Opts.MaxMemory / Math.pow(10, 9)) + "G -jar " + Opts.JarFile + " " + String.join(" ", args).replace("-pbs", "");
                 CommonFile PbsFile = new CommonFile("SubmitScript.sh");
                 if (!PbsFile.clean()) {
                     System.err.println("can't clean " + PbsFile.getName());
@@ -136,7 +134,7 @@ public class Main {
 //        MemoryUsage memoryUsage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
 //        long maxMemorySize = memoryUsage.getMax();
 //        long usedMemorySize = memoryUsage.getUsed();
-        Opts.StepCheck("NoiseReduce - ");
+//        Opts.StepCheck("NoiseReduce - ");
 
         //================================================初始化========================================================
         if (args.length >= 1 && args[0].equals("install")) {
@@ -170,13 +168,16 @@ public class Main {
         System.out.println("Author:\t" + Opts.Author);
         System.out.println("Max Memory:\t" + String.format("%.2f", Opts.MaxMemory / Math.pow(10, 9)) + "G");
         System.out.println("-------------------------------------------------------------------------------");
+        //==============================================================================================================
+        AbstractFile.delete(Opts.CommandOutFile);
+        AbstractFile.delete(Opts.StatisticFile);
+        AbstractFile.delete(Opts.ResourceStatFile);
+        Opts.RSStat.Init();
+        Opts.RSStat.Stat();
         //===========================================初始化输出文件======================================================
         FastqFile[] LinkerFastqFileR1, UseLinkerFasqFileR1 = new FastqFile[ValidLinkerSeq.length];
         FastqFile[] LinkerFastqFileR2, UseLinkerFasqFileR2 = new FastqFile[ValidLinkerSeq.length];
         //==============================================================================================================
-        //==============================================================================================================
-        AbstractFile.delete(Opts.CommandOutFile);
-        AbstractFile.delete(Opts.StatisticFile);
         Thread ST;//统计线程
         Thread[] STS;//统计线程
         //=========================================linker filter==linker 过滤===========================================
@@ -401,6 +402,8 @@ public class Main {
                 Opts.NRStat.SelfLigationFile[i] = bedpe[i].getSelfLigationFile();
                 Opts.NRStat.ReLigationFile[i] = bedpe[i].getReLigationFile();
                 Opts.NRStat.RepeatFile[i] = bedpe[i].getRepeatFile();
+                Opts.NRStat.SameCleanFile[i] = bedpe[i].getSameNoDumpFile();
+                Opts.NRStat.DiffCleanFile[i] = bedpe[i].getDiffNoDumpFile();
                 Opts.NRStat.CleanFile[i] = bedpe[i].getFinalFile();
             }
             Opts.NRStat.Stat(Configure.Thread);
@@ -421,6 +424,7 @@ public class Main {
 //                Stat.InterAction.InterActionNum = Stat.InterAction.FinalBedpeNum - Stat.InterAction.IntraActionNum;
                 if (Opts.LFStat.EnzymeCuttingSite.replace("^", "").length() <= 4) {
                     Opts.OVStat.RangeThreshold = 5000;
+//                    long[] range = SameBedpeFile.RangeCount(new Region(0, 5000), new Region(5000, Integer.MAX_VALUE), 1);
                     Opts.OVStat.ShortRange = SameBedpeFile.DistanceCount(0, 5000, 1);
                 } else {
                     Opts.OVStat.RangeThreshold = 20000;
@@ -526,6 +530,7 @@ public class Main {
 //        Stat.Show();
 //        Stat.ReportHtml(new File(ReportDir + "/Test.index.html"));
         Tools.RemoveEmptyFile(OutPath);
+        Opts.RSStat.Finish();
     }
 
     /**
@@ -706,6 +711,14 @@ public class Main {
         InputFile = Opts.OVStat.InputFile = Configure.InputFile;
         GenomeFile = Opts.ALStat.GenomeFile = Configure.GenomeFile;
         Restriction = Opts.LFStat.EnzymeCuttingSite = Configure.Restriction;
+        if (Configure.Restriction.replace("^", "").length() <= 4) {
+            Opts.OVStat.RangeThreshold = 5000;
+        } else {
+            Opts.OVStat.RangeThreshold = 20000;
+        }
+        Opts.NRStat.ShortRegion = new Region(0, Opts.OVStat.RangeThreshold);
+        Opts.NRStat.LongRegion = new Region(Opts.OVStat.RangeThreshold, Integer.MAX_VALUE);
+
         String[] halfLinker = Opts.LFStat.HalfLinkers = Configure.HalfLinker;
         LinkerA = halfLinker[0];
         LinkerLength = LinkerA.length();
@@ -719,6 +732,7 @@ public class Main {
         OutPath = Opts.OVStat.OutDir = Configure.OutPath;
         Opts.CommandOutFile = new CommonFile(Configure.OutPath + "/" + Opts.CommandOutFile.getName());
         Opts.StatisticFile = new CommonFile(Configure.OutPath + "/" + Opts.StatisticFile.getName());
+        Opts.ResourceStatFile = new CommonFile(Configure.OutPath + "/" + Opts.ResourceStatFile.getName());
         Prefix = Opts.OVStat.Prefix = Configure.Prefix;
         Resolution = Opts.MMStat.Resolutions = Configure.Resolution;
         Threads = Configure.Thread;

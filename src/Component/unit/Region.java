@@ -18,8 +18,12 @@ public class Region implements Comparable<Region> {
         return this.Start <= b.End && this.End >= b.Start;
     }
 
-    public boolean IsBelong(Region reg) {
-        return this.Start >= reg.Start && this.End <= reg.End;
+    public boolean IsBelong(Region b) {
+        return this.Start >= b.Start && this.End <= b.End;
+    }
+
+    public boolean IsContain(int point) {
+        return this.Start < point && this.End >= point;
     }
 
     public boolean IsContain(Region reg) {

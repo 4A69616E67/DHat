@@ -116,9 +116,9 @@ public class LinkerFilterStat extends AbstractStat {
                 }
             }
             synchronized (lock[2]) {
-                InputFile.ItemNum++;
-                if (InputFile.ItemNum % 1000000 == 0) {
-                    System.out.println(new Date() + " [Linker filter statistic]:\t" + InputFile.ItemNum / 1000000 + " Million has been statistic");
+                InputNum++;
+                if (InputNum % 1000000 == 0) {
+                    System.out.println(new Date() + " [Linker filter statistic]:\t" + InputNum / 1000000 + " Million has been statistic");
                 }
             }
 
@@ -138,7 +138,7 @@ public class LinkerFilterStat extends AbstractStat {
         show.append("Linker mapping minimum quality:\t").append(Threshold).append("\n");
         show.append("Output directory:\t").append(OutDir).append("\n");
         show.append("------------------------------------------------------------------------------------------------\n");
-        show.append("Input:").append("\t").append(new DecimalFormat("#,###").format(InputFile.getItemNum())).append("\t").append("-").append("\n");
+        show.append("Input:").append("\t").append(new DecimalFormat("#,###").format(InputNum)).append("\t").append("-").append("\n");
         show.append("\n");
         for (int i = 0; i < Linkers.length; i++) {
             show.append("Linker ").append(Linkers[i].getType()).append(":\t").append(Linkers[i].getSeq()).append("\n");
@@ -165,7 +165,6 @@ public class LinkerFilterStat extends AbstractStat {
 
     @Override
     protected void UpDate() {
-        InputNum = InputFile.getItemNum();
         AllLinkerMatchable = StatUtil.sum(LinkerMatchableNum);
         if (LinkerUnmatchableNum == 0 && AllLinkerMatchable != 0) {
             LinkerUnmatchableNum = InputFile.getItemNum() - AllLinkerMatchable;
