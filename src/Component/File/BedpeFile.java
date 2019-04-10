@@ -219,6 +219,9 @@ public class BedpeFile extends AbstractFile<BedpeItem> {
         return Count[0];
     }
 
+    /**
+     * @return {short range, long range}
+     */
     public long[] RangeCount(Region ShortRange, Region LongRange, int thread) throws IOException {
         ItemNum = 0;
         thread = thread > 0 ? thread : 1;

@@ -159,13 +159,7 @@ public class BedpeProcess {
             t[i].start();
         }
         Tools.ThreadsWait(t);
-        //==========================================染色体间的交互处理==================================================
-//        BedpeFile SortDiffFile = new BedpeFile(FragmentDiffFile + ".sort");
-//        AllEnzyFile.Merge(EnzyFile);
-//        FragmentLocation(DiffFile, AllEnzyFile, FragmentDiffFile);
-//        FragmentDiffFile.SplitSortFile(SortDiffFile);
-//        RemoveRepeat(SortDiffFile, DiffNoDumpFile, DiffRepeatFile);//去duplication
-        //================================================================
+        //==============================================================================================================
         AbstractFile[] NeedRemove = new AbstractFile[]{SameNoDumpFile, SelfLigationFile, ReLigationFile, ValidFile, FragmentLocationFile, RepeatFile};
         for (int i = 0; i < NeedRemove.length; i++) {
             if (NeedRemove[i].exists() && !NeedRemove[i].delete()) {
@@ -340,25 +334,30 @@ public class BedpeProcess {
         System.out.println(new Date() + "\tEnd to find eny site\t" + BedpeFile.getName());
     }//OK
 
-    private void SeparateLigationType(BedpeFile InFile, BedpeFile SelfFile, BedpeFile ReligFile, BedpeFile ValidFile) throws IOException {
+    private void SeparateLigationType(BedpeFile InFile, BedpeFile SelfFile, BedpeFile RelFile, BedpeFile ValidFile) throws IOException {
         BufferedReader infile = new BufferedReader(new FileReader(InFile));
         BufferedWriter selffile = new BufferedWriter(new FileWriter(SelfFile));
-        BufferedWriter religfile = new BufferedWriter(new FileWriter(ReligFile));
+        BufferedWriter religfile = new BufferedWriter(new FileWriter(RelFile));
         BufferedWriter valifile = new BufferedWriter(new FileWriter(ValidFile));
+        InFile.ItemNum = SelfFile.ItemNum = RelFile.ItemNum = ValidFile.ItemNum = 0;
         System.out.println(new Date() + "\tBegin to separate ligation\t" + InFile.getName());
         String line;
         String[] str;
         FragSite[] fss = new FragSite[2];
         while ((line = infile.readLine()) != null) {
+            InFile.ItemNum++;
             str = line.split("\\s+");
             fss[0] = new FragSite(str[str.length - 4]);
             fss[1] = new FragSite(str[str.length - 2]);
             if (fss[0].getSite() == fss[1].getSite()) {
                 selffile.write(line + "\n");
+                SelfFile.ItemNum++;
             } else if ((fss[1].getSite() - fss[0].getSite() == 1) && (fss[1].getOrientation() - fss[0].getOrientation() == -1)) {
                 religfile.write(line + "\n");
+                RelFile.ItemNum++;
             } else {
                 valifile.write(line + "\n");
+                ValidFile.ItemNum++;
             }
         }
         infile.close();
@@ -424,15 +423,17 @@ public class BedpeProcess {
         return fs;
     }
 
-    private void RemoveRepeat(File InFile, File CleanFile, File RepeatFile) throws IOException {
+    private void RemoveRepeat(BedpeFile InFile, BedpeFile CleanFile, BedpeFile RepeatFile) throws IOException {
         BufferedReader infile = new BufferedReader(new FileReader(InFile));
         BufferedWriter clean_file = new BufferedWriter(new FileWriter(CleanFile));
         BufferedWriter repeat_file = new BufferedWriter(new FileWriter(RepeatFile));
+        InFile.ItemNum = CleanFile.ItemNum = RepeatFile.ItemNum = 0;
         ArrayList<String[]> TempList = new ArrayList<>();
         String line;
         String[] Str;
         System.out.println(new Date() + "\tStart remove repeat\t" + InFile.getName());
         while ((line = infile.readLine()) != null) {
+            InFile.ItemNum++;
             Str = line.split("\\s+");
             boolean flag = false;
             for (int i = 0; i < TempList.size(); i++) {
@@ -441,6 +442,7 @@ public class BedpeProcess {
                     if (Str[3].equals(tempstr[1]) && Str[8].equals(tempstr[2]) && Str[9].equals(tempstr[3]) && Str[12].equals(tempstr[5])) {
                         flag = true;
                         repeat_file.write(line + "\n");
+                        RepeatFile.ItemNum++;
                         break;
                     }
                 } else {
@@ -449,8 +451,10 @@ public class BedpeProcess {
                 }
             }
             if (!flag) {
+
                 TempList.add(new String[]{Str[0], Str[3], Str[8], Str[9], Str[10], Str[12]});
                 clean_file.write(line + "\n");
+                CleanFile.ItemNum++;
             }
         }
         infile.close();
@@ -478,15 +482,16 @@ public class BedpeProcess {
                             synchronized (SameBedpeWrite) {
                                 SameBedpeWrite.write(line + "\n");
                                 SameBedpeFile.ItemNum++;
-                                BedpeFile.ItemNum++;
                             }
                         } else {
                             //--------------------------取不同染色体上的交互----------------------
                             synchronized (DiffBedpeWrite) {
                                 DiffBedpeWrite.write(line + "\n");
                                 DiffBedpeFile.ItemNum++;
-                                BedpeFile.ItemNum++;
                             }
+                        }
+                        synchronized (process) {
+                            BedpeFile.ItemNum++;
                         }
                     }
                 } catch (IOException e) {

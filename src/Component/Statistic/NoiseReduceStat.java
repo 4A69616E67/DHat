@@ -79,23 +79,9 @@ public class NoiseReduceStat extends AbstractStat {
                     }
                     System.out.println(new Date() + " [Noise Reduce statistic]:\tCalculate the number of short and long range, file name: " + temp.getName());
                     try {
-                        temp.ReadOpen();
-                        BedpeItem item;
-                        while ((item = temp.ReadItem()) != null) {
-                            int distance = item.getLocation().Distance();
-                            if (ShortRegion.IsContain(distance)) {
-                                LinkerShortRangeNum[j]++;
-                            } else if (LongRegion.IsContain(distance)) {
-                                LinkerLongRangeNum[j]++;
-                            }
-                            synchronized (t) {
-                                if (!InteractionRangeDistribution.containsKey(distance)) {
-                                    InteractionRangeDistribution.put(distance, 0);
-                                }
-                                InteractionRangeDistribution.put(distance, InteractionRangeDistribution.get(distance) + 1);
-                            }
-                            temp.ItemNum++;
-                        }
+                        long[] result = RangeCount(temp);
+                        LinkerShortRangeNum[j] = result[0];
+                        LinkerLongRangeNum[j] = result[1];
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -114,6 +100,34 @@ public class NoiseReduceStat extends AbstractStat {
             LinkerCleanNum[i] = CleanFile[i].getItemNum();
         }
 
+    }
+
+    public long[] RangeCount(BedpeFile inFile) throws IOException {
+        long[] result = new long[2];
+        try {
+            inFile.ReadOpen();
+        } catch (IOException e) {
+            System.err.println("[" + this.getClass().getName() + "] " + e.getMessage());
+            return new long[]{0, 0};
+        }
+        BedpeItem item;
+        while ((item = inFile.ReadItem()) != null) {
+            int distance = item.getLocation().Distance();
+            if (ShortRegion.IsContain(distance)) {
+                result[0]++;
+            } else if (LongRegion.IsContain(distance)) {
+                result[1]++;
+            }
+            synchronized (this) {
+                if (!InteractionRangeDistribution.containsKey(distance)) {
+                    InteractionRangeDistribution.put(distance, 0);
+                }
+                InteractionRangeDistribution.put(distance, InteractionRangeDistribution.get(distance) + 1);
+            }
+            inFile.ItemNum++;
+        }
+        inFile.ReadClose();
+        return result;
     }
 
     @Override

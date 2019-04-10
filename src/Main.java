@@ -341,6 +341,11 @@ public class Main {
                         Opts.NRStat.LinkerReLigationNum[finalI] = bedpe[finalI].getReLigationFile().getItemNum();
                         Opts.NRStat.LinkerRepeatNum[finalI] = bedpe[finalI].getRepeatFile().getItemNum();
                         Opts.NRStat.LinkerCleanNum[finalI] = bedpe[finalI].getFinalFile().getItemNum();
+                        Opts.NRStat.LinkerSameCleanNum[finalI] = bedpe[finalI].getSameNoDumpFile().getItemNum();
+                        Opts.NRStat.LinkerDiffCleanNum[finalI] = bedpe[finalI].getDiffNoDumpFile().getItemNum();
+                        long[] range_result = Opts.NRStat.RangeCount(bedpe[finalI].getSameNoDumpFile());
+                        Opts.NRStat.LinkerShortRangeNum[finalI] = range_result[0];
+                        Opts.NRStat.LinkerLongRangeNum[finalI] = range_result[1];
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -355,7 +360,6 @@ public class Main {
             Thread t1 = new Thread(() -> {
                 try {
                     SameBedpeFile.Merge(LinkerFinalSameCleanBedpeFile);
-                    Opts.OVStat.IntraActionNum = SameBedpeFile.getItemNum();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -364,7 +368,6 @@ public class Main {
             Thread t2 = new Thread(() -> {
                 try {
                     DiffBedpeFile.Merge(LinkerFinalDiffCleanBedpeFile);
-                    Opts.OVStat.InterActionNum = DiffBedpeFile.getItemNum();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -416,20 +419,16 @@ public class Main {
             new BedpeToInter(FinalBedpeFile.getPath(), InterBedpeFile.getPath());//将交互区间转换成交互点
         }
         //==============================================================================================================
-        ST = new Thread(() -> {
-            try {
+
 //                Stat.InterAction.FinalBedpeFile = new BedpeFile(FinalBedpeFile);
 //                Stat.InterAction.FinalBedpeNum = Stat.InterAction.FinalBedpeFile.getItemNum();
 //                Stat.InterAction.IntraActionNum = new BedpeFile(SameBedpeFile).getItemNum();
 //                Stat.InterAction.InterActionNum = Stat.InterAction.FinalBedpeNum - Stat.InterAction.IntraActionNum;
-                if (Opts.LFStat.EnzymeCuttingSite.replace("^", "").length() <= 4) {
-                    Opts.OVStat.RangeThreshold = 5000;
+
+//            Opts.OVStat.RangeThreshold = 5000;
 //                    long[] range = SameBedpeFile.RangeCount(new Region(0, 5000), new Region(5000, Integer.MAX_VALUE), 1);
-                    Opts.OVStat.ShortRange = SameBedpeFile.DistanceCount(0, 5000, 1);
-                } else {
-                    Opts.OVStat.RangeThreshold = 20000;
-                    Opts.OVStat.ShortRange = SameBedpeFile.DistanceCount(0, 20000, 1);
-                }
+//            Opts.OVStat.ShortRange = SameBedpeFile.DistanceCount(0, 5000, 1);
+
 //                Opts.OVStat.ShortRange = (long) Stat.InterAction.ShortRegionNum;
 //                Stat.InterAction.LongRegionNum = Stat.InterAction.IntraActionNum - Stat.InterAction.ShortRegionNum;
 //                File InterActionLengthDisData = new File(Stat.getDataDir() + "/InterActionLengthDistribution.data");
@@ -439,12 +438,7 @@ public class Main {
 //                Opts.CommandOutFile.Append(ComLine + "\n");
 //                Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
 //                Configure.InterActionDistanceDisPng = InterActionLengthDisPng;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        ST.start();
-        SThread.add(ST);
+
         //=================================================Make Matrix==================================================
         Date matrixTime = new Date();
         System.err.println("Noise reducing: " + bedpeTime + " - " + matrixTime);

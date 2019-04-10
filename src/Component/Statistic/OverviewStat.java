@@ -56,7 +56,11 @@ public class OverviewStat extends AbstractStat {
         AlignmentNum = StatUtil.sum(Opts.ALStat.LinkerInputNum);
         UniqueMappedNum = StatUtil.sum(Opts.ALStat.MergeNum);
         CleanNum = StatUtil.sum(Opts.NRStat.LinkerCleanNum);
-        LongRange = IntraActionNum - ShortRange;
+        RangeThreshold = Opts.NRStat.ShortRegion.End;
+        IntraActionNum = Opts.NRStat.SameCleanNum;
+        InterActionNum = Opts.NRStat.DiffCleanNum;
+        ShortRange = Opts.NRStat.ShortRangeNum;
+        LongRange = Opts.NRStat.LongRangeNum;
     }
 
     @Override
