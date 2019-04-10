@@ -131,6 +131,15 @@ public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
         //==============================================测试区==========================================================
 
+//        FastqFile TestFile = new FastqFile("Test.fq.gz");
+//        TestFile.ReadOpen();
+//        String[] Lines;
+//        while ((Lines = TestFile.ReadItemLine()) != null) {
+//            for (int i = 0; i < Lines.length; i++) {
+//                System.out.println(Lines[i]);
+//            }
+//        }
+
 //        MemoryUsage memoryUsage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
 //        long maxMemorySize = memoryUsage.getMax();
 //        long usedMemorySize = memoryUsage.getUsed();

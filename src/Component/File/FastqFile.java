@@ -5,6 +5,7 @@ import Component.unit.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Created by snowf on 2019/2/17.
@@ -213,5 +214,4 @@ public class FastqFile extends AbstractFile<FastqItem> {
         ReadClose();
         OutFile.WriteClose();
     }
-
 }

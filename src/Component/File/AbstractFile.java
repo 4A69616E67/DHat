@@ -4,6 +4,7 @@ import Component.unit.SortItem;
 
 import java.io.*;
 import java.util.*;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Created by snowf on 2019/2/17.
@@ -45,7 +46,11 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
     }
 
     public void ReadOpen() throws IOException {
-        reader = new BufferedReader(new FileReader(this), BufferSize);
+        if (getName().matches(".*\\.gz")) {
+            reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(this))), BufferSize);
+        } else {
+            reader = new BufferedReader(new FileReader(this), BufferSize);
+        }
     }
 
     public void ReadClose() throws IOException {
