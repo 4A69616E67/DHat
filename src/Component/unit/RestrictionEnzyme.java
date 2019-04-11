@@ -7,7 +7,7 @@ package Component.unit;
 public class RestrictionEnzyme {
 
     public static final RestrictionEnzyme HindIII = new RestrictionEnzyme("HindIII", "A^AGCTT");
-    public static final RestrictionEnzyme MseI = new RestrictionEnzyme("MseI", "A^ATT");
+    public static final RestrictionEnzyme MseI = new RestrictionEnzyme("MseI", "T^TAA");
     public static final RestrictionEnzyme ClaI = new RestrictionEnzyme("ClaI", "AT^CGAT");
     public static final RestrictionEnzyme[] list = new RestrictionEnzyme[]{HindIII, MseI, ClaI};
     private static final String Delimiter = "^";
