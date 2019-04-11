@@ -713,8 +713,8 @@ public class Main {
         String[] tempstrs;
         InputFile = Opts.OVStat.InputFile = Configure.InputFile;
         GenomeFile = Opts.ALStat.GenomeFile = Configure.GenomeFile;
-        Restriction = Opts.LFStat.EnzymeCuttingSite = Configure.Restriction;
-        if (Configure.Restriction.replace("^", "").length() <= 4) {
+        Restriction = Opts.LFStat.EnzymeCuttingSite = Configure.Restriction.toString();
+        if (Configure.Restriction.getSequence().length() <= 4) {
             Opts.OVStat.RangeThreshold = 5000;
         } else {
             Opts.OVStat.RangeThreshold = 20000;

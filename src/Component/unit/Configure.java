@@ -19,7 +19,7 @@ public class Configure {
     public static File LinkerScoreDisPng;
     //-----------------------------------------------------------
     public static FastqFile InputFile;
-    public static String Restriction;
+    public static RestrictionEnzyme Restriction;
     public static String[] HalfLinker;
     public static File GenomeFile;
     //-----------------------------------------------------------
@@ -210,7 +210,7 @@ public class Configure {
 
     private static void Init() {
         InputFile = Require.InputFile.Value != null ? new FastqFile(Require.InputFile.Value.toString().trim()) : null;
-        Restriction = Require.Restriction.Value != null ? Require.Restriction.Value.toString().trim() : null;
+        Restriction = Require.Restriction.Value != null ? new RestrictionEnzyme(Require.Restriction.Value.toString().trim()) : null;
         HalfLinker = Require.HalfLinker.Value != null ? Require.HalfLinker.Value.toString().trim().split("\\s+") : null;
         GenomeFile = Require.GenomeFile.Value != null ? new File(Require.GenomeFile.Value.toString()) : null;
         //----------------------------------------------------------------------------------------------------

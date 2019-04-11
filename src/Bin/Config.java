@@ -6,6 +6,7 @@ import Component.Software.Python;
 import Component.tool.Tools;
 import Component.unit.Chromosome;
 import Component.unit.Configure;
+import Component.unit.RestrictionEnzyme;
 
 import javax.swing.*;
 import java.awt.event.*;
@@ -118,7 +119,7 @@ class Config extends JDialog {
     private void Init() {
         TextField_InputFile.setText(Configure.InputFile == null ? "" : Configure.InputFile.toString());
         TextField_GenomeFile.setText(Configure.GenomeFile == null ? "" : Configure.GenomeFile.toString());
-        TextField_Restriction.setText(Configure.Restriction == null ? "" : Configure.Restriction);
+        TextField_Restriction.setText(Configure.Restriction == null ? "" : Configure.Restriction.toString());
         String[] strs;
         if (Configure.HalfLinker == null) {
             TextField_HalfLinker1.setText("");
@@ -180,7 +181,7 @@ class Config extends JDialog {
         if (tabbedPane1.getSelectedIndex() == 0) {
             Configure.InputFile = new FastqFile(TextField_InputFile.getText().trim());
             Configure.GenomeFile = new File(TextField_GenomeFile.getText().trim());
-            Configure.Restriction = TextField_Restriction.getText().trim();
+            Configure.Restriction = new RestrictionEnzyme(TextField_Restriction.getText().trim());
             Configure.HalfLinker = String.join(" ", new String[]{TextField_HalfLinker1.getText().trim(), TextField_HalfLinker2.getText().trim()}).split("\\s+");
             Configure.OutPath = new File(TextField_OutPath.getText().trim());
             Configure.Prefix = TextField_Prefix.getText().trim();
