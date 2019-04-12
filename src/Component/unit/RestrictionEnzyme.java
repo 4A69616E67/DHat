@@ -35,9 +35,9 @@ public class RestrictionEnzyme {
 
     public RestrictionEnzyme(String s) {
         boolean flag = false;
-        for (int i = 0; i < list.length; i++) {
-            if (s.compareToIgnoreCase(list[i].getName()) == 0) {
-                copy(list[i]);
+        for (RestrictionEnzyme aList : list) {
+            if (s.compareToIgnoreCase(aList.getName()) == 0) {
+                copy(aList);
                 flag = true;
                 break;
             }

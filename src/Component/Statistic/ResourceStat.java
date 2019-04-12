@@ -13,7 +13,7 @@ import java.util.Date;
 
 public class ResourceStat extends AbstractStat {
     private Thread StatThread;
-    private float IntervalTime = 5;//second
+    private float IntervalTime = 2;//second
     private SimpleDateFormat data_format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
