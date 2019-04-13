@@ -1,10 +1,10 @@
 <component name="libraryTable">
   <library name="Apache Commons">
     <CLASSES>
-      <root url="file://$PROJECT_DIR$/src/Libraries/Apache Commons" />
+      <root url="file://$PROJECT_DIR$/Libraries/Apache Commons" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
-    <jarDirectory url="file://$PROJECT_DIR$/src/Libraries/Apache Commons" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/Libraries/Apache Commons" recursive="false" />
   </library>
 </component>

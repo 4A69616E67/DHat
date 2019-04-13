@@ -153,23 +153,25 @@ public class Opts {
 
 
     public static final int MaxBinNum = 1000000;//最大bin的数目
+    public static final String InterResourceDir = "Resource";
+    public static final String InterArchiveDir = "Archive";
     public static final File JarFile = new File(Opts.class.getProtectionDomain().getCodeSource().getLocation().getFile());
-    public static final File ScriptDir = new File(JarFile.getParent() + "/Script");//脚本文件存放的位置
-    public static final File ResourceDir = new File(JarFile.getParent() + "/Resource");//资源文件存放的位置
+    public static final File OutScriptDir = new File(JarFile.getParent() + "/Script");//脚本文件存放的位置
+    public static final File OutResourceDir = new File(JarFile.getParent() + "/Resource");//资源文件存放的位置
     public static CommonFile CommandOutFile = new CommonFile(Configure.OutPath + "/Command.log");
     public static CommonFile StatisticFile = new CommonFile(Configure.OutPath + "/Statistic.txt");
     public static CommonFile ResourceStatFile = new CommonFile(Configure.OutPath + "/JVM_stat.txt");
     public static final String[] ResourceFile = new String[]{"default.conf", "default_adv.conf"};
     public static final String[] ScriptFile = new String[]{"PlotHeatMap.py", "StatisticPlot.py", "RegionPlot.py"};
-    public static final CommonFile ConfigFile = new CommonFile(ResourceDir + "/" + ResourceFile[0]);
-    public static final CommonFile AdvConfigFile = new CommonFile(ResourceDir + "/" + ResourceFile[1]);
-    public static final File PlotHeatMapScriptFile = new File(ScriptDir + "/" + ScriptFile[0]);
-    public static final File StatisticPlotFile = new File(ScriptDir + "/" + ScriptFile[1]);
-    public static final File StyleCss = new File("/resource/style.css");
-    public static final File JqueryJs = new File("/resource/jquery.min.js");
-    public static final File ScriptJs = new File("/resource/script.js");
-    public static final File TemplateReportHtml = new File("/resource/Report.html");
-    public static final File ReadMeFile = new File("/resource/ReadMe.md");
+    public static final CommonFile ConfigFile = new CommonFile(OutResourceDir + "/" + ResourceFile[0]);
+    public static final CommonFile AdvConfigFile = new CommonFile(OutResourceDir + "/" + ResourceFile[1]);
+    public static final File PlotHeatMapScriptFile = new File(OutScriptDir + "/" + ScriptFile[0]);
+    public static final File StatisticPlotFile = new File(OutScriptDir + "/" + ScriptFile[1]);
+    public static final File StyleCss = new File("/" + InterResourceDir + "/style.css");
+    public static final File JqueryJs = new File("/" + InterResourceDir + "/jquery.min.js");
+    public static final File ScriptJs = new File("/" + InterResourceDir + "/script.js");
+    public static final File TemplateReportHtml = new File("/" + InterResourceDir + "/Report.html");
+    public static final File ReadMeFile = new File("/" + InterResourceDir + "/ReadMe.txt");
     public static final Float Version = 1.0F;
     public static final String Author = "Snowflakes";
     public static final String Email = "john-jh@foxmail.com";

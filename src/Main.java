@@ -1,6 +1,4 @@
 import java.io.*;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryUsage;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -147,17 +145,17 @@ public class Main {
 
         //================================================初始化========================================================
         if (args.length >= 1 && args[0].equals("install")) {
-            if (!Opts.ResourceDir.isDirectory() & !Opts.ResourceDir.mkdir())
-                System.err.println(new Date() + ":\tCan't Create " + Opts.ResourceDir.getName());
-            if (!Opts.ScriptDir.isDirectory() & !Opts.ScriptDir.mkdir())
-                System.err.println(new Date() + ":\tCan't Create " + Opts.ScriptDir.getName());
+            if (!Opts.OutResourceDir.isDirectory() & !Opts.OutResourceDir.mkdir())
+                System.err.println(new Date() + ":\tCan't Create " + Opts.OutResourceDir.getName());
+            if (!Opts.OutScriptDir.isDirectory() & !Opts.OutScriptDir.mkdir())
+                System.err.println(new Date() + ":\tCan't Create " + Opts.OutScriptDir.getName());
             for (String f : Opts.ScriptFile) {
-                System.out.println("Extract " + Opts.ScriptDir + "/" + f);
-                FileTool.ExtractFile("/Archive/" + f, new File(Opts.ScriptDir + "/" + f));
+                System.out.println("Extract " + Opts.OutScriptDir + "/" + f);
+                FileTool.ExtractFile("/" + Opts.InterArchiveDir + "/" + f, new File(Opts.OutScriptDir + "/" + f));
             }
             for (String f : Opts.ResourceFile) {
-                System.out.println("Extract " + Opts.ResourceDir + "/" + f);
-                FileTool.ExtractFile("/resource/" + f, new File(Opts.ResourceDir + "/" + f));
+                System.out.println("Extract " + Opts.OutResourceDir + "/" + f);
+                FileTool.ExtractFile("/" + Opts.InterResourceDir + "/" + f, new File(Opts.OutResourceDir + "/" + f));
             }
             System.out.println("Extract " + Opts.JarFile.getParent() + "/" + Opts.ReadMeFile.getName());
             FileTool.ExtractFile(Opts.ReadMeFile.getPath(), new File(Opts.JarFile.getParent() + "/" + Opts.ReadMeFile.getName()));

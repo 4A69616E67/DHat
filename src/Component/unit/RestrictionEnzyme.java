@@ -1,15 +1,20 @@
 package Component.unit;
 
+import Component.File.FileTool;
+
+import java.io.*;
+import java.util.ArrayList;
+
 /**
  * Created by snowf on 2019/4/11.
  */
 
 public class RestrictionEnzyme {
 
-    public static final RestrictionEnzyme HindIII = new RestrictionEnzyme("HindIII", "A^AGCTT");
-    public static final RestrictionEnzyme MseI = new RestrictionEnzyme("MseI", "T^TAA");
-    public static final RestrictionEnzyme ClaI = new RestrictionEnzyme("ClaI", "AT^CGAT");
-    public static final RestrictionEnzyme[] list = new RestrictionEnzyme[]{HindIII, MseI, ClaI};
+    //    public static final RestrictionEnzyme HindIII = new RestrictionEnzyme("HindIII", "A^AGCTT");
+//    public static final RestrictionEnzyme MseI = new RestrictionEnzyme("MseI", "T^TAA");
+//    public static final RestrictionEnzyme ClaI = new RestrictionEnzyme("ClaI", "AT^CGAT");
+    public static final RestrictionEnzyme[] list = load("/Resource/EnzymeSite.txt");
     private static final String Delimiter = "^";
 
     private String Name;
@@ -26,6 +31,22 @@ public class RestrictionEnzyme {
             Sequence = s;
             CutSite = 0;
         }
+    }
+
+    private static RestrictionEnzyme[] load(String f) {
+        ArrayList<RestrictionEnzyme> list = new ArrayList<>();
+        BufferedReader in = new BufferedReader(FileTool.GetFileStream(f));
+        String line;
+        try {
+            while ((line = in.readLine()) != null) {
+                String[] str = line.split("\\s+");
+                list.add(new RestrictionEnzyme(str[0], str[1]));
+            }
+        } catch (IOException e) {
+            System.err.println("Load " + f + " error!");
+        }
+
+        return list.toArray(new RestrictionEnzyme[0]);
     }
 
     public static void main(String[] args) {
@@ -69,4 +90,5 @@ public class RestrictionEnzyme {
     public String toString() {
         return Sequence.substring(0, CutSite) + Delimiter + Sequence.substring(CutSite);
     }
+
 }
