@@ -9,7 +9,6 @@ import java.util.ArrayList;
 
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 public class AdapterDetection {
     public static void main(String[] args) throws IOException, InterruptedException, ParseException {
@@ -18,6 +17,7 @@ public class AdapterDetection {
         Argument.addOption(Option.builder("p").hasArg().desc("prefix").build());
         Argument.addOption(Option.builder("c").hasArg().desc("cutoff position").build());
         Argument.addOption(Option.builder("q").hasArg(false).desc("quiet mode").build());
+        Argument.addOption(Option.builder("n").hasArg(false).desc("sequence number use to processing").build());
         if (args.length == 0) {
             new HelpFormatter().printHelp("java -cp " + Opts.JarFile.getName() + " " + AdapterDetection.class.getName(), Argument, true);
             System.exit(1);
@@ -26,9 +26,9 @@ public class AdapterDetection {
         File InPutFile = Opts.GetFileOpt(ComLine, "i", null);
         String Prefix = Opts.GetStringOpt(ComLine, "p", Configure.Prefix);
         int SubIndex = Opts.GetIntOpt(ComLine, "c", 0);
+        int SeqNum = Opts.GetIntOpt(ComLine, "n", 100);
         StringBuilder Adapter = new StringBuilder();
         ArrayList<char[]> MsaStat = new ArrayList<>();
-        int SeqNum = 31;
         int[] CountArrays = new int[255];
         File HeadFile = new File(Prefix + ".head" + SeqNum);
         File MsaFile = new File(Prefix + ".msa");

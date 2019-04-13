@@ -87,7 +87,7 @@ public class FastqFile extends AbstractFile<FastqItem> {
     public String AdapterDetect(File Prefix, int SubIndex) throws IOException, InterruptedException {
         StringBuilder Adapter = new StringBuilder();
         ArrayList<char[]> MsaStat = new ArrayList<>();
-        int SeqNum = 31;
+        int SeqNum = 100;
         int[] CountArrays = new int[255];
         FastaFile HeadFile = new FastaFile(Prefix + ".head" + SeqNum);
         FastaFile MsaFile = new FastaFile(Prefix + ".msa");
