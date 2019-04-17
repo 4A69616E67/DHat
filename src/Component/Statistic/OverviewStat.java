@@ -45,8 +45,8 @@ public class OverviewStat extends AbstractStat {
         show.append("Clean data:    \t").append(new DecimalFormat("#,###").format(CleanNum)).append("\t").append(String.format("%.2f", (double) CleanNum / RawDataNum * 100)).append("%").append("\n");
         show.append("Inter-action:  \t").append(new DecimalFormat("#,###").format(InterActionNum)).append("\t").append(String.format("%.2f", (double) InterActionNum / CleanNum * 100)).append("%").append("\t");
         show.append("Intra-action:  \t").append(new DecimalFormat("#,###").format(IntraActionNum)).append("\t").append(String.format("%.2f", (double) IntraActionNum / CleanNum * 100)).append("%").append("\n");
-        show.append("Short range(<").append(RangeThreshold).append("):\t").append(new DecimalFormat("#,###").format(ShortRange)).append("\t").append(String.format("%.2f", (double) ShortRange / IntraActionNum * 100)).append("%").append("\t");
-        show.append("Long range(>=").append(RangeThreshold).append("):\t").append(new DecimalFormat("#,###").format(LongRange)).append("\t").append(String.format("%.2f", (double) LongRange / IntraActionNum * 100)).append("%").append("\n");
+        show.append("Short range(<=").append(RangeThreshold).append("):\t").append(new DecimalFormat("#,###").format(ShortRange)).append("\t").append(String.format("%.2f", (double) ShortRange / IntraActionNum * 100)).append("%").append("\t");
+        show.append("Long range(>").append(RangeThreshold).append("):\t").append(new DecimalFormat("#,###").format(LongRange)).append("\t").append(String.format("%.2f", (double) LongRange / IntraActionNum * 100)).append("%").append("\n");
         return show.toString();
     }
 

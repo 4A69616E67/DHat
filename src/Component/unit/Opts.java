@@ -152,6 +152,7 @@ public class Opts {
     }
 
 
+    public static final String OsName = System.getProperty("os.name");
     public static final int MaxBinNum = 1000000;//最大bin的数目
     public static final String InterResourceDir = "Resource";
     public static final String InterArchiveDir = "Archive";

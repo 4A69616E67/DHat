@@ -3,7 +3,9 @@ package Component.Software;
 import Component.File.CommonFile;
 import Component.tool.Tools;
 import Component.unit.Configure;
+import Component.unit.Opts;
 
+import javax.sound.midi.SoundbankResource;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -31,7 +33,12 @@ public abstract class AbstractSoftware {
     protected File getPath() {
         CommonFile temporaryFile = new CommonFile(Configure.OutPath + "/software.path.tmp");
         try {
-            Tools.ExecuteCommandStr("which " + Execution, new PrintWriter(temporaryFile), null);
+            if (Opts.OsName.matches(".*(?i)windows.*")) {
+                Tools.ExecuteCommandStr("where " + Execution, new PrintWriter(temporaryFile), null);
+            } else {
+                Tools.ExecuteCommandStr("which " + Execution, new PrintWriter(temporaryFile), null);
+            }
+
             ArrayList<char[]> tempLines = temporaryFile.Read();
             Path = new File(String.valueOf(tempLines.get(0))).getParentFile();
             Valid = true;

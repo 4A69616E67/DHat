@@ -42,27 +42,37 @@ public class Python extends AbstractSoftware {
     }
 
     public boolean installPackage(String packageName) {
-        String commandLine = Path + "/pip install " + packageName;
+        String commandLine = Path + "/Scripts/pip install " + packageName;
         return true;
     }
 
-    public boolean checkPackage(String packageName) {
-        String commandLine = Path + "/pip list";
+    public String getPackageVersion(String packageName) {
+        String version = null;
+        String commandLine = Path + "/Scripts/pip list";
         CommonFile temporaryFile = new CommonFile(Configure.OutPath + "/python.package_list.tmp");
         try {
             Tools.ExecuteCommandStr(commandLine, new PrintWriter(temporaryFile), null);
             ArrayList<char[]> lines = temporaryFile.Read();
             temporaryFile.delete();
             for (char[] c : lines) {
-                String p = String.valueOf(c).split("\\s+")[0];
-                if (p.equals(packageName)) {
-                    return true;
+                String[] p = String.valueOf(c).split("\\s+");
+                if (p[0].equals(packageName)) {
+                    version = p[1].replaceAll("\\(|\\)", "");
                 }
             }
         } catch (IOException | InterruptedException e) {
             temporaryFile.delete();
-            System.err.println("Warning! can't check python package: " + packageName);
+            System.err.println("Warning! can't get python package: " + packageName);
         }
-        return false;
+        return version;
+    }
+
+
+    public boolean checkPackage(String packageName, String version) {
+        if (version == null || version.trim().equals("")) {
+            return true;
+        }
+        String pversion = getPackageVersion(packageName);
+        return pversion != null && pversion.equals(version);
     }
 }

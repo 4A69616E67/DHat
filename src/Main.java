@@ -113,7 +113,9 @@ public class Main {
                     System.exit(1);
                 }
                 PbsFile.Append(comline);
-                Tools.ExecuteCommandStr("qsub -d ./ -l nodes=1:ppn=" + Configure.Thread + " -N " + Configure.Prefix + " " + PbsFile, new PrintWriter(System.out), new PrintWriter(System.err));
+                comline = "qsub -d ./ -l nodes=1:ppn=" + Configure.Thread + " -N " + Configure.Prefix + " " + PbsFile;
+                System.out.println(comline);
+                Tools.ExecuteCommandStr(comline, new PrintWriter(System.out), new PrintWriter(System.err));
                 System.exit(0);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -187,6 +189,7 @@ public class Main {
         //==============================================================================================================
         Thread ST;//统计线程
         Thread[] STS;//统计线程
+        Thread findenzy = FindRestrictionFragment();
         //=========================================linker filter==linker 过滤===========================================
         Date preTime = new Date();
         //---------------------------------保存linker序列--------------------------------
@@ -277,6 +280,9 @@ public class Main {
                     CreateIndex(GenomeFile);
                 }
                 Opts.ALStat.GenomeIndex = IndexPrefix;
+                if (Opts.Step.FindEnzymeFragment.Execute) {
+                    findenzy.start();
+                }
                 SamFile[] r1 = SeProcess(UseLinkerFasqFileR1[i], UseLinkerFasqFileR1[i].getName().replace(".fastq", ""));
                 SamFile[] r2 = SeProcess(UseLinkerFasqFileR2[i], UseLinkerFasqFileR2[i].getName().replace(".fastq", ""));
                 Opts.ALStat.LinkerInputNum[i] = UseLinkerFasqFileR1[i].getItemNum();
@@ -289,6 +295,10 @@ public class Main {
                 System.out.println(new Date() + "\t" + R1SortBedFile[i].getName() + " " + R2SortBedFile[i].getName() + " to " + SeBedpeFile[i].getName());
                 SeBedpeFile[i].BedToBedpe(R1SortBedFile[i], R2SortBedFile[i]);//合并左右端bed文件，输出bedpe文件
                 Opts.ALStat.MergeNum[i] = SeBedpeFile[i].getItemNum();
+                if (Opts.Step.FindEnzymeFragment.Execute) {
+                    findenzy.join();
+                    Opts.Step.FindEnzymeFragment.Execute = false;
+                }
             }
         }
         if (Opts.Step.Statistic.Execute) {
@@ -330,12 +340,12 @@ public class Main {
             bedpe[i] = new BedpeProcess(new File(BedpeProcessDir + "/" + ValidLinkerSeq[i].getType()), Prefix + "." + ValidLinkerSeq[i].getType(), Chromosomes, ChrEnzyFile, SeBedpeFile[i]);//bedpe文件处理类
             bedpe[i].Threads = Math.max(1, Threads / LinkerProcess.length);//设置线程数
         }
-        Thread findenzy = FindRestrictionFragment();
         if (Opts.Step.BedPeProcess.Execute) {
             //==========================================获取酶切片段和染色体大小=============================================
             if (Opts.Step.FindEnzymeFragment.Execute) {
                 findenzy.start();
                 findenzy.join();
+                Opts.Step.FindEnzymeFragment.Execute = false;
             }
             //==============================================BedpeFile Process====bedpe 处理=================================
             for (int i = 0; i < LinkerProcess.length; i++) {
