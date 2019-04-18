@@ -113,7 +113,7 @@ public class Main {
                     System.exit(1);
                 }
                 PbsFile.Append(comline);
-                comline = "qsub -d ./ -l nodes=1:ppn=" + Configure.Thread + " -N " + Configure.Prefix + " " + PbsFile;
+                comline = "qsub -d ./ -l nodes=1:ppn=" + Configure.Thread + ",mem=" + (int) Math.ceil(Opts.MaxMemory / Math.pow(10, 9)) + "g -N " + Configure.Prefix + " " + PbsFile;
                 System.out.println(comline);
                 Tools.ExecuteCommandStr(comline, new PrintWriter(System.out), new PrintWriter(System.err));
                 System.exit(0);
