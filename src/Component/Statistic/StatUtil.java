@@ -17,6 +17,16 @@ public class StatUtil {
         return res;
     }
 
+    public static int sum(int[] i) {
+        int res = 0;
+        if (i != null) {
+            for (long aI : i) {
+                res += aI;
+            }
+        }
+        return res;
+    }
+
     public static int max(int[] i) {
         int max = Integer.MIN_VALUE;
         for (int a : i) {

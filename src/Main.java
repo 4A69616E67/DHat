@@ -7,6 +7,7 @@ import Component.File.*;
 import Component.Process.BedpeProcess;
 import Component.Process.PreProcess;
 import Component.Process.SeProcess;
+import Component.Software.Python;
 import Component.tool.*;
 import Component.tool.FindRestrictionSite;
 import Component.unit.*;
@@ -206,7 +207,12 @@ public class Main {
                 if (AdapterSeq[0].compareToIgnoreCase("auto") == 0) {
                     //标记为自动识别Adapter
                     AdapterSeq = new String[1];
-                    AdapterSeq[0] = InputFile.AdapterDetect(new File(PreProcessDir + "/" + Prefix), LinkerLength + MaxReadsLength);
+//                    AdapterSeq[0] = InputFile.AdapterDetection(new File(PreProcessDir + "/" + Prefix), LinkerLength + MaxReadsLength);
+                    CommonFile StatFile = new CommonFile(PreProcessDir + "/" + Prefix + ".base.freq");
+                    AdapterSeq[0] = FileTool.AdapterDetection(InputFile, new File(PreProcessDir + "/" + Prefix), LinkerLength + MaxReadsLength, StatFile);
+                    String ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t stackbar -y Percentage --title Base_Frequency" + " -i " + StatFile + " -o " + Stat.getImageDir() + "/" + StatFile.getName() + ".png";
+                    Opts.CommandOutFile.Append(ComLine + "\n");
+                    Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
                     System.out.println(new Date() + "\tDetected adapter seq:\t" + AdapterSeq[0]);
                 }
                 //将Adapter序列输出到文件中
@@ -273,6 +279,9 @@ public class Main {
             Opts.NRStat.InputFile[i] = SeBedpeFile[i];
         }
         if (Opts.Step.SeProcess.Execute) {
+            if (Opts.Step.FindEnzymeFragment.Execute) {
+                findenzy.start();
+            }
             for (int i = 0; i < ValidLinkerSeq.length; i++) {
                 System.out.println(new Date() + "\tStart Alignment");
                 //==========================================Create Index========================================================
@@ -280,9 +289,6 @@ public class Main {
                     CreateIndex(GenomeFile);
                 }
                 Opts.ALStat.GenomeIndex = IndexPrefix;
-                if (Opts.Step.FindEnzymeFragment.Execute) {
-                    findenzy.start();
-                }
                 SamFile[] r1 = SeProcess(UseLinkerFasqFileR1[i], UseLinkerFasqFileR1[i].getName().replace(".fastq", ""));
                 SamFile[] r2 = SeProcess(UseLinkerFasqFileR2[i], UseLinkerFasqFileR2[i].getName().replace(".fastq", ""));
                 Opts.ALStat.LinkerInputNum[i] = UseLinkerFasqFileR1[i].getItemNum();
@@ -295,10 +301,10 @@ public class Main {
                 System.out.println(new Date() + "\t" + R1SortBedFile[i].getName() + " " + R2SortBedFile[i].getName() + " to " + SeBedpeFile[i].getName());
                 SeBedpeFile[i].BedToBedpe(R1SortBedFile[i], R2SortBedFile[i]);//合并左右端bed文件，输出bedpe文件
                 Opts.ALStat.MergeNum[i] = SeBedpeFile[i].getItemNum();
-                if (Opts.Step.FindEnzymeFragment.Execute) {
-                    findenzy.join();
-                    Opts.Step.FindEnzymeFragment.Execute = false;
-                }
+            }
+            if (Opts.Step.FindEnzymeFragment.Execute) {
+                findenzy.join();
+                Opts.Step.FindEnzymeFragment.Execute = false;
             }
         }
         if (Opts.Step.Statistic.Execute) {
@@ -858,6 +864,14 @@ public class Main {
 
     private void ShowParameter() {
         System.out.println(Configure.ShowParameter());
+    }
+
+
+    private String[] LinkerDetection(FastqFile fastqFile) throws IOException {
+        int LineNum = 100;
+        String[] HalfLinkers = null;
+        fastqFile.ReadOpen();
+        return HalfLinkers;
     }
 
 

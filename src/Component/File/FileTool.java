@@ -1,5 +1,6 @@
 package Component.File;
 
+import Component.tool.Tools;
 import Component.unit.*;
 
 import java.io.*;
@@ -23,31 +24,19 @@ public class FileTool {
         return Str;
     }
 
-    public static Opts.FileFormat ReadsType(File fastqfile) throws IOException {
+    public static Opts.FileFormat ReadsType(FastqFile fastqfile) throws IOException {
         int LineNumber = 100, i = 0, Count = 0;
-        BufferedReader reader = new BufferedReader(new FileReader(fastqfile));
-        String line;
-        try {
-            reader.readLine();
-            line = reader.readLine();
-        } catch (NullPointerException e) {
-            return Opts.FileFormat.ErrorFormat;
-        }
-        while (line != null) {
+        fastqfile.ReadOpen();
+//        BufferedReader reader = new BufferedReader(new FileReader(fastqfile));
+        FastqItem item;
+        while ((item = fastqfile.ReadItem()) != null) {
+            Count += item.Sequence.length();
             i++;
-            Count += line.length();
             if (i >= LineNumber) {
                 break;
             }
-            try {
-                reader.readLine();
-                reader.readLine();
-                reader.readLine();
-                line = reader.readLine();
-            } catch (NullPointerException e) {
-                break;
-            }
         }
+        fastqfile.ReadClose();
         if (i == 0) {
             return Opts.FileFormat.ErrorFormat;
         }
@@ -111,70 +100,100 @@ public class FileTool {
         return matrix;
     }
 
-//    public static ArrayList<InterAction> ReadInterActionFile(BedpeFile file, int Name, int Count, int Fragment1, int Fragment2) throws IOException {
-//        String line;
-//        String[] str;
-//        ArrayList<InterAction> List = new ArrayList<>();
-//        BufferedReader in = new BufferedReader(new FileReader(file));
-//        if (file.BedpeDetect() == Opts.FileFormat.BedpePointFormat) {
-//            while ((line = in.readLine()) != null) {
-//                str = line.split("\\s+");
-//                InterAction inter = new InterAction(new ChrRegion(new String[]{str[0], str[1], str[1]}), new ChrRegion(new String[]{str[2], str[3], str[3]}));
-//                if (Name >= 0) {
-//                    try {
-//                        inter.Name = str[Name];
-//                    } catch (IndexOutOfBoundsException e) {
-//                        inter.Name = null;
-//                    }
-//                }
-//                if (Count >= 0) {
-//                    try {
-//                        inter.Score = Integer.parseInt(str[Count]);
-//                    } catch (NumberFormatException | IndexOutOfBoundsException e) {
-//                        inter.Score = 1;
-//                    }
-//                }
-//                if (Fragment1 >= 0 && Fragment2 >= 0) {
-//                    try {
-//                        inter.LeftFragment = Integer.parseInt(str[Fragment1]);
-//                        inter.RightFragment = Integer.parseInt(str[Fragment2]);
-//                    } catch (IndexOutOfBoundsException | NumberFormatException ignored) {
-//                    }
-//                }
-//                List.add(inter);
-//            }
-//        } else if (file.BedpeDetect() == Opts.FileFormat.BedpeRegionFormat) {
-//            while ((line = in.readLine()) != null) {
-//                str = line.split("\\s+");
-//                InterAction inter = new InterAction(new ChrRegion(new String[]{str[0], str[1], str[2]}), new ChrRegion(new String[]{str[3], str[4], str[5]}));
-//                if (Name >= 0) {
-//                    try {
-//                        inter.Name = str[Name];
-//                    } catch (IndexOutOfBoundsException e) {
-//                        inter.Name = null;
-//                    }
-//                }
-//                if (Count >= 0) {
-//                    try {
-//                        inter.Score = Integer.parseInt(str[Count]);
-//                    } catch (NumberFormatException | IndexOutOfBoundsException e) {
-//                        inter.Score = 1;
-//                    }
-//                }
-//                if (Fragment1 >= 0 && Fragment2 >= 0) {
-//                    try {
-//                        inter.LeftFragment = Integer.parseInt(str[Fragment1]);
-//                        inter.RightFragment = Integer.parseInt(str[Fragment2]);
-//                    } catch (IndexOutOfBoundsException | NumberFormatException ignored) {
-//                    }
-//                }
-//                List.add(inter);
-//            }
-//        } else {
-//            System.out.println("Error format");
-//            System.exit(1);
-//        }
-//        in.close();
-//        return List;
-//    }
+    public static String AdapterDetection(FastqFile file, File Prefix, int SubIndex, AbstractFile stat_file) throws IOException, InterruptedException {
+        StringBuilder Adapter = new StringBuilder();
+        int SeqNum = 100;
+        FastaFile HeadFile = new FastaFile(Prefix + ".head" + SeqNum);
+        file.ReadOpen();
+        BufferedWriter writer = new BufferedWriter(new FileWriter(HeadFile));
+        FastqItem fastq_item;
+        int linenumber = 0;
+        while ((fastq_item = file.ReadItem()) != null && ++linenumber <= SeqNum) {
+            writer.write(fastq_item.Title.replace("@", ">") + "\n");
+            writer.write(fastq_item.Sequence.substring(SubIndex) + "\n");
+        }
+        file.ReadClose();
+        writer.close();
+        FastaItem[] SplitAdapter = FindSimilarSequences(HeadFile, stat_file);
+        int MaxValue = 0;
+        for (FastaItem aSplitAdapter : SplitAdapter) {
+            if (aSplitAdapter.Sequence.length() > MaxValue) {
+                MaxValue = aSplitAdapter.Sequence.length();
+                Adapter = aSplitAdapter.Sequence;
+            }
+        }
+        return Adapter.toString();
+    }
+
+    private static FastaItem[] FindSimilarSequences(FastaFile file, AbstractFile stat_file) throws IOException, InterruptedException {
+        FastaFile MsaFile = new FastaFile(file.getPath() + ".msa");
+        StringBuilder SimSeq = new StringBuilder();
+        ArrayList<char[]> MsaStat = new ArrayList<>();
+        ArrayList<float[]> BaseFreq = new ArrayList<>();
+        int[] CountArrays = new int[255];
+        FastaItem[] ResItems;
+        //----------------------------------------------------------------------
+        String ComLine = "mafft " + file.getPath();
+        Opts.CommandOutFile.Append(ComLine + "\n");
+        PrintWriter msa = new PrintWriter(MsaFile);
+        if (Configure.DeBugLevel < 1) {
+            Tools.ExecuteCommandStr(ComLine, msa, null);
+        } else {
+            Tools.ExecuteCommandStr(ComLine, msa, new PrintWriter(System.err));
+        }
+        msa.close();
+        MsaFile.ReadOpen();
+        FastaItem item;
+        while ((item = MsaFile.ReadItem()) != null) {
+            MsaStat.add(item.Sequence.toString().toCharArray());
+        }
+        int SeqNum = MsaStat.size();
+        MsaFile.ReadClose();
+        for (int i = 0; i < MsaStat.get(0).length; i++) {
+            CountArrays['A'] = 0;
+            CountArrays['T'] = 0;
+            CountArrays['C'] = 0;
+            CountArrays['G'] = 0;
+            CountArrays['-'] = 0;
+            for (char[] aMsaStat : MsaStat) {
+                CountArrays[Character.toUpperCase(aMsaStat[i])]++;
+            }
+            int MaxValue = 0;
+            char MaxBase = '-';
+            BaseFreq.add(new float[255]);
+            for (char base : new char[]{'A', 'T', 'C', 'G', '-'}) {
+                BaseFreq.get(i)[base] = (float) CountArrays[base] / SeqNum;
+                if (CountArrays[base] > MaxValue) {
+                    MaxValue = CountArrays[base];
+                    MaxBase = base;
+                }
+            }
+            if (MaxValue > SeqNum / 2) {
+                SimSeq.append(MaxBase);
+            } else {
+                SimSeq.append('N');
+            }
+        }
+        String[] SplitSeq = SimSeq.toString().replace("-", "").split("N+");
+        ResItems = new FastaItem[SplitSeq.length];
+        for (int i = 0; i < ResItems.length; i++) {
+            ResItems[i] = new FastaItem(">seq" + i);
+            ResItems[i].Sequence.append(SplitSeq[i]);
+        }
+        if (stat_file != null) {
+            BufferedWriter writer = stat_file.WriteOpen();
+            writer.write("Position\tA\tT\tC\tG\t-\n");
+            for (int i = 0; i < BaseFreq.size(); i++) {
+                writer.write(String.valueOf(i + 1));
+                for (char base : new char[]{'A', 'T', 'C', 'G', '-'}) {
+                    writer.write("\t" + String.format("%.2f", BaseFreq.get(i)[base]));
+                }
+                writer.write("\n");
+            }
+            stat_file.WriteClose();
+        }
+        return ResItems;
+    }
+
+
 }
