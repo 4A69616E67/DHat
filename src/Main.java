@@ -7,7 +7,6 @@ import Component.File.*;
 import Component.Process.BedpeProcess;
 import Component.Process.PreProcess;
 import Component.Process.SeProcess;
-import Component.Software.Python;
 import Component.tool.*;
 import Component.tool.FindRestrictionSite;
 import Component.unit.*;
@@ -132,7 +131,8 @@ public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
         //==============================================测试区==========================================================
 
-//        FastqFile TestFile = new FastqFile("Test.fq.gz");
+        FastqFile TestFile = new FastqFile("Test.HindII.fastq");
+        FileTool.LinkersDetection(TestFile, new File("test"), 80, new CommonFile("test.linker.kmer.fastq"));
 //        TestFile.ReadOpen();
 //        String[] Lines;
 //        while ((Lines = TestFile.ReadItemLine()) != null) {
@@ -208,7 +208,7 @@ public class Main {
                     //标记为自动识别Adapter
                     AdapterSeq = new String[1];
 //                    AdapterSeq[0] = InputFile.AdapterDetection(new File(PreProcessDir + "/" + Prefix), LinkerLength + MaxReadsLength);
-                    CommonFile StatFile = new CommonFile(PreProcessDir + "/" + Prefix + ".base.freq");
+                    CommonFile StatFile = new CommonFile(PreProcessDir + "/" + Prefix + "adapter_detection.base.freq");
                     AdapterSeq[0] = FileTool.AdapterDetection(InputFile, new File(PreProcessDir + "/" + Prefix), LinkerLength + MaxReadsLength, StatFile);
                     String ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t stackbar -y Percentage --title Base_Frequency" + " -i " + StatFile + " -o " + Stat.getImageDir() + "/" + StatFile.getName() + ".png";
                     Opts.CommandOutFile.Append(ComLine + "\n");
@@ -218,6 +218,9 @@ public class Main {
                 //将Adapter序列输出到文件中
                 FileUtils.write(AdapterFile, String.join("\n", AdapterSeq), StandardCharsets.UTF_8);
                 Opts.LFStat.Adapters = AdapterSeq;
+            }
+            if (LinkerSeq == null) {
+
             }
             //-----------------------------------------------------------------------------
             preprocess.run();//运行预处理部分

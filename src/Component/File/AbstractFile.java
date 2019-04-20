@@ -86,6 +86,23 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
 
     protected abstract E ExtractItem(String[] s);
 
+    public ArrayList<E> Extraction(int num) throws IOException {
+        ArrayList<E> list = new ArrayList<>();
+        ReadOpen();
+        E item;
+        int i = 0;
+        while ((item = ReadItem()) != null) {
+            i++;
+            if (i <= num) {
+                list.add(item);
+            } else {
+                break;
+            }
+        }
+        ReadClose();
+        return list;
+    }
+
     public synchronized String[] ReadItemLine() throws IOException {
         String line = reader.readLine();
         if (line != null) {

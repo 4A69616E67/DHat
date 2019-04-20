@@ -268,7 +268,7 @@ public class SeProcess {
         //------------------------------------------fasta file write----------------------------------------------------
         for (String title : ReadsList.keySet()) {
             char[] Seq = ReadsList.get(title);
-            String[] KSeq = Tools.GetKmer(String.valueOf(Seq), Num);
+            String[] KSeq = Tools.GetKmer(String.valueOf(Seq), Seq.length - Num);
             for (String aKSeq : KSeq) {
                 fasta_write.write(">" + title + "\n");
                 fasta_write.write(aKSeq + "\n");

@@ -4,7 +4,7 @@ import Component.tool.Tools;
 import Component.unit.*;
 
 import java.io.*;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Created by snowf on 2019/2/17.
@@ -114,7 +114,7 @@ public class FileTool {
         }
         file.ReadClose();
         writer.close();
-        FastaItem[] SplitAdapter = FindSimilarSequences(HeadFile, stat_file);
+        FastaItem[] SplitAdapter = FindSimilarSequences(HeadFile, stat_file, 0.5f);
         int MaxValue = 0;
         for (FastaItem aSplitAdapter : SplitAdapter) {
             if (aSplitAdapter.Sequence.length() > MaxValue) {
@@ -125,7 +125,152 @@ public class FileTool {
         return Adapter.toString();
     }
 
-    private static FastaItem[] FindSimilarSequences(FastaFile file, AbstractFile stat_file) throws IOException, InterruptedException {
+    public static LinkerSequence[] LinkersDetection(FastqFile input_file, File prefix, int length, AbstractFile stat_file) throws IOException, InterruptedException {
+        ArrayList<FastqItem> ValidKmerList = GetValidKmer(input_file, 0, length, 1000, 0.05f);
+        ArrayList<ArrayList<FastqItem>> assembly_list = Assembly(ValidKmerList);
+        ArrayList<ArrayList<FastqItem>> final_assembly_list = new ArrayList<>(), temp_assembly_list = new ArrayList<>();
+        for (int i = 0; i < assembly_list.size(); i++) {
+            if (assembly_list.get(i).size() >= 3) {
+                if (temp_assembly_list.size() > final_assembly_list.size()) {
+                    final_assembly_list = temp_assembly_list;
+                }
+                temp_assembly_list = new ArrayList<>();
+            } else {
+                temp_assembly_list.add(assembly_list.get(i));
+            }
+        }
+        if (temp_assembly_list.size() > final_assembly_list.size()) {
+            final_assembly_list = temp_assembly_list;
+        }
+
+        BufferedWriter writer = stat_file.WriteOpen();
+        int i = 1;
+        for (FastqItem s : ValidKmerList) {
+//            writer.write("@seq" + i + "\n");
+            writer.write(s.Sequence + "\n");
+//            writer.write("+\n");
+//            writer.write(CleanMap.get(s)[0] + "\n");
+            i++;
+        }
+        stat_file.WriteClose();
+
+//        FastaItem[] SimilarSeqs = FindSimilarSequences(HeadFile, stat_file);
+
+        return new LinkerSequence[0];
+    }
+
+    private static ArrayList<ArrayList<FastqItem>> Assembly(ArrayList<FastqItem> origin) {
+        ArrayList<FastqItem> temp_list = new ArrayList<>(origin);
+        ArrayList<ArrayList<FastqItem>> assembly_list = new ArrayList<>();
+        ArrayList<ArrayList<FastqItem>> temp_assembly_list = AssemblyListInit(temp_list);
+        FastqItem item;
+        while (temp_list.size() > 0) {
+            while (true) {
+                ArrayList<FastqItem> start_list = temp_assembly_list.get(0);
+                ArrayList<FastqItem> insert_list = AssemblySearch(start_list, temp_list, 0);
+                if (insert_list.size() == 0) {
+                    break;
+                } else {
+                    temp_assembly_list.add(0, insert_list);
+                }
+            }
+            while (true) {
+                ArrayList<FastqItem> end_list = temp_assembly_list.get(temp_assembly_list.size() - 1);
+                ArrayList<FastqItem> insert_list = AssemblySearch(end_list, temp_list, 1);
+                if (insert_list.size() == 0) {
+                    break;
+                } else {
+                    temp_assembly_list.add(insert_list);
+                }
+            }
+            if (temp_assembly_list.size() > assembly_list.size()) {
+                assembly_list = temp_assembly_list;
+            }
+            if (temp_list.size() > 0) {
+                temp_assembly_list = AssemblyListInit(temp_list);
+            }
+        }
+        return assembly_list;
+    }
+
+    private static ArrayList<FastqItem> AssemblySearch(ArrayList<FastqItem> search_list, ArrayList<FastqItem> list, int type) {
+        ArrayList<FastqItem> insert_list = new ArrayList<>();
+        FastqItem item;
+        for (FastqItem aSearch_list : search_list) {
+            item = aSearch_list;
+            String sub1;
+            if (type == 0) {
+                sub1 = item.Sequence.substring(0, item.Sequence.length() - 1);
+            } else {
+                sub1 = item.Sequence.substring(1);
+            }
+            for (int j = 0; j < list.size(); j++) {
+                item = list.get(j);
+                String sub2;
+                if (type == 0) {
+                    sub2 = item.Sequence.substring(1);
+                } else {
+                    sub2 = item.Sequence.substring(0, item.Sequence.length() - 1);
+                }
+                if (sub1.equals(sub2)) {
+                    insert_list.add(item);
+                    list.remove(j);
+                    j--;
+                }
+            }
+        }
+        return insert_list;
+    }
+
+    private static ArrayList<ArrayList<FastqItem>> AssemblyListInit(ArrayList<FastqItem> list) {
+        ArrayList<ArrayList<FastqItem>> assembly_list = new ArrayList<>();
+        assembly_list.add(new ArrayList<>());
+        FastqItem item = list.remove(0);
+        assembly_list.get(0).add(item);
+        String s = item.Sequence;
+        int i = 0;
+        while (list.size() > 0 && i < list.size()) {
+            String[] sub1 = new String[]{s.substring(0, s.length() - 1), s.substring(1)};
+            String[] sub2 = new String[]{list.get(i).Sequence.substring(0, list.get(i).Sequence.length() - 1), list.get(i).Sequence.substring(1)};
+            if (sub1[0].equals(sub2[0]) || sub1[1].equals(sub2[1])) {
+                assembly_list.get(0).add(list.get(i));
+                list.remove(i);
+            } else {
+                i++;
+            }
+        }
+        return assembly_list;
+    }
+
+    private static ArrayList<FastqItem> GetValidKmer(FastqFile input_file, int start_site, int end_site, int seq_num, float threshold) throws IOException {
+        ArrayList<FastqItem> list = input_file.Extraction(seq_num);
+        HashMap<String, int[]> KmerMap = new HashMap<>();
+        HashMap<String, int[]> CleanMap = new HashMap<>();
+        for (FastqItem item : list) {
+            String[] kmer = Tools.GetKmer(item.Sequence.substring(start_site, end_site), 10);
+            for (String s : kmer) {
+                if (!KmerMap.containsKey(s)) {
+                    KmerMap.put(s, new int[]{0});
+                }
+                KmerMap.get(s)[0]++;
+            }
+        }
+        for (String s : KmerMap.keySet()) {
+            if (KmerMap.get(s)[0] > threshold * seq_num) {
+                CleanMap.put(s, KmerMap.get(s));
+            }
+        }
+        KmerMap.clear();
+        ArrayList<FastqItem> result = new ArrayList<>();
+        int i = 0;
+        for (String s : CleanMap.keySet()) {
+            i++;
+            result.add(new FastqItem(new String[]{"@seq" + i, s, "+", String.valueOf(CleanMap.get(s)[0])}));
+        }
+        return result;
+    }
+
+    private static FastaItem[] FindSimilarSequences(FastaFile file, AbstractFile stat_file, float threshold) throws IOException, InterruptedException {
         FastaFile MsaFile = new FastaFile(file.getPath() + ".msa");
         StringBuilder SimSeq = new StringBuilder();
         ArrayList<char[]> MsaStat = new ArrayList<>();
@@ -168,7 +313,7 @@ public class FileTool {
                     MaxBase = base;
                 }
             }
-            if (MaxValue > SeqNum / 2) {
+            if (MaxValue > SeqNum * threshold) {
                 SimSeq.append(MaxBase);
             } else {
                 SimSeq.append('N');

@@ -257,10 +257,9 @@ public class Tools {
         if (l > str.length()) {
             return new String[0];
         }
-        String[] Kmer = new String[l + 1];
-        int length = str.length() - l;
-        for (int i = 0; i < l + 1; i++) {
-            Kmer[i] = str.substring(i, i + length);
+        String[] Kmer = new String[str.length() - l + 1];
+        for (int i = 0; i < Kmer.length; i++) {
+            Kmer[i] = str.substring(i, i + l);
         }
         return Kmer;
     }
