@@ -131,8 +131,9 @@ public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
         //==============================================测试区==========================================================
 
-        FastqFile TestFile = new FastqFile("Test.HindII.fastq");
-        FileTool.LinkersDetection(TestFile, new File("test"), 80, new CommonFile("test.linker.kmer.fastq"));
+        FastqFile TestFile = new FastqFile("Test.MseI.fastq.gz");
+//        FastqFile TestFile = new FastqFile("Test.HindII.fastq");
+        AdapterDetection.LinkersDetection(TestFile, new File("test"), 80);
 //        TestFile.ReadOpen();
 //        String[] Lines;
 //        while ((Lines = TestFile.ReadItemLine()) != null) {
