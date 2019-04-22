@@ -34,12 +34,13 @@ public class AdapterDetection {
     }
 
     public static LinkerSequence[] LinkersDetection(FastqFile input_file, File prefix, int length) throws IOException {
-        int SeqNum = 4000;
+        int SeqNum = 5000;
         ArrayList<FastqItem> list = input_file.Extraction(SeqNum);
         for (FastqItem item : list) {
             item.Sequence = item.Sequence.substring(0, length);
+//            item.Sequence = item.Sequence.substring(length);
         }
-        ArrayList<FastqItem> ValidKmerList = GetValidKmer(list, 10, 0.05f * SeqNum);
+        ArrayList<FastqItem> ValidKmerList = GetValidKmer(list, 10, 0.1f * SeqNum);
         ArrayList<ArrayList<FastqItem>> assembly_list = Assembly(ValidKmerList);
         ArrayList<ArrayList<FastqItem>> final_assembly_list = new ArrayList<>(), temp_assembly_list = new ArrayList<>();
         for (int i = 0; i < assembly_list.size(); i++) {
@@ -139,9 +140,9 @@ public class AdapterDetection {
         FastqItem item = list.remove(0);
         assembly_list.get(0).add(item);
         String s = item.Sequence;
+        String[] sub1 = new String[]{s.substring(0, s.length() - 1), s.substring(1)};
         int i = 0;
         while (list.size() > 0 && i < list.size()) {
-            String[] sub1 = new String[]{s.substring(0, s.length() - 1), s.substring(1)};
             String[] sub2 = new String[]{list.get(i).Sequence.substring(0, list.get(i).Sequence.length() - 1), list.get(i).Sequence.substring(1)};
             if (sub1[0].equals(sub2[0]) || sub1[1].equals(sub2[1])) {
                 assembly_list.get(0).add(list.get(i));
