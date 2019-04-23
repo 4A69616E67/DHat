@@ -1,6 +1,8 @@
 package Component.tool;
 
 import Component.File.FastqFile;
+import Component.Sequence.DNASequence;
+import Component.Sequence.KmerStructure;
 import Component.unit.Configure;
 import Component.unit.FastqItem;
 import Component.unit.LinkerSequence;
@@ -37,124 +39,66 @@ public class AdapterDetection {
         int SeqNum = 5000;
         ArrayList<FastqItem> list = input_file.Extraction(SeqNum);
         for (FastqItem item : list) {
-            item.Sequence = item.Sequence.substring(0, length);
-//            item.Sequence = item.Sequence.substring(length);
+//            item.Sequence = item.Sequence.substring(0, length);
+            item.Sequence = item.Sequence.substring(length);
         }
-        ArrayList<FastqItem> ValidKmerList = GetValidKmer(list, 10, 0.1f * SeqNum);
-        ArrayList<ArrayList<FastqItem>> assembly_list = Assembly(ValidKmerList);
-        ArrayList<ArrayList<FastqItem>> final_assembly_list = new ArrayList<>(), temp_assembly_list = new ArrayList<>();
-        for (int i = 0; i < assembly_list.size(); i++) {
-            if (assembly_list.get(i).size() >= 3) {
-                if (temp_assembly_list.size() > final_assembly_list.size()) {
-                    final_assembly_list = temp_assembly_list;
-                }
-                temp_assembly_list = new ArrayList<>();
-            } else {
-                if (assembly_list.get(i).size() >= 2) {
-                    int Q1 = Integer.parseInt(assembly_list.get(i).get(0).Quality);
-                    int Q2 = Integer.parseInt(assembly_list.get(i).get(1).Quality);
-                    if (Q1 * 3 < Q2) {
-                        assembly_list.get(i).remove(0);
-                    } else if (Q1 > Q2 * 3) {
-                        assembly_list.get(i).remove(1);
-                    }
-                }
-                temp_assembly_list.add(assembly_list.get(i));
-            }
-        }
-        if (temp_assembly_list.size() > final_assembly_list.size()) {
-            final_assembly_list = temp_assembly_list;
-        }
-
-//        FastaItem[] SimilarSeqs = FindSimilarSequences(HeadFile, stat_file);
+        ArrayList<KmerStructure> ValidKmerList = GetValidKmer(list, 10, 0.1f * SeqNum);
+        ArrayList<KmerStructure> assembly_list = Assembly(ValidKmerList);
+        ArrayList<DNASequence> final_assembly_list = AssemblyShow(assembly_list);
 
         return new LinkerSequence[0];
     }
 
-    private static ArrayList<ArrayList<FastqItem>> Assembly(ArrayList<FastqItem> origin) {
-        ArrayList<FastqItem> temp_list = new ArrayList<>(origin);
-        ArrayList<ArrayList<FastqItem>> assembly_list = new ArrayList<>();
-        ArrayList<ArrayList<FastqItem>> temp_assembly_list = AssemblyListInit(temp_list);
-        FastqItem item;
-        while (temp_list.size() > 0) {
-            while (true) {
-                ArrayList<FastqItem> start_list = temp_assembly_list.get(0);
-                ArrayList<FastqItem> insert_list = AssemblySearch(start_list, temp_list, 0);
-                if (insert_list.size() == 0) {
-                    break;
-                } else {
-                    temp_assembly_list.add(0, insert_list);
+    private static ArrayList<DNASequence> AssemblyShow(ArrayList<KmerStructure> input) {
+        ArrayList<DNASequence> result = new ArrayList<>();
+        if (input == null || input.size() == 0) {
+            result.add(new DNASequence(""));
+        } else {
+            for (int i = 0; i < input.size(); i++) {
+                ArrayList<DNASequence> next_seq = AssemblyShow(input.get(i).next);
+                for (int j = 0; j < next_seq.size(); j++) {
+                    DNASequence s = next_seq.get(j);
+                    if (s.getSeq().length() == 0) {
+                        result.add(new DNASequence(input.get(i).Seq.getSeq(), '+', input.get(i).Seq.Value));
+                    } else {
+                        result.add(new DNASequence(input.get(i).Seq.getSeq() + s.getSeq().substring(input.get(i).Seq.getSeq().length() - 1), '+', input.get(i).Seq.Value + s.Value));
+                    }
                 }
             }
-            while (true) {
-                ArrayList<FastqItem> end_list = temp_assembly_list.get(temp_assembly_list.size() - 1);
-                ArrayList<FastqItem> insert_list = AssemblySearch(end_list, temp_list, 1);
-                if (insert_list.size() == 0) {
-                    break;
-                } else {
-                    temp_assembly_list.add(insert_list);
+        }
+        return result;
+    }
+
+    private static ArrayList<KmerStructure> Assembly(ArrayList<KmerStructure> origin) {
+        ArrayList<KmerStructure> temp_list = new ArrayList<>(origin);
+        ArrayList<KmerStructure> assembly_list = new ArrayList<>();
+        ArrayList<String[]> subList = new ArrayList<>();
+        for (int i = 0; i < temp_list.size(); i++) {
+            String s = temp_list.get(i).Seq.getSeq();
+            subList.add(new String[]{s.substring(0, s.length() - 1), s.substring(1)});
+        }
+        for (int i = 0; i < temp_list.size(); i++) {
+            String[] sub1 = subList.get(i);
+            for (int j = i; j < temp_list.size(); j++) {
+                String[] sub2 = subList.get(j);
+                if (sub1[0].equals(sub2[1])) {
+                    temp_list.get(i).last.add(temp_list.get(j));
+                    temp_list.get(j).next.add(temp_list.get(i));
+                } else if (sub1[1].equals(sub2[0])) {
+                    temp_list.get(i).next.add(temp_list.get(j));
+                    temp_list.get(j).last.add(temp_list.get(i));
                 }
             }
-            if (temp_assembly_list.size() > assembly_list.size()) {
-                assembly_list = temp_assembly_list;
-            }
-            if (temp_list.size() > 0) {
-                temp_assembly_list = AssemblyListInit(temp_list);
+        }
+        for (int i = 0; i < temp_list.size(); i++) {
+            if (temp_list.get(i).last.size() == 0) {
+                assembly_list.add(temp_list.get(i));
             }
         }
         return assembly_list;
     }
 
-    private static ArrayList<FastqItem> AssemblySearch(ArrayList<FastqItem> search_list, ArrayList<FastqItem> list, int type) {
-        ArrayList<FastqItem> insert_list = new ArrayList<>();
-        FastqItem item;
-        for (FastqItem aSearch_list : search_list) {
-            item = aSearch_list;
-            String sub1;
-            if (type == 0) {
-                sub1 = item.Sequence.substring(0, item.Sequence.length() - 1);
-            } else {
-                sub1 = item.Sequence.substring(1);
-            }
-            for (int j = 0; j < list.size(); j++) {
-                item = list.get(j);
-                String sub2;
-                if (type == 0) {
-                    sub2 = item.Sequence.substring(1);
-                } else {
-                    sub2 = item.Sequence.substring(0, item.Sequence.length() - 1);
-                }
-                if (sub1.equals(sub2)) {
-                    insert_list.add(item);
-                    list.remove(j);
-                    j--;
-                }
-            }
-        }
-        return insert_list;
-    }
-
-    private static ArrayList<ArrayList<FastqItem>> AssemblyListInit(ArrayList<FastqItem> list) {
-        ArrayList<ArrayList<FastqItem>> assembly_list = new ArrayList<>();
-        assembly_list.add(new ArrayList<>());
-        FastqItem item = list.remove(0);
-        assembly_list.get(0).add(item);
-        String s = item.Sequence;
-        String[] sub1 = new String[]{s.substring(0, s.length() - 1), s.substring(1)};
-        int i = 0;
-        while (list.size() > 0 && i < list.size()) {
-            String[] sub2 = new String[]{list.get(i).Sequence.substring(0, list.get(i).Sequence.length() - 1), list.get(i).Sequence.substring(1)};
-            if (sub1[0].equals(sub2[0]) || sub1[1].equals(sub2[1])) {
-                assembly_list.get(0).add(list.get(i));
-                list.remove(i);
-            } else {
-                i++;
-            }
-        }
-        return assembly_list;
-    }
-
-    private static ArrayList<FastqItem> GetValidKmer(ArrayList<FastqItem> list, int k, float threshold) {
+    private static ArrayList<KmerStructure> GetValidKmer(ArrayList<FastqItem> list, int k, float threshold) {
         HashMap<String, int[]> KmerMap = new HashMap<>();
         HashMap<String, int[]> CleanMap = new HashMap<>();
         for (FastqItem item : list) {
@@ -172,11 +116,11 @@ public class AdapterDetection {
             }
         }
         KmerMap.clear();
-        ArrayList<FastqItem> result = new ArrayList<>();
+        ArrayList<KmerStructure> result = new ArrayList<>();
         int i = 0;
         for (String s : CleanMap.keySet()) {
             i++;
-            result.add(new FastqItem(new String[]{"@seq" + i, s, "+", String.valueOf(CleanMap.get(s)[0])}));
+            result.add(new KmerStructure(new DNASequence(s, '+', CleanMap.get(s)[0])));
         }
         return result;
     }

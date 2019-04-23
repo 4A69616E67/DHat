@@ -1,19 +1,19 @@
-package Component.unit.Sequence;
+package Component.Sequence;
 
 /**
  * Created by snowf on 2019/4/22.
  */
 
 public class DNASequence extends AbstractSequence {
-    DNASequence(String seq) {
+    public DNASequence(String seq) {
         super(seq);
     }
 
-    DNASequence(String seq, char ori) {
+    public DNASequence(String seq, char ori) {
         super(seq, ori);
     }
 
-    DNASequence(String seq, char ori, double v) {
+    public DNASequence(String seq, char ori, double v) {
         super(seq, ori, v);
     }
 

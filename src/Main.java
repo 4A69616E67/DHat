@@ -220,9 +220,6 @@ public class Main {
                 FileUtils.write(AdapterFile, String.join("\n", AdapterSeq), StandardCharsets.UTF_8);
                 Opts.LFStat.Adapters = AdapterSeq;
             }
-            if (LinkerSeq == null) {
-
-            }
             //-----------------------------------------------------------------------------
             preprocess.run();//运行预处理部分
             //----------------------------------------------------------------------

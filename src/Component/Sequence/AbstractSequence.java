@@ -1,4 +1,4 @@
-package Component.unit.Sequence;
+package Component.Sequence;
 
 /**
  * Created by snowf on 2019/4/22.
