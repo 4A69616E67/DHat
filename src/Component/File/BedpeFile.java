@@ -154,17 +154,13 @@ public class BedpeFile extends AbstractFile<BedpeItem> {
         WriteOpen();
         ItemNum = 0;
         BedItem item1 = file1.ReadItem();
-        if (item1 == null) {
-            WriteClose();
-            return;
-        }
-        item1.SortBy = BedItem.Sort.SeqTitle;
         BedItem item2 = file2.ReadItem();
-        if (item2 == null) {
+        if (item1 == null || item2 == null) {
             WriteClose();
             return;
         }
         while (item1 != null && item2 != null) {
+            item1.SortBy = BedItem.Sort.SeqTitle;
             int res = item1.compareTo(item2);
             if (res == 0) {
                 item1.SortBy = BedItem.Sort.Location;
@@ -180,7 +176,6 @@ public class BedpeFile extends AbstractFile<BedpeItem> {
                 item2 = file2.ReadItem();
             } else {
                 item1 = file1.ReadItem();
-                item1.SortBy = BedItem.Sort.SeqTitle;
             }
         }
         file1.ReadClose();
