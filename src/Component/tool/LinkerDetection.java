@@ -9,13 +9,12 @@ import org.apache.commons.cli.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Hashtable;
 
 /**
  * Created by snowf on 2019/2/17.
  */
-public class AdapterDetection {
+public class LinkerDetection {
     public static void main(String[] args) throws IOException, InterruptedException, ParseException {
 //        FastqFile TestFile = new FastqFile("Test.MseI.fastq.gz");
 //        FastqFile TestFile = new FastqFile("Test.HindII.fastq");
@@ -28,7 +27,7 @@ public class AdapterDetection {
         Argument.addOption(Option.builder("q").hasArg(false).desc("quiet mode").build());
         Argument.addOption(Option.builder("n").hasArg(false).desc("sequence number use to processing").build());
         if (args.length == 0) {
-            new HelpFormatter().printHelp("java -cp " + Opts.JarFile.getName() + " " + AdapterDetection.class.getName(), Argument, true);
+            new HelpFormatter().printHelp("java -cp " + Opts.JarFile.getName() + " " + LinkerDetection.class.getName(), Argument, true);
             System.exit(1);
         }
         CommandLine ComLine = new DefaultParser().parse(Argument, args);
@@ -37,7 +36,7 @@ public class AdapterDetection {
         int SubIndex = Opts.GetIntOpt(ComLine, "c", 0);
         int SeqNum = Opts.GetIntOpt(ComLine, "n", 100);
         //--------------------------------------------------------------------------------------------------------------
-        ArrayList<DNASequence> linkers = AdapterDetection.LinkersDetection(InPutFile, new File("test"), 70);
+        ArrayList<DNASequence> linkers = LinkerDetection.LinkersDetection(InPutFile, new File("test"), 170);
         //find out restriction enzyme
         RestrictionEnzyme enzyme;
         int[] Count = new int[RestrictionEnzyme.list.length];
@@ -98,7 +97,7 @@ public class AdapterDetection {
         int SeqNum = 5000;
         ArrayList<FastqItem> list = input_file.Extraction(SeqNum);
         for (FastqItem item : list) {
-            item.Sequence = item.Sequence.substring(0, length);
+            item.Sequence = item.Sequence.substring(0, Math.min(length, item.Sequence.length()));
 //            item.Sequence = item.Sequence.substring(length);
         }
         ArrayList<KmerStructure> ValidKmerList = GetValidKmer(list, 10, 0.1f * SeqNum);
@@ -114,6 +113,11 @@ public class AdapterDetection {
             result.add(new DNASequence(""));
         } else {
             for (int i = 0; i < input.size(); i++) {
+                if (input.get(i).Visited) {
+                    result.add(new DNASequence(""));
+                    continue;
+                }
+                input.get(i).Visited = true;
                 ArrayList<DNASequence> next_seq = AssemblyShow(input.get(i).next);
                 for (int j = 0; j < next_seq.size(); j++) {
                     DNASequence s = next_seq.get(j);
@@ -123,6 +127,7 @@ public class AdapterDetection {
                         result.add(new DNASequence(input.get(i).Seq.getSeq() + s.getSeq().substring(input.get(i).Seq.getSeq().length() - 1), '+', input.get(i).Seq.Value + s.Value));
                     }
                 }
+                input.get(i).Visited = false;
             }
         }
         return result;

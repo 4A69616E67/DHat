@@ -10,6 +10,7 @@ public class KmerStructure {
     public DNASequence Seq;
     public ArrayList<KmerStructure> next = new ArrayList<>();
     public ArrayList<KmerStructure> last = new ArrayList<>();
+    public boolean Visited = false;
 
     public KmerStructure(DNASequence seq) {
         Seq = seq;
