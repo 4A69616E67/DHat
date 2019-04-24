@@ -3,21 +3,24 @@ package Component.tool;
 import Component.File.FastqFile;
 import Component.Sequence.DNASequence;
 import Component.Sequence.KmerStructure;
-import Component.unit.Configure;
-import Component.unit.FastqItem;
-import Component.unit.LinkerSequence;
-import Component.unit.Opts;
+import Component.unit.*;
 import org.apache.commons.cli.*;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
 
 /**
  * Created by snowf on 2019/2/17.
  */
 public class AdapterDetection {
     public static void main(String[] args) throws IOException, InterruptedException, ParseException {
+//        FastqFile TestFile = new FastqFile("Test.MseI.fastq.gz");
+//        FastqFile TestFile = new FastqFile("Test.HindII.fastq");
+//        AdapterDetection.LinkersDetection(TestFile, new File("test"), 70);
+        //==============================================================================================================
         Options Argument = new Options();
         Argument.addOption(Option.builder("i").hasArg().desc("input file").required().build());
         Argument.addOption(Option.builder("p").hasArg().desc("prefix").build());
@@ -29,24 +32,80 @@ public class AdapterDetection {
             System.exit(1);
         }
         CommandLine ComLine = new DefaultParser().parse(Argument, args);
-        File InPutFile = Opts.GetFileOpt(ComLine, "i", null);
+        FastqFile InPutFile = new FastqFile(Opts.GetFileOpt(ComLine, "i", null));
         String Prefix = Opts.GetStringOpt(ComLine, "p", Configure.Prefix);
         int SubIndex = Opts.GetIntOpt(ComLine, "c", 0);
         int SeqNum = Opts.GetIntOpt(ComLine, "n", 100);
+        //--------------------------------------------------------------------------------------------------------------
+        ArrayList<DNASequence> linkers = AdapterDetection.LinkersDetection(InPutFile, new File("test"), 70);
+        //find out restriction enzyme
+        RestrictionEnzyme enzyme;
+        int[] Count = new int[RestrictionEnzyme.list.length];
+        for (int i = 0; i < linkers.size(); i++) {
+            int minPosition = 1000;
+            int minIndex = 0;
+            for (int j = 0; j < RestrictionEnzyme.list.length; j++) {
+                String subEnzyme1 = RestrictionEnzyme.list[j].getSequence().substring(0, RestrictionEnzyme.list[j].getSequence().length() - RestrictionEnzyme.list[j].getCutSite());
+                int position = linkers.get(i).getSeq().indexOf(subEnzyme1);
+                if (position >= 0 && position < minPosition) {
+                    minPosition = position;
+                    minIndex = j;
+                }
+//            String subEnzyme2 = RestrictionEnzyme.list[i].getSequence().substring(RestrictionEnzyme.list[i].getCutSite());
+            }
+            Count[minIndex]++;
+        }
+        int maxCount = 0, maxIndex = 0;
+        for (int i = 0; i < Count.length; i++) {
+            if (Count[i] > maxCount) {
+                maxCount = Count[i];
+                maxIndex = i;
+            }
+        }
+        enzyme = RestrictionEnzyme.list[maxIndex];
+        System.out.println(enzyme);
+        //修剪
+        for (int i = 0; i < linkers.size(); i++) {
+            String subEnzyme1 = enzyme.getSequence().substring(0, enzyme.getSequence().length() - enzyme.getCutSite());
+            String subEnzyme2 = enzyme.getSequence().substring(enzyme.getCutSite());
+            int index1, index2;
+            index1 = linkers.get(i).getSeq().indexOf(subEnzyme1);
+            index2 = linkers.get(i).getSeq().lastIndexOf(subEnzyme2);
+            if (index1 >= 0 && index2 >= 0) {
+                DNASequence s = new DNASequence(linkers.get(i).getSeq().substring(index1 + subEnzyme1.length(), index2), '+', linkers.get(i).Value);
+                linkers.set(i, s);
+            } else {
+                linkers.remove(i);
+                i--;
+            }
+        }
+        //去重
+        Hashtable<String, Double> final_linkers = new Hashtable<>();
+        for (DNASequence d : linkers) {
+            if (!final_linkers.contains(d.getSeq())) {
+                final_linkers.put(d.getSeq(), d.Value);
+            } else {
+                final_linkers.put(d.getSeq(), final_linkers.get(d.getSeq()) + d.Value);
+            }
+        }
+        for (String s : final_linkers.keySet()) {
+            System.out.println(new DNASequence(s, '+', final_linkers.get(s)));
+        }
+
     }
 
-    public static LinkerSequence[] LinkersDetection(FastqFile input_file, File prefix, int length) throws IOException {
+    public static ArrayList<DNASequence> LinkersDetection(FastqFile input_file, File prefix, int length) throws IOException {
         int SeqNum = 5000;
         ArrayList<FastqItem> list = input_file.Extraction(SeqNum);
         for (FastqItem item : list) {
-//            item.Sequence = item.Sequence.substring(0, length);
-            item.Sequence = item.Sequence.substring(length);
+            item.Sequence = item.Sequence.substring(0, length);
+//            item.Sequence = item.Sequence.substring(length);
         }
         ArrayList<KmerStructure> ValidKmerList = GetValidKmer(list, 10, 0.1f * SeqNum);
         ArrayList<KmerStructure> assembly_list = Assembly(ValidKmerList);
         ArrayList<DNASequence> final_assembly_list = AssemblyShow(assembly_list);
 
-        return new LinkerSequence[0];
+        return final_assembly_list;
     }
 
     private static ArrayList<DNASequence> AssemblyShow(ArrayList<KmerStructure> input) {
