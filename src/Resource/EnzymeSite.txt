@@ -1,3 +1,4 @@
 HindIII A^AGCTT
 MseI    T^TAA
 ClaI    AT^CGAT
+MspI    C^CGG

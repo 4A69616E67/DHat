@@ -18,14 +18,14 @@ public class LinkerDetection {
     public static void main(String[] args) throws IOException, InterruptedException, ParseException {
 //        FastqFile TestFile = new FastqFile("Test.MseI.fastq.gz");
 //        FastqFile TestFile = new FastqFile("Test.HindII.fastq");
-//        AdapterDetection.LinkersDetection(TestFile, new File("test"), 70);
+//        AdapterDetection.SimilarSeqDetection(TestFile, new File("test"), 70);
         //==============================================================================================================
         Options Argument = new Options();
         Argument.addOption(Option.builder("i").hasArg().desc("input file").required().build());
         Argument.addOption(Option.builder("p").hasArg().desc("prefix").build());
-        Argument.addOption(Option.builder("c").hasArg().desc("cutoff position").build());
-        Argument.addOption(Option.builder("q").hasArg(false).desc("quiet mode").build());
-        Argument.addOption(Option.builder("n").hasArg(false).desc("sequence number use to processing").build());
+        Argument.addOption(Option.builder("s").hasArg().desc("cutoff start index (default 0)").build());
+        Argument.addOption(Option.builder("t").hasArg(false).desc("cutoff terminal index (default 70, if you want to remain full reads, please set a large number)").build());
+        Argument.addOption(Option.builder("n").hasArg(false).desc("sequence number use to processing (default 5000)").build());
         if (args.length == 0) {
             new HelpFormatter().printHelp("java -cp " + Opts.JarFile.getName() + " " + LinkerDetection.class.getName(), Argument, true);
             System.exit(1);
@@ -33,10 +33,11 @@ public class LinkerDetection {
         CommandLine ComLine = new DefaultParser().parse(Argument, args);
         FastqFile InPutFile = new FastqFile(Opts.GetFileOpt(ComLine, "i", null));
         String Prefix = Opts.GetStringOpt(ComLine, "p", Configure.Prefix);
-        int SubIndex = Opts.GetIntOpt(ComLine, "c", 0);
-        int SeqNum = Opts.GetIntOpt(ComLine, "n", 100);
+        int Index1 = Opts.GetIntOpt(ComLine, "s", 0);
+        int Index2 = Opts.GetIntOpt(ComLine, "t", 70);
+        int SeqNum = Opts.GetIntOpt(ComLine, "n", 5000);
         //--------------------------------------------------------------------------------------------------------------
-        ArrayList<DNASequence> linkers = LinkerDetection.LinkersDetection(InPutFile, new File("test"), 170);
+        ArrayList<DNASequence> linkers = LinkerDetection.SimilarSeqDetection(InPutFile, new File("test"), Index1, Index2, SeqNum);
         //find out restriction enzyme
         RestrictionEnzyme enzyme;
         int[] Count = new int[RestrictionEnzyme.list.length];
@@ -93,17 +94,18 @@ public class LinkerDetection {
 
     }
 
-    public static ArrayList<DNASequence> LinkersDetection(FastqFile input_file, File prefix, int length) throws IOException {
-        int SeqNum = 5000;
+    public static ArrayList<DNASequence> SimilarSeqDetection(FastqFile input_file, File prefix, int start, int end, int SeqNum) throws IOException {
         ArrayList<FastqItem> list = input_file.Extraction(SeqNum);
         for (FastqItem item : list) {
-            item.Sequence = item.Sequence.substring(0, Math.min(length, item.Sequence.length()));
+            item.Sequence = item.Sequence.substring(start, Math.min(end, item.Sequence.length()));
 //            item.Sequence = item.Sequence.substring(length);
         }
         ArrayList<KmerStructure> ValidKmerList = GetValidKmer(list, 10, 0.1f * SeqNum);
         ArrayList<KmerStructure> assembly_list = Assembly(ValidKmerList);
         ArrayList<DNASequence> final_assembly_list = AssemblyShow(assembly_list);
-
+        for (DNASequence d : final_assembly_list) {
+            d.Value = d.Value / d.getSeq().length();
+        }
         return final_assembly_list;
     }
 
