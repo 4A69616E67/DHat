@@ -3,6 +3,7 @@ package Component.tool;
 import Component.File.FastqFile;
 import Component.Sequence.DNASequence;
 import Component.Sequence.KmerStructure;
+import Component.Statistic.StatUtil;
 import Component.unit.*;
 import org.apache.commons.cli.*;
 
@@ -51,49 +52,56 @@ public class LinkerDetection {
     public static ArrayList<DNASequence> run(FastqFile InPutFile, File prefix, int start, int end, int seqNum, RestrictionEnzyme enzyme, int k_merLen, float threshold) throws IOException {
         ArrayList<DNASequence> linkers = LinkerDetection.SimilarSeqDetection(InPutFile, new File("test"), start, end, seqNum, k_merLen, threshold);
         if (enzyme == null || enzyme.getSequence().equals("")) {
+            boolean flag = false;
             //find out restriction enzyme
             int[] Count = new int[RestrictionEnzyme.list.length];
             for (int i = 0; i < linkers.size(); i++) {
                 int minPosition = 1000;
                 int minIndex = 0;
+                flag = false;
                 for (int j = 0; j < RestrictionEnzyme.list.length; j++) {
                     String subEnzyme1 = RestrictionEnzyme.list[j].getSequence().substring(0, Math.max(RestrictionEnzyme.list[j].getCutSite(), RestrictionEnzyme.list[j].getSequence().length() - RestrictionEnzyme.list[j].getCutSite()));
                     int position = linkers.get(i).getSeq().indexOf(subEnzyme1);
-                    if (position >= 0 && position < minPosition) {
+                    if (position >= 0 && position <= 3 && position < minPosition) {
                         minPosition = position;
                         minIndex = j;
+                        flag = true;
                     }
                 }
-                Count[minIndex]++;
-            }
-            int maxCount = 0, maxIndex = 0;
-            for (int i = 0; i < Count.length; i++) {
-                if (Count[i] > maxCount) {
-                    maxCount = Count[i];
-                    maxIndex = i;
+                if (flag) {
+                    Count[minIndex]++;
                 }
             }
-            enzyme = RestrictionEnzyme.list[maxIndex];
+            int maxIndex = StatUtil.maxIndex(Count);
+            if (Count[maxIndex] >= linkers.size() / 2) {
+                enzyme = RestrictionEnzyme.list[maxIndex];
+            }
         }
-        System.out.println(enzyme);
+        if (enzyme == null) {
+            System.out.println("Unknown enzyme");
+        } else {
+            System.out.println(enzyme);
+        }
         //修剪
-        for (int i = 0; i < linkers.size(); i++) {
-            String subEnzyme1 = enzyme.getSequence().substring(0, Math.max(enzyme.getCutSite(), enzyme.getSequence().length() - enzyme.getCutSite()));
-            String subEnzyme2 = enzyme.getSequence().substring(Math.min(enzyme.getCutSite(), enzyme.getSequence().length() - enzyme.getCutSite()));
-            int index1, index2;
-            index1 = linkers.get(i).getSeq().indexOf(subEnzyme1);
-            index2 = linkers.get(i).getSeq().lastIndexOf(subEnzyme2);
-            if (index1 >= 0 && index2 >= 0 && index1 + subEnzyme1.length() < index2 && index1 <= 3 && linkers.get(i).getSeq().length() - index2 - subEnzyme2.length() <= 3) {
-                DNASequence s = new DNASequence(linkers.get(i).getSeq().substring(index1 + subEnzyme1.length(), index2), '+', linkers.get(i).Value);
-                if (s.get_reverse_complement().equals(s.getSeq())) {
-                    linkers.set(i, s);
+        if (enzyme != null) {
+            for (int i = 0; i < linkers.size(); i++) {
+                String subEnzyme1 = enzyme.getSequence().substring(0, Math.max(enzyme.getCutSite(), enzyme.getSequence().length() - enzyme.getCutSite()));
+                String subEnzyme2 = enzyme.getSequence().substring(Math.min(enzyme.getCutSite(), enzyme.getSequence().length() - enzyme.getCutSite()));
+                int index1, index2;
+                index1 = linkers.get(i).getSeq().indexOf(subEnzyme1);
+                index2 = linkers.get(i).getSeq().lastIndexOf(subEnzyme2);
+                if (index1 >= 0 && index2 >= 0 && index1 + subEnzyme1.length() < index2 && index1 <= 3 && linkers.get(i).getSeq().length() - index2 - subEnzyme2.length() <= 3) {
+                    DNASequence s = new DNASequence(linkers.get(i).getSeq().substring(index1 + subEnzyme1.length(), index2), '+', linkers.get(i).Value);
+                    if (s.get_reverse_complement().equals(s.getSeq())) {
+                        linkers.set(i, s);
+                    } else {
+                        linkers.remove(i);
+                        i--;
+                    }
                 } else {
                     linkers.remove(i);
                     i--;
                 }
-            } else {
-                linkers.remove(i);
-                i--;
             }
         }
         //去重

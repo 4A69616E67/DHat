@@ -199,7 +199,7 @@ public class LinkerFilterStat extends AbstractStat {
         BufferedWriter outfile = f.WriteOpen();
         outfile.write("Score\tCount\n");
         int[] Keys = StringArrays.toInteger(LinkerMatchScoreDistribution.keySet().toArray(new String[0]));
-        int max = StatUtil.max(Keys);
+        int max = StatUtil.maxValue(Keys);
         int min = StatUtil.min(Keys);
         for (int i = min; i <= max; i++) {
             outfile.write(i + "\t");
@@ -230,7 +230,7 @@ public class LinkerFilterStat extends AbstractStat {
                     R2Keys[index] = k;
                     index++;
                 }
-                int max = Math.max(StatUtil.max(R1Keys), StatUtil.max(R2Keys));
+                int max = Math.max(StatUtil.maxValue(R1Keys), StatUtil.maxValue(R2Keys));
                 int min = Math.min(StatUtil.min(R1Keys), StatUtil.min(R2Keys));
                 for (int j = min; j <= max; j++) {
                     outfile.write(j + "\t");

@@ -27,7 +27,7 @@ public class StatUtil {
         return res;
     }
 
-    public static int max(int[] i) {
+    public static int maxValue(int[] i) {
         int max = Integer.MIN_VALUE;
         for (int a : i) {
             if (a > max) {
@@ -35,6 +35,18 @@ public class StatUtil {
             }
         }
         return max;
+    }
+
+    public static int maxIndex(int[] i) {
+        int max = Integer.MIN_VALUE;
+        int maxIndex = 0;
+        for (int j = 0; j < i.length; j++) {
+            if (i[j] > max) {
+                max = i[j];
+                maxIndex = j;
+            }
+        }
+        return maxIndex;
     }
 
     public static int min(int[] i) {
@@ -46,4 +58,5 @@ public class StatUtil {
         }
         return min;
     }
+
 }
