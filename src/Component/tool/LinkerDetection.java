@@ -26,6 +26,8 @@ public class LinkerDetection {
         Argument.addOption(Option.builder("t").hasArg().desc("cutoff terminal index (default 70, if you want to remain full reads, please set a large number)").build());
         Argument.addOption(Option.builder("n").hasArg().desc("sequence number use to processing (default 5000)").build());
         Argument.addOption(Option.builder("e").hasArg().desc("restriction enzyme seq (example A^AGCTT or T^TAA)").build());
+        Argument.addOption(Option.builder("k").hasArg().desc("k-mer length (default 10)").build());
+        Argument.addOption(Option.builder("f").hasArg().desc("threshold (default 0.05)").build());
         if (args.length == 0) {
             new HelpFormatter().printHelp("java -cp " + Opts.JarFile.getName() + " " + LinkerDetection.class.getName(), Argument, true);
             System.exit(1);
@@ -36,16 +38,18 @@ public class LinkerDetection {
         int Index1 = Opts.GetIntOpt(ComLine, "s", 0);
         int Index2 = Opts.GetIntOpt(ComLine, "t", 70);
         int SeqNum = Opts.GetIntOpt(ComLine, "n", 5000);
+        int KmerLen = Opts.GetIntOpt(ComLine, "k", 10);
+        float Threshold = Opts.GetFloatOpt(ComLine, "f", 0.05f);
         RestrictionEnzyme enzyme = Opts.GetStringOpt(ComLine, "e", null) == null ? null : new RestrictionEnzyme(Opts.GetStringOpt(ComLine, "e", null));
         //--------------------------------------------------------------------------------------------------------------
-        ArrayList<DNASequence> result = run(InPutFile, new File(Prefix), Index1, Index2, SeqNum, enzyme);
+        ArrayList<DNASequence> result = run(InPutFile, new File(Prefix), Index1, Index2, SeqNum, enzyme, KmerLen, Threshold);
         for (DNASequence d : result) {
             System.out.println(d);
         }
     }
 
-    public static ArrayList<DNASequence> run(FastqFile InPutFile, File prefix, int start, int end, int seqNum, RestrictionEnzyme enzyme) throws IOException {
-        ArrayList<DNASequence> linkers = LinkerDetection.SimilarSeqDetection(InPutFile, new File("test"), start, end, seqNum);
+    public static ArrayList<DNASequence> run(FastqFile InPutFile, File prefix, int start, int end, int seqNum, RestrictionEnzyme enzyme, int k_merLen, float threshold) throws IOException {
+        ArrayList<DNASequence> linkers = LinkerDetection.SimilarSeqDetection(InPutFile, new File("test"), start, end, seqNum, k_merLen, threshold);
         if (enzyme == null || enzyme.getSequence().equals("")) {
             //find out restriction enzyme
             int[] Count = new int[RestrictionEnzyme.list.length];
@@ -79,9 +83,14 @@ public class LinkerDetection {
             int index1, index2;
             index1 = linkers.get(i).getSeq().indexOf(subEnzyme1);
             index2 = linkers.get(i).getSeq().lastIndexOf(subEnzyme2);
-            if (index1 >= 0 && index2 >= 0 && index1 < index2) {
+            if (index1 >= 0 && index2 >= 0 && index1 + subEnzyme1.length() < index2 && index1 <= 3 && linkers.get(i).getSeq().length() - index2 - subEnzyme2.length() <= 3) {
                 DNASequence s = new DNASequence(linkers.get(i).getSeq().substring(index1 + subEnzyme1.length(), index2), '+', linkers.get(i).Value);
-                linkers.set(i, s);
+                if (s.get_reverse_complement().equals(s.getSeq())) {
+                    linkers.set(i, s);
+                } else {
+                    linkers.remove(i);
+                    i--;
+                }
             } else {
                 linkers.remove(i);
                 i--;
@@ -104,12 +113,17 @@ public class LinkerDetection {
     }
 
 
-    public static ArrayList<DNASequence> SimilarSeqDetection(FastqFile input_file, File prefix, int start, int end, int SeqNum) throws IOException {
+    public static ArrayList<DNASequence> SimilarSeqDetection(FastqFile input_file, File prefix, int start, int end, int SeqNum, int k_merLen, float threshold) throws IOException {
+        start = start < 0 ? 0 : start;
+        end = end < start ? start : end;
+        SeqNum = SeqNum == 0 ? 5000 : SeqNum;
+        k_merLen = k_merLen == 0 ? 10 : k_merLen;
+        threshold = threshold == 0 ? 0.05f : threshold;
         ArrayList<FastqItem> list = input_file.Extraction(SeqNum);
         for (FastqItem item : list) {
             item.Sequence = item.Sequence.substring(start, Math.min(end, item.Sequence.length()));
         }
-        ArrayList<KmerStructure> ValidKmerList = GetValidKmer(list, 10, 0.1f * SeqNum);
+        ArrayList<KmerStructure> ValidKmerList = GetValidKmer(list, k_merLen, threshold * SeqNum);
         ArrayList<KmerStructure> assembly_list = Assembly(ValidKmerList);
         ArrayList<DNASequence> final_assembly_list = AssemblyShow(assembly_list);
         for (DNASequence d : final_assembly_list) {
