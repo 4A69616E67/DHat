@@ -74,12 +74,12 @@ public class LinkerDetection {
         System.out.println(enzyme);
         //修剪
         for (int i = 0; i < linkers.size(); i++) {
-            String subEnzyme1 = enzyme.getSequence().substring(0, enzyme.getSequence().length() - enzyme.getCutSite());
-            String subEnzyme2 = enzyme.getSequence().substring(enzyme.getCutSite());
+            String subEnzyme1 = enzyme.getSequence().substring(0, Math.max(enzyme.getCutSite(), enzyme.getSequence().length() - enzyme.getCutSite()));
+            String subEnzyme2 = enzyme.getSequence().substring(Math.min(enzyme.getCutSite(), enzyme.getSequence().length() - enzyme.getCutSite()));
             int index1, index2;
             index1 = linkers.get(i).getSeq().indexOf(subEnzyme1);
             index2 = linkers.get(i).getSeq().lastIndexOf(subEnzyme2);
-            if (index1 >= 0 && index2 >= 0) {
+            if (index1 >= 0 && index2 >= 0 && index1 < index2) {
                 DNASequence s = new DNASequence(linkers.get(i).getSeq().substring(index1 + subEnzyme1.length(), index2), '+', linkers.get(i).Value);
                 linkers.set(i, s);
             } else {
@@ -99,7 +99,6 @@ public class LinkerDetection {
         linkers.clear();
         for (String s : final_linkers.keySet()) {
             linkers.add(new DNASequence(s, '+', final_linkers.get(s)));
-//            System.out.println(new DNASequence(s, '+', final_linkers.get(s)));
         }
         return linkers;
     }
