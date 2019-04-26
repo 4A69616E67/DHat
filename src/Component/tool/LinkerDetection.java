@@ -15,17 +15,17 @@ import java.util.Hashtable;
  * Created by snowf on 2019/2/17.
  */
 public class LinkerDetection {
-    public static void main(String[] args) throws IOException, InterruptedException, ParseException {
-//        FastqFile TestFile = new FastqFile("Test.MseI.fastq.gz");
-//        FastqFile TestFile = new FastqFile("Test.HindII.fastq");
-//        AdapterDetection.SimilarSeqDetection(TestFile, new File("test"), 70);
+    public static void main(String[] args) throws IOException, ParseException {
+
+
         //==============================================================================================================
         Options Argument = new Options();
         Argument.addOption(Option.builder("i").hasArg().desc("input file").required().build());
         Argument.addOption(Option.builder("p").hasArg().desc("prefix").build());
         Argument.addOption(Option.builder("s").hasArg().desc("cutoff start index (default 0)").build());
-        Argument.addOption(Option.builder("t").hasArg(false).desc("cutoff terminal index (default 70, if you want to remain full reads, please set a large number)").build());
-        Argument.addOption(Option.builder("n").hasArg(false).desc("sequence number use to processing (default 5000)").build());
+        Argument.addOption(Option.builder("t").hasArg().desc("cutoff terminal index (default 70, if you want to remain full reads, please set a large number)").build());
+        Argument.addOption(Option.builder("n").hasArg().desc("sequence number use to processing (default 5000)").build());
+        Argument.addOption(Option.builder("e").hasArg().desc("restriction enzyme seq (example A^AGCTT or T^TAA)").build());
         if (args.length == 0) {
             new HelpFormatter().printHelp("java -cp " + Opts.JarFile.getName() + " " + LinkerDetection.class.getName(), Argument, true);
             System.exit(1);
@@ -36,33 +36,41 @@ public class LinkerDetection {
         int Index1 = Opts.GetIntOpt(ComLine, "s", 0);
         int Index2 = Opts.GetIntOpt(ComLine, "t", 70);
         int SeqNum = Opts.GetIntOpt(ComLine, "n", 5000);
+        RestrictionEnzyme enzyme = Opts.GetStringOpt(ComLine, "e", null) == null ? null : new RestrictionEnzyme(Opts.GetStringOpt(ComLine, "e", null));
         //--------------------------------------------------------------------------------------------------------------
-        ArrayList<DNASequence> linkers = LinkerDetection.SimilarSeqDetection(InPutFile, new File("test"), Index1, Index2, SeqNum);
-        //find out restriction enzyme
-        RestrictionEnzyme enzyme;
-        int[] Count = new int[RestrictionEnzyme.list.length];
-        for (int i = 0; i < linkers.size(); i++) {
-            int minPosition = 1000;
-            int minIndex = 0;
-            for (int j = 0; j < RestrictionEnzyme.list.length; j++) {
-                String subEnzyme1 = RestrictionEnzyme.list[j].getSequence().substring(0, RestrictionEnzyme.list[j].getSequence().length() - RestrictionEnzyme.list[j].getCutSite());
-                int position = linkers.get(i).getSeq().indexOf(subEnzyme1);
-                if (position >= 0 && position < minPosition) {
-                    minPosition = position;
-                    minIndex = j;
+        ArrayList<DNASequence> result = run(InPutFile, new File(Prefix), Index1, Index2, SeqNum, enzyme);
+        for (DNASequence d : result) {
+            System.out.println(d);
+        }
+    }
+
+    public static ArrayList<DNASequence> run(FastqFile InPutFile, File prefix, int start, int end, int seqNum, RestrictionEnzyme enzyme) throws IOException {
+        ArrayList<DNASequence> linkers = LinkerDetection.SimilarSeqDetection(InPutFile, new File("test"), start, end, seqNum);
+        if (enzyme == null || enzyme.getSequence().equals("")) {
+            //find out restriction enzyme
+            int[] Count = new int[RestrictionEnzyme.list.length];
+            for (int i = 0; i < linkers.size(); i++) {
+                int minPosition = 1000;
+                int minIndex = 0;
+                for (int j = 0; j < RestrictionEnzyme.list.length; j++) {
+                    String subEnzyme1 = RestrictionEnzyme.list[j].getSequence().substring(0, Math.max(RestrictionEnzyme.list[j].getCutSite(), RestrictionEnzyme.list[j].getSequence().length() - RestrictionEnzyme.list[j].getCutSite()));
+                    int position = linkers.get(i).getSeq().indexOf(subEnzyme1);
+                    if (position >= 0 && position < minPosition) {
+                        minPosition = position;
+                        minIndex = j;
+                    }
                 }
-//            String subEnzyme2 = RestrictionEnzyme.list[i].getSequence().substring(RestrictionEnzyme.list[i].getCutSite());
+                Count[minIndex]++;
             }
-            Count[minIndex]++;
-        }
-        int maxCount = 0, maxIndex = 0;
-        for (int i = 0; i < Count.length; i++) {
-            if (Count[i] > maxCount) {
-                maxCount = Count[i];
-                maxIndex = i;
+            int maxCount = 0, maxIndex = 0;
+            for (int i = 0; i < Count.length; i++) {
+                if (Count[i] > maxCount) {
+                    maxCount = Count[i];
+                    maxIndex = i;
+                }
             }
+            enzyme = RestrictionEnzyme.list[maxIndex];
         }
-        enzyme = RestrictionEnzyme.list[maxIndex];
         System.out.println(enzyme);
         //修剪
         for (int i = 0; i < linkers.size(); i++) {
@@ -88,17 +96,19 @@ public class LinkerDetection {
                 final_linkers.put(d.getSeq(), final_linkers.get(d.getSeq()) + d.Value);
             }
         }
+        linkers.clear();
         for (String s : final_linkers.keySet()) {
-            System.out.println(new DNASequence(s, '+', final_linkers.get(s)));
+            linkers.add(new DNASequence(s, '+', final_linkers.get(s)));
+//            System.out.println(new DNASequence(s, '+', final_linkers.get(s)));
         }
-
+        return linkers;
     }
+
 
     public static ArrayList<DNASequence> SimilarSeqDetection(FastqFile input_file, File prefix, int start, int end, int SeqNum) throws IOException {
         ArrayList<FastqItem> list = input_file.Extraction(SeqNum);
         for (FastqItem item : list) {
             item.Sequence = item.Sequence.substring(start, Math.min(end, item.Sequence.length()));
-//            item.Sequence = item.Sequence.substring(length);
         }
         ArrayList<KmerStructure> ValidKmerList = GetValidKmer(list, 10, 0.1f * SeqNum);
         ArrayList<KmerStructure> assembly_list = Assembly(ValidKmerList);

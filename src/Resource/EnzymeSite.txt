@@ -2,3 +2,13 @@ HindIII A^AGCTT
 MseI    T^TAA
 ClaI    AT^CGAT
 MspI    C^CGG
+ApaI    GGGCC^C
+BamHI   G^GATCC
+BgIII   A^GATCT
+EcoRI   G^AATTC
+KpnI    GGTAC^C
+NcoI    C^CATGG
+NdeI    CA^TATG
+NheI    G^CTAGC
+SacI    GAGCT^C
+SalI    G^TCGAC
