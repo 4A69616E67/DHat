@@ -26,7 +26,7 @@ public class LinkerDetection {
         Argument.addOption(Option.builder("s").hasArg().desc("cutoff start index (default 0)").build());
         Argument.addOption(Option.builder("t").hasArg().desc("cutoff terminal index (default 70, if you want to remain full reads, please set a large number)").build());
         Argument.addOption(Option.builder("n").hasArg().desc("sequence number use to processing (default 5000)").build());
-        Argument.addOption(Option.builder("e").hasArg().desc("restriction enzyme seq (example A^AGCTT or T^TAA)").build());
+        Argument.addOption(Option.builder("e").hasArg().desc("restriction enzyme seq (example A^AGCTT or T^TAA. if you needn't enzyme, set this option \"no\")").build());
         Argument.addOption(Option.builder("k").hasArg().desc("k-mer length (default 10)").build());
         Argument.addOption(Option.builder("f").hasArg().desc("threshold (default 0.05)").build());
         if (args.length == 0) {
@@ -51,14 +51,13 @@ public class LinkerDetection {
 
     public static ArrayList<DNASequence> run(FastqFile InPutFile, File prefix, int start, int end, int seqNum, RestrictionEnzyme enzyme, int k_merLen, float threshold) throws IOException {
         ArrayList<DNASequence> linkers = LinkerDetection.SimilarSeqDetection(InPutFile, new File("test"), start, end, seqNum, k_merLen, threshold);
-        if (enzyme == null || enzyme.getSequence().equals("")) {
-            boolean flag = false;
+        if (enzyme == null) {
             //find out restriction enzyme
             int[] Count = new int[RestrictionEnzyme.list.length];
             for (int i = 0; i < linkers.size(); i++) {
                 int minPosition = 1000;
                 int minIndex = 0;
-                flag = false;
+                boolean flag = false;
                 for (int j = 0; j < RestrictionEnzyme.list.length; j++) {
                     String subEnzyme1 = RestrictionEnzyme.list[j].getSequence().substring(0, Math.max(RestrictionEnzyme.list[j].getCutSite(), RestrictionEnzyme.list[j].getSequence().length() - RestrictionEnzyme.list[j].getCutSite()));
                     int position = linkers.get(i).getSeq().indexOf(subEnzyme1);
@@ -76,6 +75,8 @@ public class LinkerDetection {
             if (Count[maxIndex] >= linkers.size() / 2) {
                 enzyme = RestrictionEnzyme.list[maxIndex];
             }
+        } else if (enzyme.getSequence().compareToIgnoreCase("no") == 0) {
+            enzyme = null;
         }
         if (enzyme == null) {
             System.out.println("Unknown enzyme");
