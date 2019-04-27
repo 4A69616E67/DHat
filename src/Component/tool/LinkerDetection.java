@@ -16,6 +16,8 @@ import java.util.Hashtable;
  * Created by snowf on 2019/2/17.
  */
 public class LinkerDetection {
+    public static RestrictionEnzyme Enzyme;
+
     public static void main(String[] args) throws IOException, ParseException {
 
 
@@ -74,6 +76,7 @@ public class LinkerDetection {
             int maxIndex = StatUtil.maxIndex(Count);
             if (Count[maxIndex] >= linkers.size() / 2) {
                 enzyme = RestrictionEnzyme.list[maxIndex];
+                Enzyme = enzyme;
             }
         } else if (enzyme.getSequence().compareToIgnoreCase("no") == 0) {
             enzyme = null;
@@ -135,9 +138,6 @@ public class LinkerDetection {
         ArrayList<KmerStructure> ValidKmerList = GetValidKmer(list, k_merLen, threshold * SeqNum);
         ArrayList<KmerStructure> assembly_list = Assembly(ValidKmerList);
         ArrayList<DNASequence> final_assembly_list = AssemblyShow(assembly_list);
-        for (DNASequence d : final_assembly_list) {
-            d.Value = d.Value / d.getSeq().length();
-        }
         return final_assembly_list;
     }
 
@@ -158,7 +158,7 @@ public class LinkerDetection {
                     if (s.getSeq().length() == 0) {
                         result.add(new DNASequence(input.get(i).Seq.getSeq(), '+', input.get(i).Seq.Value));
                     } else {
-                        result.add(new DNASequence(input.get(i).Seq.getSeq() + s.getSeq().substring(input.get(i).Seq.getSeq().length() - 1), '+', input.get(i).Seq.Value + s.Value));
+                        result.add(new DNASequence(input.get(i).Seq.getSeq() + s.getSeq().substring(input.get(i).Seq.getSeq().length() - 1), '+', Math.min(input.get(i).Seq.Value, s.Value)));
                     }
                 }
                 input.get(i).Visited = false;

@@ -2,8 +2,10 @@ package Component.unit;
 
 
 import Component.File.FastqFile;
+import Component.Sequence.DNASequence;
 import Component.Software.Bwa;
 import Component.Software.Python;
+import Component.tool.LinkerDetection;
 import Component.tool.Tools;
 
 import java.io.*;
@@ -51,7 +53,7 @@ public class Configure {
     public static int DeBugLevel = 0;
 
     public enum Require {
-        InputFile("InputFile", Configure.InputFile), Restriction("Restriction", Configure.Restriction), HalfLinker("HalfLinker", Tools.ArraysToString(Configure.HalfLinker)), GenomeFile("GenomeFile", Configure.GenomeFile);
+        InputFile("InputFile", Configure.InputFile), Restriction("Restriction", Configure.Restriction), HalfLinker("HalfLinker", Configure.HalfLinker != null ? Tools.ArraysToString(Configure.HalfLinker) : null), GenomeFile("GenomeFile", Configure.GenomeFile);
         private String Key;
         public Object Value;
 
@@ -208,10 +210,22 @@ public class Configure {
         Advance.DeBugLevel.Value = DeBugLevel;
     }
 
-    private static void Init() {
+    private static void Init() throws IOException {
         InputFile = Require.InputFile.Value != null ? new FastqFile(Require.InputFile.Value.toString().trim()) : null;
         Restriction = Require.Restriction.Value != null ? new RestrictionEnzyme(Require.Restriction.Value.toString().trim()) : null;
         HalfLinker = Require.HalfLinker.Value != null ? Require.HalfLinker.Value.toString().trim().split("\\s+") : null;
+        if (HalfLinker == null) {
+            ArrayList<DNASequence> linkers = LinkerDetection.run(InputFile, new File(""), 0, 70, 5000, Restriction, 10, 0.05f);
+            HalfLinker = new String[linkers.size()];
+            for (int i = 0; i < HalfLinker.length; i++) {
+                HalfLinker[i] = linkers.get(i).getSeq().substring(0, linkers.get(i).getSeq().length() / 2);
+            }
+            Require.HalfLinker.Value = String.join(" ", HalfLinker);
+        }
+        if (Restriction == null) {
+            Restriction = LinkerDetection.Enzyme;
+            Require.Restriction.Value = Restriction.toString();
+        }
         GenomeFile = Require.GenomeFile.Value != null ? new File(Require.GenomeFile.Value.toString()) : null;
         //----------------------------------------------------------------------------------------------------
         OutPath = Optional.OutPath.Value != null ? new File(Optional.OutPath.Value.toString().trim()) : OutPath;
