@@ -142,26 +142,26 @@ public class NoiseReduceStat extends AbstractStat {
         show.append("------------------------------------------------------------------------------------------------\n");
         for (int i = 0; i < Linkers.length; i++) {
             show.append("Linker ").append(Linkers[i].getType()).append(":\t").append(Linkers[i].getSeq()).append("\n");
-            show.append("Raw data:     \t").append(new DecimalFormat("#,###").format(LinkerRawDataNum[i])).append("\n");
-            show.append("Self-ligation:\t").append(new DecimalFormat("#,###").format(LinkerSelfLigationNum[i])).append("\t").append(String.format("%.2f", (double) LinkerSelfLigationNum[i] / LinkerRawDataNum[i] * 100)).append("%").append("\t");
+            show.append("Raw data:        \t").append(new DecimalFormat("#,###").format(LinkerRawDataNum[i])).append("\n");
+            show.append("Self-ligation:   \t").append(new DecimalFormat("#,###").format(LinkerSelfLigationNum[i])).append("\t").append(String.format("%.2f", (double) LinkerSelfLigationNum[i] / LinkerRawDataNum[i] * 100)).append("%").append("\t");
             show.append("Re-ligation: ").append(new DecimalFormat("#,###").format(LinkerReLigationNum[i])).append(" ").append(String.format("%.2f", (double) LinkerReLigationNum[i] / LinkerRawDataNum[i] * 100)).append("%").append("\t");
             show.append("Duplicate: ").append(new DecimalFormat("#,###").format(LinkerRepeatNum[i])).append(" ").append(String.format("%.2f", (double) LinkerRepeatNum[i] / LinkerRawDataNum[i] * 100)).append("%").append("\n");
-            show.append("Clean data:   \t").append(new DecimalFormat("#,###").format(LinkerCleanNum[i])).append("\t").append(String.format("%.2f", (double) LinkerCleanNum[i] / LinkerRawDataNum[i] * 100)).append("%").append("\n");
-            show.append("Intra-action: \t").append(new DecimalFormat("#,###").format(LinkerSameCleanNum[i])).append("\t").append(String.format("%.2f", (double) LinkerSameCleanNum[i] / LinkerCleanNum[i] * 100)).append("%").append("\t");
-            show.append("Inter-action: ").append(new DecimalFormat("#,###").format(LinkerDiffCleanNum[i])).append("\t").append(String.format("%.2f", (double) LinkerDiffCleanNum[i] / LinkerCleanNum[i] * 100)).append("%").append("\n");
-            show.append("Short range:  \t").append(new DecimalFormat("#,###").format(LinkerShortRangeNum[i])).append("\t").append(String.format("%.2f", (double) LinkerShortRangeNum[i] / LinkerSameCleanNum[i] * 100)).append("%").append("\t");
+            show.append("Clean data:      \t").append(new DecimalFormat("#,###").format(LinkerCleanNum[i])).append("\t").append(String.format("%.2f", (double) LinkerCleanNum[i] / LinkerRawDataNum[i] * 100)).append("%").append("\n");
+            show.append("Intra-chromosome:\t").append(new DecimalFormat("#,###").format(LinkerSameCleanNum[i])).append("\t").append(String.format("%.2f", (double) LinkerSameCleanNum[i] / LinkerCleanNum[i] * 100)).append("%").append("\t");
+            show.append("Inter-chromosome: ").append(new DecimalFormat("#,###").format(LinkerDiffCleanNum[i])).append("\t").append(String.format("%.2f", (double) LinkerDiffCleanNum[i] / LinkerCleanNum[i] * 100)).append("%").append("\n");
+            show.append("Short range:     \t").append(new DecimalFormat("#,###").format(LinkerShortRangeNum[i])).append("\t").append(String.format("%.2f", (double) LinkerShortRangeNum[i] / LinkerSameCleanNum[i] * 100)).append("%").append("\t");
             show.append("Long range: ").append(new DecimalFormat("#,###").format(LinkerLongRangeNum[i])).append("\t").append(String.format("%.2f", (double) LinkerLongRangeNum[i] / LinkerSameCleanNum[i] * 100)).append("%").append("\n");
             show.append("\n");
         }
         show.append("Total:\n");
-        show.append("Raw data:     \t").append(new DecimalFormat("#,###").format(RawDataNum)).append("\n");
-        show.append("Self-ligation:\t").append(new DecimalFormat("#,###").format(SelfLigationNum)).append("\t").append(String.format("%.2f", (double) SelfLigationNum / RawDataNum * 100)).append("%").append("\t");
+        show.append("Raw data:        \t").append(new DecimalFormat("#,###").format(RawDataNum)).append("\n");
+        show.append("Self-ligation:   \t").append(new DecimalFormat("#,###").format(SelfLigationNum)).append("\t").append(String.format("%.2f", (double) SelfLigationNum / RawDataNum * 100)).append("%").append("\t");
         show.append("Re-ligation: ").append(new DecimalFormat("#,###").format(ReLigationNum)).append(" ").append(String.format("%.2f", (double) ReLigationNum / RawDataNum * 100)).append("%").append("\t");
         show.append("Duplicate: ").append(new DecimalFormat("#,###").format(RepeatNum)).append(" ").append(String.format("%.2f", (double) RepeatNum / RawDataNum * 100)).append("%").append("\n");
-        show.append("Clean data:   \t").append(new DecimalFormat("#,###").format(CleanNum)).append("\t").append(String.format("%.2f", (double) CleanNum / RawDataNum * 100)).append("%").append("\n");
-        show.append("Intra-action: \t").append(new DecimalFormat("#,###").format(SameCleanNum)).append("\t").append(String.format("%.2f", (double) SameCleanNum / CleanNum * 100)).append("%").append("\t");
-        show.append("Inter-action: ").append(new DecimalFormat("#,###").format(DiffCleanNum)).append("\t").append(String.format("%.2f", (double) DiffCleanNum / CleanNum * 100)).append("%").append("\n");
-        show.append("Short range:  \t").append(new DecimalFormat("#,###").format(ShortRangeNum)).append("\t").append(String.format("%.2f", (double) ShortRangeNum / SameCleanNum * 100)).append("%").append("\t");
+        show.append("Clean data:      \t").append(new DecimalFormat("#,###").format(CleanNum)).append("\t").append(String.format("%.2f", (double) CleanNum / RawDataNum * 100)).append("%").append("\n");
+        show.append("Intra-chromosome:\t").append(new DecimalFormat("#,###").format(SameCleanNum)).append("\t").append(String.format("%.2f", (double) SameCleanNum / CleanNum * 100)).append("%").append("\t");
+        show.append("Inter-chromosome: ").append(new DecimalFormat("#,###").format(DiffCleanNum)).append("\t").append(String.format("%.2f", (double) DiffCleanNum / CleanNum * 100)).append("%").append("\n");
+        show.append("Short range:     \t").append(new DecimalFormat("#,###").format(ShortRangeNum)).append("\t").append(String.format("%.2f", (double) ShortRangeNum / SameCleanNum * 100)).append("%").append("\t");
         show.append("Long range: ").append(new DecimalFormat("#,###").format(LongRangeNum)).append("\t").append(String.format("%.2f", (double) LongRangeNum / SameCleanNum * 100)).append("%").append("\n");
         show.append("\n");
         return show.toString();
