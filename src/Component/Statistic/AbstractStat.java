@@ -5,6 +5,7 @@ package Component.Statistic;
  */
 
 public abstract class AbstractStat {
+    public long Time;
 
 
     public abstract void Stat() throws Exception;

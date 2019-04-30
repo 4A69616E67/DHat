@@ -4,7 +4,7 @@ package Component.Statistic;
  * Created by 浩 on 2019/3/2.
  */
 public class StatUtil {
-    private StatUtil() {
+    public StatUtil() {
     }
 
     public static long sum(long[] l) {
@@ -57,6 +57,14 @@ public class StatUtil {
             }
         }
         return min;
+    }
+
+    public double ToDouble(int i) {
+        return (double) i;
+    }
+
+    public double ToDouble(long l) {
+        return (double) l;
     }
 
 }

@@ -159,12 +159,12 @@ public class PreProcess extends AbstractProcess {
                     if (Integer.parseInt(filter_result[6]) >= MinLinkerMappingScore) {
                         for (int j = 0; j < Linkers.length; j++) {
                             if (filter_result[5].equals(Linkers[j].getType())) {
-                                synchronized (Linkers[j]) {
-                                    Opts.LFStat.LinkerMatchableNum[j]++;
+                                synchronized (Opts.LFStat.linkers[j].lock[4]) {
+                                    Opts.LFStat.linkers[j].MatchableNum++;
                                 }
                                 fastq_string = DivideLinker.Execute(filter_result, MatchSeq, AppendSeq, AppendQuality, MaxReadsLen, DivideLinker.Format.All, j);
                                 if (fastq_string[0] != null && fastq_string[1] != null) {
-                                    synchronized (Linkers[j]) {
+                                    synchronized (Opts.LFStat.linkers[j].lock[5]) {
                                         FastqR1File[j].ItemNum++;
                                         FastqR2File[j].ItemNum++;
                                         try {
@@ -196,7 +196,7 @@ public class PreProcess extends AbstractProcess {
         }
         Tools.ThreadsWait(t);
         for (int j = 0; j < Linkers.length; j++) {
-            Opts.LFStat.ValidPairNum[j] = FastqR1File[j].ItemNum;
+            Opts.LFStat.linkers[j].ValidPairNum = FastqR1File[j].ItemNum;
         }
         writer.close();
         for (int i = 0; i < Linkers.length; i++) {

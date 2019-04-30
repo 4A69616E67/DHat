@@ -258,18 +258,18 @@ public class DivideLinker {
             Quality = Quality.substring(Quality.length() - MaxReadsLength);
         }
         if (!MatchSeq.equals("") && AppendBase(ReadsSeq, MatchSeq, Format.First)) {
-            synchronized (Opts.LFStat) {
-                Opts.LFStat.AddBaseToLeftPair[index]++;
+            synchronized (Opts.LFStat.linkers[index].lock[0]) {
+                Opts.LFStat.linkers[index].AddBaseToLeftPair++;
             }
             ReadsSeq += AppendSeq;
             Quality += AppendQuality;
         }
-        synchronized (Opts.LFStat.ReadsLengthDistributionR1[index]) {
-            Opts.LFStat.LeftValidPairNum[index]++;
-            if (!Opts.LFStat.ReadsLengthDistributionR1[index].containsKey(ReadsSeq.length())) {
-                Opts.LFStat.ReadsLengthDistributionR1[index].put(ReadsSeq.length(), new int[]{0});
+        synchronized (Opts.LFStat.linkers[index].lock[1]) {
+            Opts.LFStat.linkers[index].LeftValidPairNum++;
+            if (!Opts.LFStat.linkers[index].ReadsLengthDistributionR1.containsKey(ReadsSeq.length())) {
+                Opts.LFStat.linkers[index].ReadsLengthDistributionR1.put(ReadsSeq.length(), new int[]{0});
             }
-            Opts.LFStat.ReadsLengthDistributionR1[index].get(ReadsSeq.length())[0]++;
+            Opts.LFStat.linkers[index].ReadsLengthDistributionR1.get(ReadsSeq.length())[0]++;
         }
         return new FastqItem(new String[]{ReadsTitle, ReadsSeq, Orientation, Quality});
     }
@@ -290,18 +290,18 @@ public class DivideLinker {
             Quality = Quality.substring(0, MaxReadsLength);
         }
         if (!MatchSeq.equals("") && AppendBase(ReadsSeq, MatchSeq, Format.Second)) {
-            synchronized (Opts.LFStat) {
-                Opts.LFStat.AddBaseToRightPair[index]++;
+            synchronized (Opts.LFStat.linkers[index].lock[2]) {
+                Opts.LFStat.linkers[index].AddBaseToRightPair++;
             }
             ReadsSeq = AppendSeq + ReadsSeq;
             Quality = AppendQuality + Quality;
         }
-        synchronized (Opts.LFStat.ReadsLengthDistributionR2[index]) {
-            Opts.LFStat.RightValidPairNum[index]++;
-            if (!Opts.LFStat.ReadsLengthDistributionR2[index].containsKey(ReadsSeq.length())) {
-                Opts.LFStat.ReadsLengthDistributionR2[index].put(ReadsSeq.length(), new int[]{0});
+        synchronized (Opts.LFStat.linkers[index].lock[3]) {
+            Opts.LFStat.linkers[index].RightValidPairNum++;
+            if (!Opts.LFStat.linkers[index].ReadsLengthDistributionR2.containsKey(ReadsSeq.length())) {
+                Opts.LFStat.linkers[index].ReadsLengthDistributionR2.put(ReadsSeq.length(), new int[]{0});
             }
-            Opts.LFStat.ReadsLengthDistributionR2[index].get(ReadsSeq.length())[0]++;
+            Opts.LFStat.linkers[index].ReadsLengthDistributionR2.get(ReadsSeq.length())[0]++;
         }
         return new FastqItem(new String[]{ReadsTitle, ReadsSeq, Orientation, Quality});
     }

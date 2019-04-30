@@ -162,7 +162,7 @@ public class PetCluster {
 //            out.write(chr1.Chr + "\t" + chr1.region.Start + "\t" + chr1.region.End + "\t" + chr2.Chr + "\t" + chr2.region.Start + "\t" + chr2.region.End + "\t" + action.Score + "\n");
 //        }
 //        out.close();
-//        out = new BufferedWriter(new FileWriter(OutPrefix + ".cluster.stat"));
+//        out = new BufferedWriter(new FileWriter(OutPrefix + ".cluster.linkers"));
 //        ArrayList<Integer> Key = new ArrayList<>(CountStat.keySet());
 //        Collections.sort(Key);
 //        for (int i : Key) {

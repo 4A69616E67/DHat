@@ -2,10 +2,14 @@ package Component.unit;
 
 import Component.File.CommonFile;
 import Component.Statistic.*;
+import Component.Statistic.Alignment.AlignmentStat;
+import Component.Statistic.LinkerFilter.LinkerFilterStat;
+import Component.Statistic.NoiseReduce.NoiseReduceStat;
 import org.apache.commons.cli.CommandLine;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Hashtable;
 
 /**
@@ -178,6 +182,7 @@ public class Opts {
     public static final String Email = "john-jh@foxmail.com";
     public static final long MaxMemory = Runtime.getRuntime().maxMemory();//java能获取的最大内存
     public static Hashtable<String, Integer> ChrSize = new Hashtable<>();
+    public static final Date StartTime = new Date();
     //==================================================================================================================
     public static final LinkerFilterStat LFStat = new LinkerFilterStat();
     public static final AlignmentStat ALStat = new AlignmentStat();

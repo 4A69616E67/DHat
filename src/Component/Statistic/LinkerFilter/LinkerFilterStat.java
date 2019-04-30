@@ -1,8 +1,10 @@
-package Component.Statistic;
+package Component.Statistic.LinkerFilter;
 
 import Component.File.AbstractFile;
 import Component.File.CommonFile;
 import Component.Process.PreProcess;
+import Component.Statistic.AbstractStat;
+import Component.Statistic.StatUtil;
 import Component.tool.DivideLinker;
 import Component.tool.LinkerFiltering;
 import Component.tool.Tools;
@@ -15,12 +17,10 @@ import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.HashMap;
 
-/**
- * Created by snowf on 2019/3/1.
- */
-
 public class LinkerFilterStat extends AbstractStat {
     public LinkerSequence[] Linkers = new LinkerSequence[0];
+    public Stat[] linkers;
+    public Stat total = new Stat();
     public String[] HalfLinkers = new String[]{""};
     public String[] Adapters = new String[]{""};
     public int Threshold;
@@ -32,23 +32,23 @@ public class LinkerFilterStat extends AbstractStat {
     //--------------------------------------------------------------------
     public CommonFile InputFile;
     public long InputNum;
-    public long[] LeftValidPairNum = new long[0], RightValidPairNum = new long[0];
-    public long[] ValidPairNum = new long[0];
-    public long[] AddBaseToLeftPair = new long[0], AddBaseToRightPair = new long[0];
-    public long[] LinkerMatchableNum = new long[0];
+    //    public long[] LeftValidPairNum = new long[0], RightValidPairNum = new long[0];
+//    public long[] ValidPairNum = new long[0];
+//    public long[] AddBaseToLeftPair = new long[0], AddBaseToRightPair = new long[0];
+//    public long[] LinkerMatchableNum = new long[0];
     public HashMap<String, int[]> LinkerMatchScoreDistribution = new HashMap<>();
-    public HashMap<Integer, int[]>[] ReadsLengthDistributionR1 = new HashMap[0];
-    public HashMap<Integer, int[]>[] ReadsLengthDistributionR2 = new HashMap[0];
+//    public HashMap<Integer, int[]>[] ReadsLengthDistributionR1 = new HashMap[0];
+//    public HashMap<Integer, int[]>[] ReadsLengthDistributionR2 = new HashMap[0];
 
-    public long AllLinkerMatchable;
+    //    public long AllLinkerMatchable;
     public long LinkerUnmatchableNum;
     public long AdapterMatchableNum;
     public long AdapterUnmatchableNum;
-    public long AllValidLeftPair;
-    public long AllLeftAddBase;
-    public long AllValidRightPair;
-    public long AllRightAddBase;
-    public long AllValidPair;
+//    public long AllValidLeftPair;
+//    public long AllLeftAddBase;
+//    public long AllValidRightPair;
+//    public long AllRightAddBase;
+//    public long AllValidPair;
 
 
     public int ThreadNum;
@@ -100,15 +100,15 @@ public class LinkerFilterStat extends AbstractStat {
                 }
             }
             if (Integer.parseInt(Str[6]) >= Threshold) {
-                for (int j = 0; j < Linkers.length; j++) {
-                    if (Str[5].equals(Linkers[j].getType())) {
-                        synchronized (Linkers[j]) {
-                            LinkerMatchableNum[j]++;
+                for (int j = 0; j < linkers.length; j++) {
+                    if (Str[5].equals(linkers[j].Linker.getType())) {
+                        synchronized (linkers[j].lock[4]) {
+                            linkers[j].MatchableNum++;
                         }
                         FastqItem[] fastq_string = DivideLinker.Execute(Str, MatchSeq, AppendSeq, AppendQuality, MaxReadsLen, DivideLinker.Format.All, j);
                         if (fastq_string[0] != null && fastq_string[1] != null) {
-                            synchronized (Linkers[j]) {
-                                ValidPairNum[j]++;
+                            synchronized (linkers[j].lock[5]) {
+                                linkers[j].ValidPairNum++;
                             }
                         }
                         break;
@@ -140,59 +140,73 @@ public class LinkerFilterStat extends AbstractStat {
         show.append("------------------------------------------------------------------------------------------------\n");
         show.append("Input:").append("\t").append(new DecimalFormat("#,###").format(InputNum)).append("\t").append("-").append("\n");
         show.append("\n");
-        for (int i = 0; i < Linkers.length; i++) {
-            show.append("Linker ").append(Linkers[i].getType()).append(":\t").append(Linkers[i].getSeq()).append("\n");
-            show.append("Linker matchable").append("\t").append(new DecimalFormat("#,###").format(LinkerMatchableNum[i])).append("\t").append(String.format("%.2f", (double) LinkerMatchableNum[i] / InputNum * 100)).append("%").append("\n");
-            show.append("Left pair valid ").append("\t").append(new DecimalFormat("#,###").format(LeftValidPairNum[i])).append("\t").append(String.format("%.2f", (double) LeftValidPairNum[i] / InputNum * 100)).append("%").append("\t");
-            show.append("Add base to left pair").append("\t").append(new DecimalFormat("#,###").format(AddBaseToLeftPair[i])).append("\t").append(String.format("%.2f", (double) AddBaseToLeftPair[i] / InputNum * 100)).append("%").append("\n");
-            show.append("Right pair valid").append("\t").append(new DecimalFormat("#,###").format(RightValidPairNum[i])).append("\t").append(String.format("%.2f", (double) RightValidPairNum[i] / InputNum * 100)).append("%").append("\t");
-            show.append("Add base to right pair").append("\t").append(new DecimalFormat("#,###").format(AddBaseToRightPair[i])).append("\t").append(String.format("%.2f", (double) AddBaseToRightPair[i] / InputNum * 100)).append("%").append("\n");
-            show.append("Valid reads pair").append("\t").append(new DecimalFormat("#,###").format(ValidPairNum[i])).append("\t").append(String.format("%.2f", (double) ValidPairNum[i] / InputNum * 100)).append("%").append("\n");
+        for (int i = 0; i < linkers.length; i++) {
+            show.append("Linker ").append(linkers[i].Linker.getType()).append(":\t").append(linkers[i].Linker.getSeq()).append("\n");
+            show.append("Linker matchable").append("\t").append(new DecimalFormat("#,###").format(linkers[i].MatchableNum)).append("\t").append(String.format("%.2f", (double) linkers[i].MatchableNum / InputNum * 100)).append("%").append("\n");
+            show.append("Left pair valid ").append("\t").append(new DecimalFormat("#,###").format(linkers[i].LeftValidPairNum)).append("\t").append(String.format("%.2f", (double) linkers[i].LeftValidPairNum / InputNum * 100)).append("%").append("\t");
+            show.append("Add base to left pair").append("\t").append(new DecimalFormat("#,###").format(linkers[i].AddBaseToLeftPair)).append("\t").append(String.format("%.2f", (double) linkers[i].AddBaseToLeftPair / InputNum * 100)).append("%").append("\n");
+            show.append("Right pair valid").append("\t").append(new DecimalFormat("#,###").format(linkers[i].RightValidPairNum)).append("\t").append(String.format("%.2f", (double) linkers[i].RightValidPairNum / InputNum * 100)).append("%").append("\t");
+            show.append("Add base to right pair").append("\t").append(new DecimalFormat("#,###").format(linkers[i].AddBaseToRightPair)).append("\t").append(String.format("%.2f", (double) linkers[i].AddBaseToRightPair / InputNum * 100)).append("%").append("\n");
+            show.append("Valid reads pair").append("\t").append(new DecimalFormat("#,###").format(linkers[i].ValidPairNum)).append("\t").append(String.format("%.2f", (double) linkers[i].ValidPairNum / InputNum * 100)).append("%").append("\n");
             show.append("\n");
         }
         show.append("Total:\n");
-        show.append("Linker matchable").append("\t").append(new DecimalFormat("#,###").format(AllLinkerMatchable)).append("\t").append(String.format("%.2f", (double) AllLinkerMatchable / InputNum * 100)).append("%").append("\t");
+        show.append("Linker matchable").append("\t").append(new DecimalFormat("#,###").format(total.MatchableNum)).append("\t").append(String.format("%.2f", (double) total.MatchableNum / InputNum * 100)).append("%").append("\t");
         show.append("Linker unmatchable").append("\t").append(new DecimalFormat("#,###").format(LinkerUnmatchableNum)).append("\t").append(String.format("%.2f", (double) LinkerUnmatchableNum / InputNum * 100)).append("%").append("\n");
         show.append("Adapter matchable").append("\t").append(new DecimalFormat("#,###").format(AdapterMatchableNum)).append("\t").append(String.format("%.2f", (double) AdapterMatchableNum / InputNum * 100)).append("%").append("\t");
         show.append("Adapter unmatchable").append("\t").append(new DecimalFormat("#,###").format(AdapterUnmatchableNum)).append("\t").append(String.format("%.2f", (double) AdapterUnmatchableNum / InputNum * 100)).append("%").append("\n");
-        show.append("Left pair valid ").append("\t").append(new DecimalFormat("#,###").format(AllValidLeftPair)).append("\t").append(String.format("%.2f", (double) AllValidLeftPair / InputNum * 100)).append("%").append("\t");
-        show.append("Add base to left pair").append("\t").append(new DecimalFormat("#,###").format(AllLeftAddBase)).append("\t").append(String.format("%.2f", (double) AllLeftAddBase / InputNum * 100)).append("%").append("\n");
-        show.append("Right pair valid").append("\t").append(new DecimalFormat("#,###").format(AllValidRightPair)).append("\t").append(String.format("%.2f", (double) AllValidRightPair / InputNum * 100)).append("%").append("\t");
-        show.append("Add base to right pair").append("\t").append(new DecimalFormat("#,###").format(AllRightAddBase)).append("\t").append(String.format("%.2f", (double) AllRightAddBase / InputNum * 100)).append("%").append("\n");
-        show.append("Valid reads pair").append("\t").append(new DecimalFormat("#,###").format(AllValidPair)).append("\t").append(String.format("%.2f", (double) AllValidPair / InputNum * 100)).append("%").append("\n");
+        show.append("Left pair valid ").append("\t").append(new DecimalFormat("#,###").format(total.LeftValidPairNum)).append("\t").append(String.format("%.2f", (double) total.LeftValidPairNum / InputNum * 100)).append("%").append("\t");
+        show.append("Add base to left pair").append("\t").append(new DecimalFormat("#,###").format(total.AddBaseToLeftPair)).append("\t").append(String.format("%.2f", (double) total.AddBaseToLeftPair / InputNum * 100)).append("%").append("\n");
+        show.append("Right pair valid").append("\t").append(new DecimalFormat("#,###").format(total.RightValidPairNum)).append("\t").append(String.format("%.2f", (double) total.RightValidPairNum / InputNum * 100)).append("%").append("\t");
+        show.append("Add base to right pair").append("\t").append(new DecimalFormat("#,###").format(total.AddBaseToRightPair)).append("\t").append(String.format("%.2f", (double) total.AddBaseToRightPair / InputNum * 100)).append("%").append("\n");
+        show.append("Valid reads pair").append("\t").append(new DecimalFormat("#,###").format(total.ValidPairNum)).append("\t").append(String.format("%.2f", (double) total.ValidPairNum / InputNum * 100)).append("%").append("\n");
         return show.toString();
     }
 
     @Override
     protected void UpDate() {
-        AllLinkerMatchable = StatUtil.sum(LinkerMatchableNum);
-        if (LinkerUnmatchableNum == 0 && AllLinkerMatchable != 0) {
-            LinkerUnmatchableNum = InputFile.getItemNum() - AllLinkerMatchable;
+        total.clear();
+        for (Stat linker : linkers) {
+            total.MatchableNum += linker.MatchableNum;
+            total.LeftValidPairNum += linker.LeftValidPairNum;
+            total.RightValidPairNum += linker.RightValidPairNum;
+            total.AddBaseToLeftPair += linker.AddBaseToLeftPair;
+            total.AddBaseToRightPair += linker.AddBaseToRightPair;
+            total.ValidPairNum += linker.ValidPairNum;
+        }
+//        AllLinkerMatchable = StatUtil.sum(LinkerMatchableNum);
+        if (LinkerUnmatchableNum == 0 && total.MatchableNum != 0) {
+            LinkerUnmatchableNum = InputFile.getItemNum() - total.MatchableNum;
         }
         if (AdapterUnmatchableNum == 0 && AdapterMatchableNum != 0) {
             AdapterUnmatchableNum = InputFile.getItemNum() - AdapterMatchableNum;
         }
-        AllValidPair = StatUtil.sum(ValidPairNum);
-        AllValidLeftPair = StatUtil.sum(LeftValidPairNum);
-        AllValidRightPair = StatUtil.sum(RightValidPairNum);
-        AllLeftAddBase = StatUtil.sum(AddBaseToLeftPair);
-        AllRightAddBase = StatUtil.sum(AddBaseToRightPair);
+//        AllValidPair = StatUtil.sum(ValidPairNum);
+//        AllValidLeftPair = StatUtil.sum(LeftValidPairNum);
+//        AllValidRightPair = StatUtil.sum(RightValidPairNum);
+//        AllLeftAddBase = StatUtil.sum(AddBaseToLeftPair);
+//        AllRightAddBase = StatUtil.sum(AddBaseToRightPair);
     }
 
     @Override
     public void Init() {
-        LinkerMatchableNum = new long[Linkers.length];
-        ValidPairNum = new long[Linkers.length];
-        LeftValidPairNum = new long[Linkers.length];
-        RightValidPairNum = new long[Linkers.length];
-        AddBaseToLeftPair = new long[Linkers.length];
-        AddBaseToRightPair = new long[Linkers.length];
-        ReadsLengthDistributionR1 = new HashMap[Linkers.length];
-        ReadsLengthDistributionR2 = new HashMap[Linkers.length];
+        linkers = new Stat[Linkers.length];
         for (int i = 0; i < Linkers.length; i++) {
-            ReadsLengthDistributionR1[i] = new HashMap<>();
-            ReadsLengthDistributionR2[i] = new HashMap<>();
+            linkers[i] = new Stat();
+            linkers[i].Linker = Linkers[i];
         }
+//        LinkerMatchableNum = new long[Linkers.length];
+//        ValidPairNum = new long[Linkers.length];
+//        LeftValidPairNum = new long[Linkers.length];
+//        RightValidPairNum = new long[Linkers.length];
+//        AddBaseToLeftPair = new long[Linkers.length];
+//        AddBaseToRightPair = new long[Linkers.length];
+//        ReadsLengthDistributionR1 = new HashMap[Linkers.length];
+//        ReadsLengthDistributionR2 = new HashMap[Linkers.length];
+//        for (int i = 0; i < Linkers.length; i++) {
+//            ReadsLengthDistributionR1[i] = new HashMap<>();
+//            ReadsLengthDistributionR2[i] = new HashMap<>();
+//        }
     }
 
     public void WriteLinkerScoreDis(AbstractFile f) throws IOException {
@@ -217,16 +231,16 @@ public class LinkerFilterStat extends AbstractStat {
         for (int i = 0; i < f.length; i++) {
             BufferedWriter outfile = f[i].WriteOpen();
             outfile.write("Length\tR1\tR2\n");
-            int[] R1Keys = new int[ReadsLengthDistributionR1[i].size()];
-            int[] R2Keys = new int[ReadsLengthDistributionR2[i].size()];
+            int[] R1Keys = new int[linkers[i].ReadsLengthDistributionR1.size()];
+            int[] R2Keys = new int[linkers[i].ReadsLengthDistributionR2.size()];
             try {
                 int index = 0;
-                for (Integer k : ReadsLengthDistributionR1[i].keySet()) {
+                for (Integer k : linkers[i].ReadsLengthDistributionR1.keySet()) {
                     R1Keys[index] = k;
                     index++;
                 }
                 index = 0;
-                for (Integer k : ReadsLengthDistributionR2[i].keySet()) {
+                for (Integer k : linkers[i].ReadsLengthDistributionR2.keySet()) {
                     R2Keys[index] = k;
                     index++;
                 }
@@ -234,15 +248,15 @@ public class LinkerFilterStat extends AbstractStat {
                 int min = Math.min(StatUtil.min(R1Keys), StatUtil.min(R2Keys));
                 for (int j = min; j <= max; j++) {
                     outfile.write(j + "\t");
-                    if (!ReadsLengthDistributionR1[i].containsKey(j)) {
+                    if (!linkers[i].ReadsLengthDistributionR1.containsKey(j)) {
                         outfile.write(0 + "\t");
                     } else {
-                        outfile.write(ReadsLengthDistributionR1[i].get(j)[0] + "\t");
+                        outfile.write(linkers[i].ReadsLengthDistributionR1.get(j)[0] + "\t");
                     }
-                    if (!ReadsLengthDistributionR2[i].containsKey(j)) {
+                    if (!linkers[i].ReadsLengthDistributionR2.containsKey(j)) {
                         outfile.write(0 + "\n");
                     } else {
-                        outfile.write(ReadsLengthDistributionR2[i].get(j)[0] + "\n");
+                        outfile.write(linkers[i].ReadsLengthDistributionR2.get(j)[0] + "\n");
                     }
                 }
                 outfile.close();
