@@ -19,15 +19,11 @@ public class NoiseReduceStat extends AbstractStat {
     public LinkerSequence[] Linkers;
     public Stat[] linkers;
     public Stat total = new Stat();
-    //    public long[] LinkerRawDataNum, LinkerSelfLigationNum, LinkerReLigationNum, LinkerRepeatNum, LinkerSameCleanNum, LinkerDiffCleanNum, LinkerCleanNum, LinkerShortRangeNum, LinkerLongRangeNum;
-//    public long RawDataNum, SelfLigationNum, ReLigationNum, RepeatNum, SameCleanNum, DiffCleanNum, CleanNum;
-//    public long ShortRangeNum, LongRangeNum;
     public HashMap<Integer, Integer> InteractionRangeDistribution = new HashMap<>();
     public Region ShortRegion, LongRegion;
     public File OutDir;
 
     //-----------------------------------------------------------------------------
-//    public BedpeFile[] InputFile, SelfLigationFile, ReLigationFile, DuplicateFile, SameCleanFile, DiffCleanFile, CleanFile;
 
     @Override
 
@@ -190,22 +186,5 @@ public class NoiseReduceStat extends AbstractStat {
             linkers[i] = new Stat();
             linkers[i].Linker = Linkers[i];
         }
-//        LinkerRawDataNum = new long[Linkers.length];
-//        LinkerSelfLigationNum = new long[Linkers.length];
-//        LinkerReLigationNum = new long[Linkers.length];
-//        LinkerRepeatNum = new long[Linkers.length];
-//        LinkerSameCleanNum = new long[Linkers.length];
-//        LinkerDiffCleanNum = new long[Linkers.length];
-//        LinkerCleanNum = new long[Linkers.length];
-//        LinkerShortRangeNum = new long[Linkers.length];
-//        LinkerLongRangeNum = new long[Linkers.length];
-//        //-------------------------------------------------------------------
-//        InputFile = new BedpeFile[Linkers.length];
-//        SelfLigationFile = new BedpeFile[Linkers.length];
-//        ReLigationFile = new BedpeFile[Linkers.length];
-//        DuplicateFile = new BedpeFile[Linkers.length];
-//        SameCleanFile = new BedpeFile[Linkers.length];
-//        DiffCleanFile = new BedpeFile[Linkers.length];
-//        CleanFile = new BedpeFile[Linkers.length];
     }
 }

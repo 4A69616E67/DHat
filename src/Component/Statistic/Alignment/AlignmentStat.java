@@ -16,25 +16,15 @@ import java.util.LinkedList;
  * Created by 浩 on 2019/3/2.
  */
 public class AlignmentStat extends AbstractStat {
-    //    private long InputNum;
     public Stat[] linkers;
     public Stat total = new Stat();
     public LinkerSequence[] Linkers = new LinkerSequence[0];
-    //    public long[] InputNum = new long[0];
-//    public long[] R1Mapped = new long[0], R1Unmapped = new long[0], R1MultiMapped = new long[0];
-//    public long[] R2Mapped = new long[0], R2Unmapped = new long[0], R2MultiMapped = new long[0];
-//    public long[] MergeNum = new long[0];
     public int Threshold;
     public AbstractSoftware AlignmentSoftware;
     public File GenomeFile;
     public File GenomeIndex;
     public File OutDir;
 
-    //------------------------------------------------------
-//    public FastqFile[] InputFile;
-//    public SamFile[] UniqueSamFile1, MultiSamFile1, UnmappedSamFile1;
-//    public SamFile[] UniqueSamFile2, MultiSamFile2, UnmappedSamFile2;
-//    public BedpeFile[] BedPeFile;
 
     @Override
     public void Stat() {

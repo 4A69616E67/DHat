@@ -2,11 +2,9 @@ package Component.Statistic.LinkerFilter;
 
 import Component.File.AbstractFile;
 import Component.File.CommonFile;
-import Component.Process.PreProcess;
 import Component.Statistic.AbstractStat;
 import Component.Statistic.StatUtil;
 import Component.tool.DivideLinker;
-import Component.tool.LinkerFiltering;
 import Component.tool.Tools;
 import Component.unit.*;
 
@@ -32,23 +30,11 @@ public class LinkerFilterStat extends AbstractStat {
     //--------------------------------------------------------------------
     public CommonFile InputFile;
     public long InputNum;
-    //    public long[] LeftValidPairNum = new long[0], RightValidPairNum = new long[0];
-//    public long[] ValidPairNum = new long[0];
-//    public long[] AddBaseToLeftPair = new long[0], AddBaseToRightPair = new long[0];
-//    public long[] LinkerMatchableNum = new long[0];
     public HashMap<String, int[]> LinkerMatchScoreDistribution = new HashMap<>();
-//    public HashMap<Integer, int[]>[] ReadsLengthDistributionR1 = new HashMap[0];
-//    public HashMap<Integer, int[]>[] ReadsLengthDistributionR2 = new HashMap[0];
 
-    //    public long AllLinkerMatchable;
     public long LinkerUnmatchableNum;
     public long AdapterMatchableNum;
     public long AdapterUnmatchableNum;
-//    public long AllValidLeftPair;
-//    public long AllLeftAddBase;
-//    public long AllValidRightPair;
-//    public long AllRightAddBase;
-//    public long AllValidPair;
 
 
     public int ThreadNum;
@@ -174,18 +160,12 @@ public class LinkerFilterStat extends AbstractStat {
             total.AddBaseToRightPair += linker.AddBaseToRightPair;
             total.ValidPairNum += linker.ValidPairNum;
         }
-//        AllLinkerMatchable = StatUtil.sum(LinkerMatchableNum);
         if (LinkerUnmatchableNum == 0 && total.MatchableNum != 0) {
             LinkerUnmatchableNum = InputFile.getItemNum() - total.MatchableNum;
         }
         if (AdapterUnmatchableNum == 0 && AdapterMatchableNum != 0) {
             AdapterUnmatchableNum = InputFile.getItemNum() - AdapterMatchableNum;
         }
-//        AllValidPair = StatUtil.sum(ValidPairNum);
-//        AllValidLeftPair = StatUtil.sum(LeftValidPairNum);
-//        AllValidRightPair = StatUtil.sum(RightValidPairNum);
-//        AllLeftAddBase = StatUtil.sum(AddBaseToLeftPair);
-//        AllRightAddBase = StatUtil.sum(AddBaseToRightPair);
     }
 
     @Override
@@ -195,18 +175,6 @@ public class LinkerFilterStat extends AbstractStat {
             linkers[i] = new Stat();
             linkers[i].Linker = Linkers[i];
         }
-//        LinkerMatchableNum = new long[Linkers.length];
-//        ValidPairNum = new long[Linkers.length];
-//        LeftValidPairNum = new long[Linkers.length];
-//        RightValidPairNum = new long[Linkers.length];
-//        AddBaseToLeftPair = new long[Linkers.length];
-//        AddBaseToRightPair = new long[Linkers.length];
-//        ReadsLengthDistributionR1 = new HashMap[Linkers.length];
-//        ReadsLengthDistributionR2 = new HashMap[Linkers.length];
-//        for (int i = 0; i < Linkers.length; i++) {
-//            ReadsLengthDistributionR1[i] = new HashMap<>();
-//            ReadsLengthDistributionR2[i] = new HashMap<>();
-//        }
     }
 
     public void WriteLinkerScoreDis(AbstractFile f) throws IOException {

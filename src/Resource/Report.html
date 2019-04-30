@@ -336,7 +336,7 @@
               </td>
             </tr>
             <tr>
-              <td nowrap="nowrap">No-dump:</td>
+              <td nowrap="nowrap">No duplicate:</td>
               <td th:text="${Ligation.CleanFile}">&nbsp;</td>
               <td nowrap="nowrap" th:text="${#numbers.formatInteger(Ligation.CleanNum,1,'COMMA')}">&nbsp;</td>
               <td nowrap="nowrap"
@@ -388,28 +388,28 @@
             </td>
           </tr>
           <tr>
-            <td nowrap="nowrap">Inter action:</td>
+            <td nowrap="nowrap">Inter chromosome:</td>
             <td th:text="${#numbers.formatInteger(NoiseReduceStat.total.DiffCleanNum,1,'COMMA')}">&nbsp;</td>
             <td th:text="${#numbers.formatDecimal(NoiseReduceStat.total.DiffCleanNum*100/Tool.ToDouble(NoiseReduceStat.total.CleanNum),1,2)}+'%'">
               &nbsp;
             </td>
           </tr>
           <tr>
-            <td nowrap="nowrap">Intra action:</td>
+            <td nowrap="nowrap">Intra chromosome:</td>
             <td th:text="${#numbers.formatInteger(NoiseReduceStat.total.SameCleanNum,1,'COMMA')}">&nbsp;</td>
             <td th:text="${#numbers.formatDecimal(NoiseReduceStat.total.SameCleanNum*100/Tool.ToDouble(NoiseReduceStat.total.CleanNum),1,2)}+'%'">
               &nbsp;
             </td>
           </tr>
           <tr>
-            <td nowrap="nowrap">Short region:</td>
+            <td nowrap="nowrap">Short range:</td>
             <td th:text="${#numbers.formatInteger(NoiseReduceStat.total.ShortRangeNum,1,'COMMA')}">&nbsp;</td>
             <td th:text="${#numbers.formatDecimal(NoiseReduceStat.total.ShortRangeNum*100/Tool.ToDouble(NoiseReduceStat.total.SameCleanNum),1,2)}+'%'">
               &nbsp;
             </td>
           </tr>
           <tr>
-            <td nowrap="nowrap">Long region:</td>
+            <td nowrap="nowrap">Long range:</td>
             <td th:text="${#numbers.formatInteger(NoiseReduceStat.total.LongRangeNum,1,'COMMA')}">&nbsp;</td>
             <td th:text="${#numbers.formatDecimal(NoiseReduceStat.total.LongRangeNum*100/Tool.ToDouble(NoiseReduceStat.total.SameCleanNum),1,2)}+'%'">
               &nbsp;
