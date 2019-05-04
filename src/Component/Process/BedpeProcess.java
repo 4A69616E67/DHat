@@ -451,7 +451,11 @@ public class BedpeProcess {
                 }
             }
             if (!flag) {
-
+                String key1 = Str[8] + "," + Str[9];
+                String key2 = Str[10].charAt(Str[10].length() - 1) + "," + Str[12].charAt(Str[12].length() - 1);
+                synchronized (Opts.NRStat) {
+                    Opts.NRStat.OrientationPositionStat.get(key1).get(key2)[0]++;
+                }
                 TempList.add(new String[]{Str[0], Str[3], Str[8], Str[9], Str[10], Str[12]});
                 clean_file.write(line + "\n");
                 CleanFile.ItemNum++;

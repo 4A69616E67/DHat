@@ -6,6 +6,7 @@ import Component.tool.Tools;
 import Component.unit.BedpeItem;
 import Component.unit.LinkerSequence;
 import Component.unit.Region;
+import Component.unit.StringArrays;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,8 +23,20 @@ public class NoiseReduceStat extends AbstractStat {
     public HashMap<Integer, Integer> InteractionRangeDistribution = new HashMap<>();
     public Region ShortRegion, LongRegion;
     public File OutDir;
+    public HashMap<String, HashMap<String, long[]>> OrientationPositionStat = new HashMap<>();
+    private String[] OriList = new String[]{"+,+", "+,-", "-,+", "-,-"};
+    private String[] PosList = new String[]{"s,s", "s,t", "t,s", "t,t"};
 
     //-----------------------------------------------------------------------------
+    public NoiseReduceStat() {
+        for (String ori : OriList) {
+            OrientationPositionStat.put(ori, new HashMap<>());
+            for (String pos : PosList) {
+                OrientationPositionStat.get(ori).put(pos, new long[]{0});
+            }
+        }
+    }
+
 
     @Override
 
@@ -37,45 +50,72 @@ public class NoiseReduceStat extends AbstractStat {
         }
         total.ShortRangeNum = 0;
         total.LongRangeNum = 0;
-        LinkedList<BedpeFile> list = new LinkedList<>();
+        LinkedList<BedpeFile> list1 = new LinkedList<>();
+        LinkedList<BedpeFile> list2 = new LinkedList<>();
         for (int i = 0; i < Linkers.length; i++) {
-            list.add(linkers[i].InputFile);
-            list.add(linkers[i].SelfLigationFile);
-            list.add(linkers[i].ReLigationFile);
-            list.add(linkers[i].DuplicateFile);
-            list.add(linkers[i].DiffCleanFile);
-            list.add(linkers[i].CleanFile);
+            list1.add(linkers[i].InputFile);
+            list1.add(linkers[i].SelfLigationFile);
+            list1.add(linkers[i].ReLigationFile);
+            list1.add(linkers[i].DuplicateFile);
+            list1.add(linkers[i].DiffCleanFile);
+//            list1.add(linkers[i].CleanFile);
         }
-        int[] index = new int[]{0};
+        for (int i = 0; i < Linkers.length; i++) {
+            list2.add(linkers[i].CleanFile);
+        }
+        int[] index = new int[]{0, 0, 0, 0};
         Thread[] t = new Thread[thread];
         for (int i = 0; i < t.length; i++) {
             t[i] = new Thread(() -> {
                 BedpeFile temp;
                 while (true) {
                     synchronized (t) {
-                        if (index[0] >= list.size()) {
+                        if (index[0] >= list1.size()) {
                             break;
                         }
-                        temp = list.get(index[0]);
+                        temp = list1.get(index[0]);
                         index[0]++;
                     }
                     System.out.println(new Date() + " [Noise Reduce statistic]:\tCalculate item number, file name: " + temp.getName());
                     temp.getItemNum();
                 }
                 while (true) {
-                    int j;
                     synchronized (t) {
-                        if (index[0] >= list.size() + Linkers.length) {
+                        if (index[1] >= list2.size()) {
                             break;
                         }
-                        j = index[0] - list.size();
-                        temp = linkers[j].SameCleanFile;
-                        temp.ItemNum = 0;
-                        index[0]++;
+                        temp = list2.get(index[1]);
+                        index[1]++;
                     }
-                    System.out.println(new Date() + " [Noise Reduce statistic]:\tCalculate the number of short and long range, file name: " + temp.getName());
+                    System.out.println(new Date() + " [Noise Reduce statistic]:\tCalculate item number, file name: " + temp.getName());
+                    //---
                     try {
-                        long[] result = RangeCount(temp);
+                        temp.ReadOpen();
+                        BedpeItem Item;
+                        while ((Item = temp.ReadItem()) != null) {
+                            String Key1 = Item.getLocation().getLeft().Orientation + "," + Item.getLocation().getRight().Orientation;
+                            String Key2 = Item.Extends[0].charAt(Item.Extends[0].length() - 1) + "," + Item.Extends[2].charAt(Item.Extends[2].length() - 1);
+                            synchronized (this) {
+                                OrientationPositionStat.get(Key1).get(Key2)[0]++;
+                            }
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    //---
+                }
+                while (true) {
+                    int j;
+                    synchronized (t) {
+                        if (index[2] >= Linkers.length) {
+                            break;
+                        }
+                        j = index[2];
+                        index[2]++;
+                    }
+                    System.out.println(new Date() + " [Noise Reduce statistic]:\tCalculate the number of short and long range, file name: " + linkers[j].SameCleanFile.getName());
+                    try {
+                        long[] result = RangeCount(linkers[j].SameCleanFile);
                         linkers[j].ShortRangeNum = result[0];
                         linkers[j].LongRangeNum = result[1];
                     } catch (IOException e) {
@@ -100,6 +140,7 @@ public class NoiseReduceStat extends AbstractStat {
 
     public long[] RangeCount(BedpeFile inFile) throws IOException {
         long[] result = new long[2];
+        inFile.ItemNum = 0;
         try {
             inFile.ReadOpen();
         } catch (IOException e) {
@@ -159,6 +200,17 @@ public class NoiseReduceStat extends AbstractStat {
         show.append("Inter-chromosome: ").append(new DecimalFormat("#,###").format(total.DiffCleanNum)).append("\t").append(String.format("%.2f", (double) total.DiffCleanNum / total.CleanNum * 100)).append("%").append("\n");
         show.append("Short range:     \t").append(new DecimalFormat("#,###").format(total.ShortRangeNum)).append("\t").append(String.format("%.2f", (double) total.ShortRangeNum / total.SameCleanNum * 100)).append("%").append("\t");
         show.append("Long range: ").append(new DecimalFormat("#,###").format(total.LongRangeNum)).append("\t").append(String.format("%.2f", (double) total.LongRangeNum / total.SameCleanNum * 100)).append("%").append("\n");
+        show.append("\n");
+        show.append("Orientation - Position statistic:\n");
+        show.append("Item\t").append(String.join("\t", PosList)).append("\n");
+        for (String ori : OriList) {
+            show.append(ori);
+            for (String pos : PosList) {
+                show.append("\t").append(new DecimalFormat("#,###").format(OrientationPositionStat.get(ori).get(pos)[0]));
+//                show.append("/").append(String.format("%.2f", (double) OrientationPositionStat.get(ori).get(pos)[0] / total.CleanNum * 100)).append("%");
+            }
+            show.append("\n");
+        }
         show.append("\n");
         return show.toString();
     }
