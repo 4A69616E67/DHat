@@ -17,15 +17,15 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
     protected BufferedReader reader;
     protected BufferedWriter writer;
 
-    AbstractFile(String pathname) {
+    public AbstractFile(String pathname) {
         super(pathname);
     }
 
-    AbstractFile(File file) {
+    public AbstractFile(File file) {
         super(file.getPath());
     }
 
-    AbstractFile(AbstractFile file) {
+    public AbstractFile(AbstractFile file) {
         super(file.getPath());
         Item = null;
         ItemNum = file.ItemNum;

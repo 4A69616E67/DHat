@@ -1,11 +1,11 @@
-package Component.File;
+package Component.File.FastQFile;
 
+import Component.File.AbstractFile;
 import Component.tool.Tools;
 import Component.unit.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.zip.GZIPInputStream;
 
 /**
  * Created by snowf on 2019/2/17.

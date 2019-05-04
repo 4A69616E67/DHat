@@ -1,8 +1,8 @@
 package Component.Statistic.Alignment;
 
-import Component.File.BedpeFile;
-import Component.File.FastqFile;
-import Component.File.SamFile;
+import Component.File.BedPeFile.BedpeFile;
+import Component.File.FastQFile.FastqFile;
+import Component.File.SamFile.SamFile;
 import Component.unit.LinkerSequence;
 
 public class Stat {

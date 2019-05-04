@@ -1,4 +1,4 @@
-package Component.unit;
+package Component.File.MatrixFile;
 
 import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;

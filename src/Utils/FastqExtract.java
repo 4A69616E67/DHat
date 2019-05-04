@@ -1,8 +1,8 @@
 package Utils;
 
 import Component.File.CommonFile;
-import Component.File.FastqFile;
-import Component.unit.FastqItem;
+import Component.File.FastQFile.FastqFile;
+import Component.File.FastQFile.FastqItem;
 
 import java.io.IOException;
 import java.util.HashSet;

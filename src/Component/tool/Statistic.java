@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 
-import Component.File.BedpeFile;
+import Component.File.BedPeFile.BedpeFile;
 import Component.unit.LinkerSequence;
 import org.apache.commons.math3.distribution.*;
 /**

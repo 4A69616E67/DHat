@@ -1,7 +1,7 @@
 package Component.unit;
 
 
-import Component.File.FastqFile;
+import Component.File.FastQFile.FastqFile;
 import Component.Sequence.DNASequence;
 import Component.Software.Bwa;
 import Component.Software.Python;

@@ -7,7 +7,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import Component.File.BedpeFile;
+import Component.File.BedPeFile.BedpeFile;
 import Component.File.FileTool;
 import Component.Statistic.StatUtil;
 import Component.tool.Tools;

@@ -1,5 +1,9 @@
-package Component.File;
+package Component.File.BedPeFile;
 
+import Component.File.AbstractFile;
+import Component.File.BedFile.BedFile;
+import Component.File.BedFile.BedItem;
+import Component.File.CommonFile;
 import Component.tool.Tools;
 import Component.unit.*;
 

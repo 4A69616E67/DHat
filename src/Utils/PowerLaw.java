@@ -1,6 +1,6 @@
 package Utils;
 
-import Component.File.BedpeFile;
+import Component.File.BedPeFile.BedpeFile;
 import Component.unit.Opts;
 import org.apache.commons.cli.*;
 

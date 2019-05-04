@@ -1,4 +1,4 @@
-package Component.unit;
+package Component.File.SamFile;
 
 import java.util.HashMap;
 

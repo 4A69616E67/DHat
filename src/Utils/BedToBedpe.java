@@ -1,8 +1,8 @@
 package Utils;
 
 
-import Component.File.BedFile;
-import Component.File.BedpeFile;
+import Component.File.BedFile.BedFile;
+import Component.File.BedPeFile.BedpeFile;
 
 import java.io.IOException;
 

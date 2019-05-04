@@ -1,7 +1,7 @@
 package Component.tool;
 
 import Component.unit.Default;
-import Component.unit.FastqItem;
+import Component.File.FastQFile.FastqItem;
 import Component.unit.LinkerSequence;
 import Component.unit.Opts;
 import org.apache.commons.cli.*;

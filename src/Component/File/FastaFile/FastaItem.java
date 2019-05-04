@@ -1,4 +1,4 @@
-package Component.unit;
+package Component.File.FastaFile;
 
 /**
  * Created by snowf on 2019/2/17.

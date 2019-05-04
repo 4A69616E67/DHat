@@ -1,6 +1,7 @@
-package Component.File;
+package Component.File.SamFile;
 
-import Component.unit.SamItem;
+import Component.File.AbstractFile;
+import Component.File.BedFile.BedFile;
 import Component.unit.SortItem;
 
 import java.io.*;

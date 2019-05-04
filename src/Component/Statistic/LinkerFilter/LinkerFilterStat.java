@@ -2,6 +2,7 @@ package Component.Statistic.LinkerFilter;
 
 import Component.File.AbstractFile;
 import Component.File.CommonFile;
+import Component.File.FastQFile.FastqItem;
 import Component.Statistic.AbstractStat;
 import Component.Statistic.StatUtil;
 import Component.tool.DivideLinker;

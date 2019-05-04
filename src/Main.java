@@ -4,6 +4,11 @@ import java.util.*;
 
 import Bin.*;
 import Component.File.*;
+import Component.File.BedFile.BedFile;
+import Component.File.BedPeFile.BedpeFile;
+import Component.File.FastQFile.FastqFile;
+import Component.File.MatrixFile.MatrixFile;
+import Component.File.SamFile.SamFile;
 import Component.Process.BedpeProcess;
 import Component.Process.PreProcess;
 import Component.Process.SeProcess;

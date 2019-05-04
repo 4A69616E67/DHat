@@ -1,7 +1,7 @@
 package Utils;
 
 import Component.File.AbstractFile;
-import Component.File.SamFile;
+import Component.File.SamFile.SamFile;
 import Component.tool.Tools;
 import Component.unit.Opts;
 import org.apache.commons.cli.*;

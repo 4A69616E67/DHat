@@ -1,6 +1,6 @@
 package Component.Statistic.NoiseReduce;
 
-import Component.File.BedpeFile;
+import Component.File.BedPeFile.BedpeFile;
 import Component.unit.LinkerSequence;
 
 /**

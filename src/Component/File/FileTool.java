@@ -1,5 +1,9 @@
 package Component.File;
 
+import Component.File.FastQFile.FastqFile;
+import Component.File.FastQFile.FastqItem;
+import Component.File.FastaFile.FastaFile;
+import Component.File.FastaFile.FastaItem;
 import Component.tool.Tools;
 import Component.unit.*;
 

@@ -1,6 +1,6 @@
 package Bin;
 
-import Component.File.FastqFile;
+import Component.File.FastQFile.FastqFile;
 import Component.Software.Bwa;
 import Component.Software.Python;
 import Component.tool.Tools;

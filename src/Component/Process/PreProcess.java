@@ -1,7 +1,8 @@
 package Component.Process;
 
 import Component.File.CommonFile;
-import Component.File.FastqFile;
+import Component.File.FastQFile.FastqFile;
+import Component.File.FastQFile.FastqItem;
 import Component.tool.DivideLinker;
 import Component.tool.LinkerFiltering;
 import Component.tool.Tools;
@@ -18,7 +19,7 @@ public class PreProcess extends AbstractProcess {
 
     private File OutPath = new File("./");//输出目录
     private String Prefix = Configure.Prefix;//输出前缀
-    private Component.File.FastqFile FastqFile;//Fastq文件
+    private Component.File.FastQFile.FastqFile FastqFile;//Fastq文件
     private File LinkerFile;//linker文件
     private File AdapterFile;//Adapter文件
     private String Restriction = "^";//酶切序列（未处理）

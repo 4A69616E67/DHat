@@ -1,12 +1,11 @@
 package Component.Statistic.NoiseReduce;
 
-import Component.File.BedpeFile;
+import Component.File.BedPeFile.BedpeFile;
 import Component.Statistic.AbstractStat;
 import Component.tool.Tools;
-import Component.unit.BedpeItem;
+import Component.File.BedPeFile.BedpeItem;
 import Component.unit.LinkerSequence;
 import Component.unit.Region;
-import Component.unit.StringArrays;
 
 import java.io.File;
 import java.io.IOException;

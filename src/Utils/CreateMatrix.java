@@ -1,7 +1,7 @@
 package Utils;
 
-import Component.File.BedpeFile;
-import Component.File.MatrixFile;
+import Component.File.BedPeFile.BedpeFile;
+import Component.File.MatrixFile.MatrixFile;
 import Component.tool.Statistic;
 import Component.tool.Tools;
 import Component.unit.*;

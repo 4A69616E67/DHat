@@ -1,6 +1,6 @@
 package Component.Statistic;
 
-import Component.File.FastqFile;
+import Component.File.FastQFile.FastqFile;
 import Component.unit.Opts;
 
 import java.io.File;

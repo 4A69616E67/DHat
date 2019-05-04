@@ -5,6 +5,9 @@ import java.util.Date;
 import java.util.Hashtable;
 
 import Component.File.*;
+import Component.File.BedFile.BedFile;
+import Component.File.FastQFile.FastqFile;
+import Component.File.SamFile.SamFile;
 import Component.tool.Tools;
 import Component.unit.Configure;
 import Component.unit.Opts;
@@ -18,7 +21,7 @@ import Utils.SamFilter;
 
 public class SeProcess {
     //========================================================================
-    private FastqFile FastqFile;//Fastq文件
+    private Component.File.FastQFile.FastqFile FastqFile;//Fastq文件
     private File IndexPrefix;//比对索引前缀
     private File GenomeFile;
     private String Prefix = Configure.Prefix;
@@ -30,11 +33,11 @@ public class SeProcess {
     public int Threads = 1;//线程数
     //========================================================================
     private File IterationDir;
-    private SamFile SamFile;//Sam文件
+    private Component.File.SamFile.SamFile SamFile;//Sam文件
     private SamFile UniqSamFile;//唯一比对的Sam文件
     private SamFile UnMapSamFile;//未比对上的Sam文件
     private SamFile MultiSamFile;//多比对文件
-    private BedFile BedFile;//Bed文件
+    private Component.File.BedFile.BedFile BedFile;//Bed文件
     private BedFile SortBedFile;//排序后的bed文件
 
     //================================================================

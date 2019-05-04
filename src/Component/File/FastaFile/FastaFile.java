@@ -1,11 +1,10 @@
-package Component.File;
+package Component.File.FastaFile;
 
-import Component.unit.FastaItem;
+import Component.File.AbstractFile;
 import Component.unit.SortItem;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * Created by snowf on 2019/2/17.

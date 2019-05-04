@@ -1,5 +1,9 @@
-package Component.unit;
+package Component.File.BedPeFile;
 
+
+import Component.File.BedFile.BedItem;
+import Component.unit.ChrRegion;
+import Component.unit.InterAction;
 
 /**
  * Created by snowf on 2019/2/24.

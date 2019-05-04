@@ -1,10 +1,8 @@
 package Utils;
 
-import java.io.*;
 import java.util.*;
 
-import Component.File.BedpeFile;
-import Component.tool.Tools;
+import Component.File.BedPeFile.BedpeFile;
 import Component.unit.*;
 import org.apache.commons.cli.*;
 

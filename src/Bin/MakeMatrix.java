@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Properties;
 
-import Component.File.BedpeFile;
-import Component.File.MatrixFile;
+import Component.File.BedPeFile.BedpeFile;
+import Component.File.MatrixFile.MatrixFile;
 import Component.tool.*;
 import Component.unit.*;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;

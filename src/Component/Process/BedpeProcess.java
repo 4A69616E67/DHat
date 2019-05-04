@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.Hashtable;
 
 import Component.File.AbstractFile;
-import Component.File.BedpeFile;
+import Component.File.BedPeFile.BedpeFile;
 import Component.File.CommonFile;
 import Component.tool.FindRestrictionSite;
 import Component.tool.Tools;
@@ -219,7 +219,7 @@ public class BedpeProcess {
         }
     }
 
-    public Component.File.BedpeFile getFinalFile() {
+    public Component.File.BedPeFile.BedpeFile getFinalFile() {
         return FinalFile;
     }
 
@@ -538,7 +538,7 @@ public class BedpeProcess {
         return ValidFile;
     }
 
-    public Component.File.BedpeFile getRepeatFile() {
+    public Component.File.BedPeFile.BedpeFile getRepeatFile() {
         return RepeatFile;
     }
 

@@ -1,6 +1,7 @@
-package Component.File;
+package Component.File.BedFile;
 
-import Component.unit.BedItem;
+import Component.File.AbstractFile;
+import Component.File.CommonFile;
 import Component.unit.ChrRegion;
 import Component.unit.Configure;
 import Component.unit.SortItem;
