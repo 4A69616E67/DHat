@@ -4,12 +4,15 @@ import Component.File.AbstractFile;
 import Component.File.BedFile.BedFile;
 import Component.File.BedFile.BedItem;
 import Component.File.CommonFile;
+import Component.File.GffFile.GffFile;
+import Component.File.GffFile.GffItem;
 import Component.tool.Tools;
 import Component.unit.*;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 /**
  * Created by snowf on 2019/2/17.
@@ -252,5 +255,46 @@ public class BedpeFile extends AbstractFile<BedpeItem> {
         Tools.ThreadsWait(t);
         ReadClose();
         return Count;
+    }
+
+    public void Annotation(GffFile gffFile, BedpeFile outFile, int thread) throws IOException {
+        HashMap<String, ArrayList<Gene>> gffList = new HashMap<>();
+        Gene item;
+        gffFile.ReadOpen();
+        BufferedWriter out = outFile.WriteOpen();
+        while ((item = gffFile.ReadItem()) != null) {
+            if (!gffList.containsKey(item.GeneRegion.Chr)) {
+                gffList.put(item.GeneRegion.Chr, new ArrayList<>());
+            }
+            gffList.get(item.GeneRegion.Chr).add(item);
+        }
+        gffFile.ReadClose();
+        this.ReadOpen();
+        Thread[] t = new Thread[thread];
+        for (int i = 0; i < t.length; i++) {
+            t[i] = new Thread(() -> {
+                BedpeItem temp;
+                try {
+                    while ((temp = this.ReadItem()) != null) {
+                        Gene g1 = GffFile.Search(gffList.get(temp.getLocation().getLeft().Chr), temp.getLocation().getLeft());
+                        Gene g2 = GffFile.Search(gffList.get(temp.getLocation().getRight().Chr), temp.getLocation().getRight());
+                        String extra1 = "-", extra2 = "-";
+                        if (g1 != null) {
+                            extra1 = Gene.GeneDistance(g1, temp.getLocation().getLeft());
+                        }
+                        if (g2 != null) {
+                            extra2 = Gene.GeneDistance(g2, temp.getLocation().getRight());
+                        }
+                        out.write(temp + "\t" + extra1 + "\t" + extra2 + "\n");
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            t[i].start();
+        }
+        Tools.ThreadsWait(t);
+        out.close();
+        this.ReadClose();
     }
 }
