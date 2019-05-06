@@ -111,7 +111,7 @@ public class PreProcess extends AbstractProcess {
         if (Adapters == null) {
             Adapters = LinkerFiltering.ReadAdapter(AdapterFile);
             for (int i = 0; i < Adapters.length; i++) {
-                Adapters[i] = Adapters[i].substring(0, 30);
+                Adapters[i] = Adapters[i].substring(0, Math.min(30, Adapters[i].length()));
             }
         }
         //=========================================

@@ -174,6 +174,7 @@ public class Main {
             main.Run();
         } catch (Exception e) {
             Opts.RSStat.Finish();
+            throw e;
         }
     }
 

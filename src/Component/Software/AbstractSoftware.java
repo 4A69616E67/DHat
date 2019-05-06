@@ -31,21 +31,26 @@ public abstract class AbstractSoftware {
     protected abstract String getVersion();
 
     protected File getPath() {
+        if (!Configure.OutPath.isDirectory()) {
+            System.err.println("Please create out path first: " + Configure.OutPath);
+            System.exit(1);
+        }
         CommonFile temporaryFile = new CommonFile(Configure.OutPath + "/software.path.tmp");
         try {
+            String ComLine;
             if (Opts.OsName.matches(".*(?i)windows.*")) {
-                Tools.ExecuteCommandStr("where " + Execution, new PrintWriter(temporaryFile), null);
+                ComLine = "where " + Execution;
             } else {
-                Tools.ExecuteCommandStr("which " + Execution, new PrintWriter(temporaryFile), null);
+                ComLine = "which " + Execution;
             }
-
+            Opts.CommandOutFile.Append(ComLine + "\n");
+            Tools.ExecuteCommandStr(ComLine, new PrintWriter(temporaryFile), null);
             ArrayList<char[]> tempLines = temporaryFile.Read();
             Path = new File(String.valueOf(tempLines.get(0))).getParentFile();
             Valid = true;
             temporaryFile.delete();
         } catch (IOException | InterruptedException e) {
-            temporaryFile.delete();
-            System.err.println("Error! can't locate " + Execution + "full path");
+            System.err.println("Error! can't locate " + Execution + " full path");
             System.exit(1);
         }
         return Path;
