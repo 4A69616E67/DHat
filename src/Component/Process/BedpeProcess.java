@@ -3,11 +3,13 @@ package Component.Process;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Hashtable;
 
 import Component.File.AbstractFile;
 import Component.File.BedPeFile.BedpeFile;
 import Component.File.CommonFile;
+import Component.Statistic.NoiseReduce.NoiseReduceStat;
 import Component.tool.FindRestrictionSite;
 import Component.tool.Tools;
 import Component.unit.*;
@@ -120,6 +122,7 @@ public class BedpeProcess {
         //将bedpe分成染色体内的交互和染色体间的交互
         BedpeToSameAndDiff(BedpeFile, SameFile, DiffFile);
         ChrSameFile = SameFile.SeparateBedpe(Chromosomes, OutPath + "/" + Prefix, Threads);
+        HashMap<String, HashMap<String, long[]>>[] SameOriPosStat = new HashMap[Chromosomes.length], DiffOriPosStat = new HashMap[1];
         //=====================================染色体内的交互处理=========================================
         ThreadIndex index = new ThreadIndex(-2);
         Thread[] t = new Thread[Threads];
@@ -133,7 +136,7 @@ public class BedpeProcess {
                         AllEnzyFile.Merge(EnzyFile);
                         FragmentLocation(DiffFile, AllEnzyFile, FragmentDiffFile);
                         FragmentDiffFile.SplitSortFile(SortDiffFile);
-                        RemoveRepeat(SortDiffFile, DiffNoDumpFile, DiffRepeatFile);//去duplication
+                        DiffOriPosStat[0] = RemoveRepeat(SortDiffFile, DiffNoDumpFile, DiffRepeatFile);//去duplication
                         finalI = index.Add(1);
                     }
                     //=======================================染色体内的交互处理==========================================
@@ -146,7 +149,7 @@ public class BedpeProcess {
                         //按交互位置排序
                         ChrLigationFile[2][finalI].SortFile(SortChrLigationFile);
                         //去除duplication
-                        RemoveRepeat(SortChrLigationFile, ChrSameNoDumpFile[finalI], ChrSameRepetaFile[finalI]);
+                        SameOriPosStat[finalI] = RemoveRepeat(SortChrLigationFile, ChrSameNoDumpFile[finalI], ChrSameRepetaFile[finalI]);
                         if (Configure.DeBugLevel < 1) {
                             AbstractFile.delete(SortChrLigationFile);
                         }
@@ -160,6 +163,18 @@ public class BedpeProcess {
         }
         Tools.ThreadsWait(t);
         //==============================================================================================================
+        synchronized (BedpeProcess.class) {
+            for (int i = 0; i < SameOriPosStat.length; i++) {
+                for (String k1 : NoiseReduceStat.OriList) {
+                    for (String k2 : NoiseReduceStat.PosList) {
+                        if (i == 0) {
+                            Opts.NRStat.DiffOriPosStat.get(k1).get(k2)[0] += DiffOriPosStat[0].get(k1).get(k2)[0];
+                        }
+                        Opts.NRStat.SameOriPosStat.get(k1).get(k2)[0] += SameOriPosStat[i].get(k1).get(k2)[0];
+                    }
+                }
+            }
+        }
         AbstractFile[] NeedRemove = new AbstractFile[]{SameNoDumpFile, SelfLigationFile, ReLigationFile, ValidFile, FragmentLocationFile, RepeatFile};
         for (int i = 0; i < NeedRemove.length; i++) {
             if (NeedRemove[i].exists() && !NeedRemove[i].delete()) {
@@ -423,7 +438,8 @@ public class BedpeProcess {
         return fs;
     }
 
-    private void RemoveRepeat(BedpeFile InFile, BedpeFile CleanFile, BedpeFile RepeatFile) throws IOException {
+    private HashMap<String, HashMap<String, long[]>> RemoveRepeat(BedpeFile InFile, BedpeFile CleanFile, BedpeFile RepeatFile) throws IOException {
+        HashMap<String, HashMap<String, long[]>> OriPosStat = NoiseReduceStat.CreateOrientationPositionStat();
         BufferedReader infile = new BufferedReader(new FileReader(InFile));
         BufferedWriter clean_file = new BufferedWriter(new FileWriter(CleanFile));
         BufferedWriter repeat_file = new BufferedWriter(new FileWriter(RepeatFile));
@@ -453,9 +469,7 @@ public class BedpeProcess {
             if (!flag) {
                 String key1 = Str[8] + "," + Str[9];
                 String key2 = Str[10].charAt(Str[10].length() - 1) + "," + Str[12].charAt(Str[12].length() - 1);
-                synchronized (Opts.NRStat) {
-                    Opts.NRStat.OrientationPositionStat.get(key1).get(key2)[0]++;
-                }
+                OriPosStat.get(key1).get(key2)[0]++;
                 TempList.add(new String[]{Str[0], Str[3], Str[8], Str[9], Str[10], Str[12]});
                 clean_file.write(line + "\n");
                 CleanFile.ItemNum++;
@@ -465,6 +479,7 @@ public class BedpeProcess {
         clean_file.close();
         repeat_file.close();
         System.out.println(new Date() + "\tRemove repeat finish\t" + InFile.getName());
+        return OriPosStat;
     }//OK
 
     private void BedpeToSameAndDiff(BedpeFile BedpeFile, BedpeFile SameBedpeFile, BedpeFile DiffBedpeFile) throws IOException {

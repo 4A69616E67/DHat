@@ -170,7 +170,11 @@ public class Main {
         //==============================================================================================================
         Main main = new Main(args);
         main.ShowParameter();//显示参数
-        main.Run();
+        try {
+            main.Run();
+        } catch (Exception e) {
+            Opts.RSStat.Finish();
+        }
     }
 
     public void Run() throws IOException, InterruptedException {

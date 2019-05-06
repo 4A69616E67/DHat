@@ -23,15 +23,32 @@ public class NoiseReduceStat extends AbstractStat {
     public Region ShortRegion, LongRegion;
     public File OutDir;
     public HashMap<String, HashMap<String, long[]>> OrientationPositionStat = new HashMap<>();
-    private String[] OriList = new String[]{"+,+", "+,-", "-,+", "-,-"};
-    private String[] PosList = new String[]{"s,s", "s,t", "t,s", "t,t"};
+    public HashMap<String, HashMap<String, long[]>> SameOriPosStat = new HashMap<>();
+    public HashMap<String, HashMap<String, long[]>> DiffOriPosStat = new HashMap<>();
+    public static final String[] OriList = new String[]{"+,+", "+,-", "-,+", "-,-"};
+    public static final String[] PosList = new String[]{"s,s", "s,t", "t,s", "t,t"};
+
+    public static HashMap<String, HashMap<String, long[]>> CreateOrientationPositionStat() {
+        HashMap<String, HashMap<String, long[]>> OrientationPositionStat = new HashMap<>();
+        for (String ori : OriList) {
+            OrientationPositionStat.put(ori, new HashMap<>());
+            for (String pos : PosList) {
+                OrientationPositionStat.get(ori).put(pos, new long[]{0});
+            }
+        }
+        return OrientationPositionStat;
+    }
 
     //-----------------------------------------------------------------------------
     public NoiseReduceStat() {
         for (String ori : OriList) {
             OrientationPositionStat.put(ori, new HashMap<>());
+            SameOriPosStat.put(ori, new HashMap<>());
+            DiffOriPosStat.put(ori, new HashMap<>());
             for (String pos : PosList) {
                 OrientationPositionStat.get(ori).put(pos, new long[]{0});
+                SameOriPosStat.get(ori).put(pos, new long[]{0});
+                DiffOriPosStat.get(ori).put(pos, new long[]{0});
             }
         }
     }
@@ -49,8 +66,7 @@ public class NoiseReduceStat extends AbstractStat {
         }
         total.ShortRangeNum = 0;
         total.LongRangeNum = 0;
-        LinkedList<BedpeFile> list1 = new LinkedList<>();
-        LinkedList<BedpeFile> list2 = new LinkedList<>();
+        LinkedList<BedpeFile> list1 = new LinkedList<>(), list2 = new LinkedList<>();
         for (int i = 0; i < Linkers.length; i++) {
             list1.add(linkers[i].InputFile);
             list1.add(linkers[i].SelfLigationFile);
@@ -60,7 +76,8 @@ public class NoiseReduceStat extends AbstractStat {
 //            list1.add(linkers[i].CleanFile);
         }
         for (int i = 0; i < Linkers.length; i++) {
-            list2.add(linkers[i].CleanFile);
+            list2.add(linkers[i].SameCleanFile);
+            list2.add(linkers[i].DiffCleanFile);
         }
         int[] index = new int[]{0, 0, 0, 0};
         Thread[] t = new Thread[thread];
@@ -79,11 +96,13 @@ public class NoiseReduceStat extends AbstractStat {
                     temp.getItemNum();
                 }
                 while (true) {
+                    int tempIndex;
                     synchronized (t) {
                         if (index[1] >= list2.size()) {
                             break;
                         }
-                        temp = list2.get(index[1]);
+                        tempIndex = index[1];
+                        temp = new BedpeFile(list2.get(tempIndex));
                         index[1]++;
                     }
                     System.out.println(new Date() + " [Noise Reduce statistic]:\tCalculate item number, file name: " + temp.getName());
@@ -95,7 +114,11 @@ public class NoiseReduceStat extends AbstractStat {
                             String Key1 = Item.getLocation().getLeft().Orientation + "," + Item.getLocation().getRight().Orientation;
                             String Key2 = Item.Extends[0].charAt(Item.Extends[0].length() - 1) + "," + Item.Extends[2].charAt(Item.Extends[2].length() - 1);
                             synchronized (this) {
-                                OrientationPositionStat.get(Key1).get(Key2)[0]++;
+                                if (tempIndex % 2 == 0) {
+                                    SameOriPosStat.get(Key1).get(Key2)[0]++;
+                                } else {
+                                    DiffOriPosStat.get(Key1).get(Key2)[0]++;
+                                }
                             }
                         }
                     } catch (IOException e) {
@@ -106,11 +129,11 @@ public class NoiseReduceStat extends AbstractStat {
                 while (true) {
                     int j;
                     synchronized (t) {
-                        if (index[2] >= Linkers.length) {
+                        if (index[3] >= Linkers.length) {
                             break;
                         }
-                        j = index[2];
-                        index[2]++;
+                        j = index[3];
+                        index[3]++;
                     }
                     System.out.println(new Date() + " [Noise Reduce statistic]:\tCalculate the number of short and long range, file name: " + linkers[j].SameCleanFile.getName());
                     try {
@@ -199,17 +222,13 @@ public class NoiseReduceStat extends AbstractStat {
         show.append("Inter-chromosome: ").append(new DecimalFormat("#,###").format(total.DiffCleanNum)).append("\t").append(String.format("%.2f", (double) total.DiffCleanNum / total.CleanNum * 100)).append("%").append("\n");
         show.append("Short range:     \t").append(new DecimalFormat("#,###").format(total.ShortRangeNum)).append("\t").append(String.format("%.2f", (double) total.ShortRangeNum / total.SameCleanNum * 100)).append("%").append("\t");
         show.append("Long range: ").append(new DecimalFormat("#,###").format(total.LongRangeNum)).append("\t").append(String.format("%.2f", (double) total.LongRangeNum / total.SameCleanNum * 100)).append("%").append("\n");
-        show.append("\n");
-        show.append("Orientation - Position statistic:\n");
-        show.append("Item\t").append(String.join("\t", PosList)).append("\n");
-        for (String ori : OriList) {
-            show.append(ori);
-            for (String pos : PosList) {
-                show.append("\t").append(new DecimalFormat("#,###").format(OrientationPositionStat.get(ori).get(pos)[0]));
-//                show.append("/").append(String.format("%.2f", (double) OrientationPositionStat.get(ori).get(pos)[0] / total.CleanNum * 100)).append("%");
-            }
-            show.append("\n");
-        }
+        show.append("------------------------------------------------------------------------------------------------\n");
+        show.append("(Intra chromosome)\t");
+        show.append(ShowOriPosStat(SameOriPosStat));
+        show.append("(Inter chromosome)\t");
+        show.append(ShowOriPosStat(DiffOriPosStat));
+        show.append("(total)\t");
+        show.append(ShowOriPosStat(OrientationPositionStat));
         show.append("\n");
         return show.toString();
     }
@@ -228,6 +247,11 @@ public class NoiseReduceStat extends AbstractStat {
             total.ShortRangeNum += linker.ShortRangeNum;
             total.LongRangeNum += linker.LongRangeNum;
         }
+        for (String k1 : OriList) {
+            for (String k2 : PosList) {
+                OrientationPositionStat.get(k1).get(k2)[0] = SameOriPosStat.get(k1).get(k2)[0] + DiffOriPosStat.get(k1).get(k2)[0];
+            }
+        }
     }
 
     @Override
@@ -237,5 +261,20 @@ public class NoiseReduceStat extends AbstractStat {
             linkers[i] = new Stat();
             linkers[i].Linker = Linkers[i];
         }
+    }
+
+    public String ShowOriPosStat(HashMap<String, HashMap<String, long[]>> map) {
+        StringBuilder show = new StringBuilder();
+        show.append("Orientation - Position statistic:\n");
+        show.append("Item\t").append(String.join("\t", PosList)).append("\n");
+        for (String ori : OriList) {
+            show.append(ori);
+            for (String pos : PosList) {
+                show.append("\t").append(new DecimalFormat("#,###").format(map.get(ori).get(pos)[0]));
+//                show.append("/").append(String.format("%.2f", (double) OrientationPositionStat.get(ori).get(pos)[0] / total.CleanNum * 100)).append("%");
+            }
+            show.append("\n");
+        }
+        return show.toString();
     }
 }
