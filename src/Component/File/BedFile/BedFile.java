@@ -25,6 +25,7 @@ public class BedFile extends AbstractFile<BedItem> {
 
     @Override
     protected SortItem<BedItem> ExtractSortItem(String[] s) {
+        BedItem Item;
         if (s == null) {
             return null;
         }
@@ -43,6 +44,7 @@ public class BedFile extends AbstractFile<BedItem> {
 
     @Override
     protected BedItem ExtractItem(String[] s) {
+        BedItem Item;
         if (s != null) {
             Item = new BedItem(s[0].split("\\s+"));
             Item.SortBy = SortBy;

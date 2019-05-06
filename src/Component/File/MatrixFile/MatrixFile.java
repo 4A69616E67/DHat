@@ -24,6 +24,7 @@ public class MatrixFile extends AbstractFile<MatrixItem> {
 
     @Override
     protected MatrixItem ExtractItem(String[] s) {
+        MatrixItem Item;
         if (s != null && s.length > 0) {
             Item = new MatrixItem(s.length, s.length);
             for (int i = 0; i < s.length; i++) {
@@ -54,9 +55,9 @@ public class MatrixFile extends AbstractFile<MatrixItem> {
     }
 
     public void WriteItem(MatrixItem item, String separator) throws IOException {
-        for (int i = 0; i < Item.getRowDimension(); i++) {
-            for (int j = 0; j < Item.getColumnDimension(); j++) {
-                writer.write(String.valueOf(Item.getEntry(i, j)) + separator);
+        for (int i = 0; i < item.getRowDimension(); i++) {
+            for (int j = 0; j < item.getColumnDimension(); j++) {
+                writer.write(String.valueOf(item.getEntry(i, j)) + separator);
             }
             writer.write("\n");
         }

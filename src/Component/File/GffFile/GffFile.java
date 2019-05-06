@@ -31,7 +31,7 @@ public class GffFile extends AbstractFile<Gene> {
 
     @Override
     protected Gene ExtractItem(String[] s) {
-        Item = null;
+        Gene Item = null;
         if (s == null || s.length == 0) {
             return null;
         }

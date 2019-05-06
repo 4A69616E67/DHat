@@ -26,6 +26,7 @@ public class SamFile extends AbstractFile<SamItem> {
 
     @Override
     protected SamItem ExtractItem(String[] s) {
+        SamItem Item;
         if (s == null) {
             return null;
         }

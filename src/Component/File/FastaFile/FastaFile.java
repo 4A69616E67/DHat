@@ -20,6 +20,7 @@ public class FastaFile extends AbstractFile<FastaItem> {
 
     @Override
     protected FastaItem ExtractItem(String[] s) {
+        FastaItem Item;
         if (s == null) {
             Item = null;
         } else {

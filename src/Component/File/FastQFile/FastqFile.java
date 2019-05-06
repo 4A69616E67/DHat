@@ -26,6 +26,7 @@ public class FastqFile extends AbstractFile<FastqItem> {
 
     @Override
     protected FastqItem ExtractItem(String[] s) {
+        FastqItem Item;
         if (s == null) {
             Item = null;
         } else {
@@ -67,6 +68,7 @@ public class FastqFile extends AbstractFile<FastqItem> {
 
 
     public Opts.FileFormat FastqPhred() throws IOException {
+        FastqItem Item;
         ReadOpen();
         int[] FormatEdge = new int[]{(int) '9', (int) 'K'};
         int[] Count = new int[2];

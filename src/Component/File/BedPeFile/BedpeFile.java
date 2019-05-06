@@ -5,7 +5,6 @@ import Component.File.BedFile.BedFile;
 import Component.File.BedFile.BedItem;
 import Component.File.CommonFile;
 import Component.File.GffFile.GffFile;
-import Component.File.GffFile.GffItem;
 import Component.tool.Tools;
 import Component.unit.*;
 
@@ -42,6 +41,7 @@ public class BedpeFile extends AbstractFile<BedpeItem> {
     }
 
     protected BedpeItem ExtractItem(String[] s) {
+        BedpeItem Item;
         if (s != null) {
             String[] ss = s[0].split("\\s+");
             Item = new BedpeItem(ss);
@@ -54,6 +54,7 @@ public class BedpeFile extends AbstractFile<BedpeItem> {
 
     @Override
     protected SortItem<BedpeItem> ExtractSortItem(String[] s) {
+        BedpeItem Item;
         if (s == null) {
             return null;
         }
@@ -101,9 +102,10 @@ public class BedpeFile extends AbstractFile<BedpeItem> {
     }
 
     public Opts.FileFormat BedpeDetect() throws IOException {//不再支持 BedpePointFormat
+        BedpeItem Item = null;
         ReadOpen();
         try {
-            ReadItem();
+            Item = ReadItem();
         } catch (IndexOutOfBoundsException | NumberFormatException i) {
             Format = Opts.FileFormat.ErrorFormat;
         }
@@ -257,7 +259,8 @@ public class BedpeFile extends AbstractFile<BedpeItem> {
         return Count;
     }
 
-    public void Annotation(GffFile gffFile, BedpeFile outFile, int thread) throws IOException {
+    public HashMap<String, HashMap<String, long[]>> Annotation(GffFile gffFile, BedpeFile outFile, int thread) throws IOException {
+        HashMap<String, HashMap<String, long[]>> Stat = Gene.CreateAnnotationStat();
         HashMap<String, ArrayList<Gene>> gffList = new HashMap<>();
         Gene item;
         gffFile.ReadOpen();
@@ -273,19 +276,22 @@ public class BedpeFile extends AbstractFile<BedpeItem> {
         Thread[] t = new Thread[thread];
         for (int i = 0; i < t.length; i++) {
             t[i] = new Thread(() -> {
-                BedpeItem temp;
                 try {
+                    BedpeItem temp;
                     while ((temp = this.ReadItem()) != null) {
                         Gene g1 = GffFile.Search(gffList.get(temp.getLocation().getLeft().Chr), temp.getLocation().getLeft());
                         Gene g2 = GffFile.Search(gffList.get(temp.getLocation().getRight().Chr), temp.getLocation().getRight());
-                        String extra1 = "-", extra2 = "-";
+                        String[] extra1 = new String[]{"-"}, extra2 = new String[]{"-"};
                         if (g1 != null) {
                             extra1 = Gene.GeneDistance(g1, temp.getLocation().getLeft());
                         }
                         if (g2 != null) {
                             extra2 = Gene.GeneDistance(g2, temp.getLocation().getRight());
                         }
-                        out.write(temp + "\t" + extra1 + "\t" + extra2 + "\n");
+                        synchronized (t) {
+                            Stat.get(extra1[0]).get(extra2[0])[0]++;
+                            out.write(temp + "\t" + String.join(":", extra1) + "\t" + String.join(":", extra2) + "\n");
+                        }
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -296,5 +302,6 @@ public class BedpeFile extends AbstractFile<BedpeItem> {
         Tools.ThreadsWait(t);
         out.close();
         this.ReadClose();
+        return Stat;
     }
 }

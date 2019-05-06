@@ -10,7 +10,6 @@ import java.util.zip.GZIPInputStream;
  * Created by snowf on 2019/2/17.
  */
 public abstract class AbstractFile<E extends Comparable<E>> extends File {
-    protected E Item;
     public long ItemNum = 0;
     private boolean Sorted = false;
     private int BufferSize = 1024 * 1024;// default 1M
@@ -27,7 +26,6 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
 
     public AbstractFile(AbstractFile file) {
         super(file.getPath());
-        Item = null;
         ItemNum = file.ItemNum;
         reader = null;
         writer = null;
@@ -301,9 +299,6 @@ public abstract class AbstractFile<E extends Comparable<E>> extends File {
         return Outfile;
     }
 
-    public E getItem() {
-        return Item;
-    }
 
     public boolean clean() {
         return clean(this);
