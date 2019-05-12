@@ -4,6 +4,7 @@ import Component.File.GffFile.GffItem;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 
 /**
  * Created by snowf on 2019/5/4.
@@ -18,18 +19,8 @@ public class Gene implements Comparable<Gene> {
     public static final String GENE = "Gene";
     public static final String PROMOTER = "Promoter";
     public static final String INTERGENIC = "Intergenic";
-
-    public static HashMap<String, HashMap<String, long[]>> CreateAnnotationStat() {
-        HashMap<String, HashMap<String, long[]>> map = new HashMap<>();
-        String[] list = new String[]{GENE, PROMOTER, INTERGENIC, "-"};
-        for (String k1 : list) {
-            map.put(k1, new HashMap<>());
-            for (String k2 : list) {
-                map.get(k1).put(k2, new long[]{0});
-            }
-        }
-        return map;
-    }
+    public static final String INTRON = "Intron";
+    public static final String EXON = "Exon";
 
     public Gene(GffItem g) {
         GeneRegion = new ChrRegion(g.Columns[0], Integer.parseInt(g.Columns[3]), Integer.parseInt(g.Columns[4]), g.Columns[6].charAt(0));
@@ -54,6 +45,19 @@ public class Gene implements Comparable<Gene> {
         if (g.GeneRegion.IsOverlap(c)) {
             res[0] = GENE;
             res[3] = "0";
+            boolean flag = false;
+            for (Transcript trp : g.transcripts) {
+                for (ChrRegion ord : trp.Order) {
+                    if (ord.region.IsContain(c.region)) {
+                        res[0] = ord.Chr;
+                        flag = true;
+                        break;
+                    }
+                }
+            }
+            if (!flag) {
+                res[0] = "Intron";
+            }
             return res;
         } else {
             if (g.GeneRegion.compareTo(c) > 0) {

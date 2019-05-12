@@ -9,9 +9,7 @@ import Component.tool.Tools;
 import Component.unit.*;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * Created by snowf on 2019/2/17.
@@ -260,10 +258,12 @@ public class BedpeFile extends AbstractFile<BedpeItem> {
     }
 
     public HashMap<String, HashMap<String, long[]>> Annotation(GffFile gffFile, BedpeFile outFile, int thread) throws IOException {
-        HashMap<String, HashMap<String, long[]>> Stat = Gene.CreateAnnotationStat();
+        HashMap<String, HashMap<String, long[]>> Stat = new HashMap<>();
         HashMap<String, ArrayList<Gene>> gffList = new HashMap<>();
+        HashMap<String, Integer> AttributeMap = new HashMap<>();
         Gene item;
         gffFile.ReadOpen();
+        System.out.println(new Date() + "\tCreate index ......");
         BufferedWriter out = outFile.WriteOpen();
         while ((item = gffFile.ReadItem()) != null) {
             if (!gffList.containsKey(item.GeneRegion.Chr)) {
@@ -271,7 +271,11 @@ public class BedpeFile extends AbstractFile<BedpeItem> {
             }
             gffList.get(item.GeneRegion.Chr).add(item);
         }
+        for (String key : gffList.keySet()) {
+            Collections.sort(gffList.get(key));
+        }
         gffFile.ReadClose();
+        System.out.println(new Date() + "\tAnnotation begin ......");
         this.ReadOpen();
         Thread[] t = new Thread[thread];
         for (int i = 0; i < t.length; i++) {
@@ -289,8 +293,26 @@ public class BedpeFile extends AbstractFile<BedpeItem> {
                             extra2 = Gene.GeneDistance(g2, temp.getLocation().getRight());
                         }
                         synchronized (t) {
-                            Stat.get(extra1[0]).get(extra2[0])[0]++;
                             out.write(temp + "\t" + String.join(":", extra1) + "\t" + String.join(":", extra2) + "\n");
+                            if (!Stat.containsKey(extra1[0])) {
+                                Set<String> keys = Stat.keySet();
+                                Stat.put(extra1[0], new HashMap<>());
+                                Stat.get(extra1[0]).put(extra1[0], new long[]{0});
+                                for (String key : keys) {
+                                    Stat.get(extra1[0]).put(key, new long[]{0});
+                                    Stat.get(key).put(extra1[0], new long[]{0});
+                                }
+                            }
+                            if (!Stat.containsKey(extra2[0])) {
+                                Set<String> keys = Stat.keySet();
+                                Stat.put(extra2[0], new HashMap<>());
+                                Stat.get(extra2[0]).put(extra2[0], new long[]{0});
+                                for (String key : keys) {
+                                    Stat.get(extra2[0]).put(key, new long[]{0});
+                                    Stat.get(key).put(extra2[0], new long[]{0});
+                                }
+                            }
+                            Stat.get(extra1[0]).get(extra2[0])[0]++;
                         }
                     }
                 } catch (IOException e) {
@@ -302,6 +324,7 @@ public class BedpeFile extends AbstractFile<BedpeItem> {
         Tools.ThreadsWait(t);
         out.close();
         this.ReadClose();
+        System.out.println(new Date() + "\tAnnotation finish");
         return Stat;
     }
 }
