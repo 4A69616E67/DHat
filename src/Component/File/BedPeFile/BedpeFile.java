@@ -293,26 +293,14 @@ public class BedpeFile extends AbstractFile<BedpeItem> {
                             extra2 = Gene.GeneDistance(g2, temp.getLocation().getRight());
                         }
                         synchronized (t) {
-                            out.write(temp + "\t" + String.join(":", extra1) + "\t" + String.join(":", extra2) + "\n");
                             if (!Stat.containsKey(extra1[0])) {
-                                Set<String> keys = Stat.keySet();
-                                Stat.put(extra1[0], new HashMap<>());
-                                Stat.get(extra1[0]).put(extra1[0], new long[]{0});
-                                for (String key : keys) {
-                                    Stat.get(extra1[0]).put(key, new long[]{0});
-                                    Stat.get(key).put(extra1[0], new long[]{0});
-                                }
+                                MapInit(Stat, extra1[0]);
                             }
                             if (!Stat.containsKey(extra2[0])) {
-                                Set<String> keys = Stat.keySet();
-                                Stat.put(extra2[0], new HashMap<>());
-                                Stat.get(extra2[0]).put(extra2[0], new long[]{0});
-                                for (String key : keys) {
-                                    Stat.get(extra2[0]).put(key, new long[]{0});
-                                    Stat.get(key).put(extra2[0], new long[]{0});
-                                }
+                                MapInit(Stat, extra2[0]);
                             }
                             Stat.get(extra1[0]).get(extra2[0])[0]++;
+                            out.write(temp + "\t" + String.join(":", extra1) + "\t" + String.join(":", extra2) + "\n");
                         }
                     }
                 } catch (IOException e) {
@@ -327,4 +315,15 @@ public class BedpeFile extends AbstractFile<BedpeItem> {
         System.out.println(new Date() + "\tAnnotation finish");
         return Stat;
     }
+
+    private void MapInit(HashMap<String, HashMap<String, long[]>> map, String key) {
+        Set<String> keys = map.keySet();
+        map.put(key, new HashMap<>());
+        map.get(key).put(key, new long[]{0});
+        for (String k : keys) {
+            map.get(key).put(k, new long[]{0});
+            map.get(k).put(key, new long[]{0});
+        }
+    }
 }
+
