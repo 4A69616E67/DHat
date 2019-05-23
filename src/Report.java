@@ -95,17 +95,18 @@ public class Report {
         map.put("MakeMatrixTime", Tools.DateFormat(Opts.MMStat.Time / 1000));
         map.put("TotalTime", Tools.DateFormat((Opts.LFStat.Time + Opts.ALStat.Time + Opts.NRStat.Time + Opts.MMStat.Time) / 1000));
 
-
+        context.setVariable("Report", this);
         context.setVariable("LinkerFilterStat", Opts.LFStat);
         context.setVariable("AlignmentStat", Opts.ALStat);
         context.setVariable("NoiseReduceStat", Opts.NRStat);
         context.setVariable("OverViewStat", Opts.OVStat);
         context.setVariable("AdapterSeq", String.join(" ", Configure.AdapterSeq).replaceAll("\\s+", "<br/>"));
+//        context.setVariable("AdapterDetectionDis", GetBase64(Opts.LFStat.AdapterBaseDisPng));
 //        context.setVariable("TotalReads", RawDataReadsNum);
         context.setVariables(map);
-        context.setVariable("LinkerAliScoreDis", GetBase64(Configure.LinkerScoreDisPng));
-        context.setVariable("ReadsLenDiss", ReadsLengthDisBase64);
-//        context.setVariable("InteractionDistanceDis", GetBase64(Configure.InterActionDistanceDisPng));
+//        context.setVariable("LinkerAliScoreDis", GetBase64(Opts.LFStat.LinkerScoreDisPng));
+//        context.setVariable("ReadsLenDiss", ReadsLengthDisBase64);
+//        context.setVariable("InteractionDistanceDis", GetBase64(Opts.NRStat.InteractionRangeDistributionPng));
 //        context.setVariable("DrawResolutionHeatMap", DrawHeatMap);
 
 
@@ -127,6 +128,9 @@ public class Report {
 
 
     public String GetBase64(File f) throws IOException {
+        if (f == null || !f.exists()) {
+            return "";
+        }
         FileInputStream image = new FileInputStream(f);
         byte[] data = new byte[image.available()];
         image.read(data);

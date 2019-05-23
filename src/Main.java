@@ -215,9 +215,10 @@ public class Main {
                     //标记为自动识别Adapter
                     AdapterSeq = new String[1];
 //                    AdapterSeq[0] = InputFile.AdapterDetection(new File(PreProcessDir + "/" + Prefix), LinkerLength + MaxReadsLength);
-                    CommonFile StatFile = new CommonFile(PreProcessDir + "/" + Prefix + "adapter_detection.base.freq");
+                    CommonFile StatFile = new CommonFile(PreProcessDir + "/" + Prefix + ".adapter_detection.base.freq");
                     AdapterSeq[0] = FileTool.AdapterDetection(InputFile, new File(PreProcessDir + "/" + Prefix), LinkerLength + MaxReadsLength, StatFile);
-                    String ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t stackbar -y Percentage --title Base_Frequency" + " -i " + StatFile + " -o " + Stat.getImageDir() + "/" + StatFile.getName() + ".png";
+                    Opts.LFStat.AdapterBaseDisPng = new File(Stat.getImageDir() + "/" + StatFile.getName() + ".png");
+                    String ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t stackbar -y Percentage --title Base_Frequency" + " -i " + StatFile + " -o " + Opts.LFStat.AdapterBaseDisPng;
                     Opts.CommandOutFile.Append(ComLine + "\n");
                     Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
                     System.out.println(new Date() + "\tDetected adapter seq:\t" + AdapterSeq[0]);
@@ -241,8 +242,8 @@ public class Main {
         //--------------------------------------------draw statistic figure---------------------------------------------
         CommonFile LinkerDisFile = new CommonFile(Stat.getDataDir() + "/LinkerScoreDis.data");
         Opts.LFStat.WriteLinkerScoreDis(LinkerDisFile);
-        Configure.LinkerScoreDisPng = new File(Stat.getImageDir() + "/" + LinkerDisFile.getName().replace(".data", ".png"));
-        String ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -i " + LinkerDisFile + " -t bar -o " + Configure.LinkerScoreDisPng;
+        Opts.LFStat.LinkerScoreDisPng = new File(Stat.getImageDir() + "/" + LinkerDisFile.getName().replace(".data", ".png"));
+        String ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -i " + LinkerDisFile + " -t bar -o " + Opts.LFStat.LinkerScoreDisPng;
         Opts.CommandOutFile.Append(ComLine + "\n");
         Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
         CommonFile[] ReadsLenDisFile = new CommonFile[LinkerSeq.length];
@@ -252,11 +253,10 @@ public class Main {
         }
         Opts.LFStat.WriteReadsLengthDis(ReadsLenDisFile);
         for (int i = 0; i < ReadsLenDisFile.length; i++) {
-            File PngFile = new File(Stat.getImageDir() + "/" + ReadsLenDisFile[i].getName().replace(".data", ".png"));
-            ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t bar -y Count --title " + LinkerSeq[i].getType() + " -i " + ReadsLenDisFile[i] + " -o " + PngFile;
+            Opts.LFStat.linkers[i].ReadLengthDisPng = new File(Stat.getImageDir() + "/" + ReadsLenDisFile[i].getName().replace(".data", ".png"));
+            ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t bar -y Count --title " + LinkerSeq[i].getType() + " -i " + ReadsLenDisFile[i] + " -o " + Opts.LFStat.linkers[i].ReadLengthDisPng;
             Opts.CommandOutFile.Append(ComLine + "\n");
             Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
-            Stat.ReadsLengthDisBase64[i] = Stat.GetBase64(PngFile);
         }
         //==============================================================================================================
         LinkerFastqFileR1 = preprocess.getFastqR1File();
@@ -356,13 +356,13 @@ public class Main {
             bedpe[i].Threads = Math.max(1, Threads / LinkerProcess.length);//设置线程数
         }
         if (Opts.Step.BedPeProcess.Execute) {
-            //==========================================获取酶切片段和染色体大小=============================================
+            //==========================================获取酶切片段和染色体大小==========================================
             if (Opts.Step.FindEnzymeFragment.Execute) {
                 findenzy.start();
                 findenzy.join();
                 Opts.Step.FindEnzymeFragment.Execute = false;
             }
-            //==============================================BedpeFile Process====bedpe 处理=================================
+            //==============================================Noise reduce====bedpe 处理===================================
             for (int i = 0; i < LinkerProcess.length; i++) {
                 int finalI = i;
                 LinkerProcess[i] = new Thread(() -> {
@@ -451,7 +451,18 @@ public class Main {
             new BedpeToInter(FinalBedpeFile.getPath(), InterBedpeFile.getPath());//将交互区间转换成交互点
         }
         //==============================================================================================================
-
+        CommonFile InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".interaction_distance_distribution.data");
+        Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, Integer.MAX_VALUE), "M", true);
+        Opts.NRStat.InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + Prefix + ".interaction_distance_distribution.png");
+        ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat.InteractionRangeDistributionPng;
+        Opts.CommandOutFile.Append(ComLine + "\n");
+        Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
+        InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".short.interaction_distance_distribution.data");
+        Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, 50000000), "m", true);
+        Opts.NRStat.ShortInteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + Prefix + ".short.interaction_distance_distribution.png");
+        ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat.ShortInteractionRangeDistributionPng;
+        Opts.CommandOutFile.Append(ComLine + "\n");
+        Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
 //                Stat.InterAction.FinalBedpeFile = new BedpeFile(FinalBedpeFile);
 //                Stat.InterAction.FinalBedpeNum = Stat.InterAction.FinalBedpeFile.getItemNum();
 //                Stat.InterAction.IntraActionNum = new BedpeFile(SameBedpeFile).getItemNum();

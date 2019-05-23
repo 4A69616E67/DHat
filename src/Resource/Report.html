@@ -29,54 +29,37 @@
           <li><a href="#Running_info" class="active">Running information</a>
             <ul>
               <li><a href="#RI_ConfigureInformation">Configure information</a></li>
-              <li><a href="#RI_LinkerFilter">Linker filtering</a></li>
-              <li><a href="#RI_Mapping">Mapping</a></li>
-              <li><a href="#RI_LigationFilter">Ligation filtering</a></li>
-              <li><a href="#RI_InterAction">Inter Action</a></li>
             </ul>
           </li>
-          <li><a href="#Running_statistics" class="active">Running statistics</a>
+          <li><a href="#Running_statistics" class="active">Linker Filter</a>
             <ul>
-              <li><a href="#RS_Base">Basic statistics</a></li>
-              <li><a href="#RS_SequenceFilter">Sequence filtering statistics</a></li>
-              <li><a href="#RS_MappingFilter">Mapping and filtering statistics</a></li>
-              <li><a href="#RS_LigationFilter">Ligation filtering statistics</a></li>
-              <li><a href="#RS_MakeMatrix">Make Matrix statistics</a></li>
-              <li><a href="#RS_Running_Time">Running time</a></li>
+              <li><a href="#LF_Basic_statistics">Basic statistics</a></li>
+              <li><a href="#LF_Base_distribution_in_adapter_detection">Base distribution in adapter detection</a></li>
+              <li><a href="#LF_LinkerAlignScoreDis">Linker score distribution</a></li>
+              <li><a href="#LF_Tag_length_dis">Tag length distribution</a></li>
             </ul>
           </li>
-          <li><a href="#Linker_filtering_report">Linker filtering report</a>
+          <li><a href="#Alignment">Alignment</a>
             <ul>
-              <li><a href="#LFR_LinkerAlignScoreDis">Linker alignment score distribution</a></li>
-              <li><a href="#LFR_Tag_Len_Dis">Tag length distribution</a></li>
-              <li><a href="#SFR_Adapter">Adapter</a></li>
-              <li><a href="#SFR_Linker">Linker</a></li>
+              <li><a href="#AL_Basic_statistics">Basic statistics</a></li>
             </ul>
           </li>
-          <li><a href="#Mapping_report">Mapping report</a>
+          <li><a href="#Noise_reduce">Noise reduce</a>
             <ul>
-              <li><a href="#MR_Basic">Basic</a></li>
-              <li><a href="#MR_Distance">Distance distribution</a></li>
-            </ul>
-          </li>
-          <li><a href="#Ligation_report">Ligation report</a>
-            <ul>
-              <li><a href="#LR_Basic">Basic</a></li>
+              <li><a href="#NR_Basic_statistics">Basic statistics</a></li>
+              <li><a href="#NR_OriPosStat">Orientation-Position statistics</a></li>
+              <li><a href="#NR_Annotation_statistics">Annotation statistics</a></li>
+              <li><a href="#NR_InteractionDistanceDistribution">Interaction distance distribution</a></li>
             </ul>
           </li>
           <li><a href="#Matrix_report">Matrix report</a>
             <ul>
               <li><a href="#MR_Basic">Basic</a></li>
+              <li><a href="#MR_Heatmap">Heatmap</a></li>
+
             </ul>
           </li>
-          <li><a href="#Cluster_visual">Interactions visualization</a>
-            <ul>
-              <li><a href="#IV_InteractionDistanceDistribution">Interaction distance distribution</a></li>
-              <li><a href="#IV_InteractionHeatMap">Interaction heatmap</a></li>
-              <li><a href="#Rplot14">Intra-chromosomal inetractions visualization</a></li>
-              <li><a href="#Rplot15">Circular visualization</a></li>
-            </ul>
-          </li>
+
 
         </ul>
       </div>
@@ -151,7 +134,8 @@
         </table>
       </h2>
       <hr>
-      <h2 id="RI_LinkerFilter"><strong>Linker filtering</strong></h2>
+      <h1 class="title" id="Linker_filter">Linker Filter</h1>
+      <h2 id="LF_Basic_statistics"><strong>Basic statistics</strong></h2>
       <h2>
         <!--        <iframe width=8 00 height=4 40 src="images/Rplot1.html"></iframe>-->
         <table align="center" width="200" border="1" style="table-layout: fixed;">
@@ -167,6 +151,7 @@
             <td th:text="${#numbers.formatInteger(LinkerFilterStat.InputNum,1,'COMMA')}">&nbsp;</td>
             <td th:text="${#numbers.formatDecimal(LinkerFilterStat.InputNum*100/Tool.ToDouble(LinkerFilterStat.InputNum),1,2)}+'%'">
               &nbsp;
+              
             </td>
           </tr>
           <tr th:each="Linker : ${LinkerFilterStat.linkers}">
@@ -175,6 +160,7 @@
             <td width="285"
                 th:text="${#numbers.formatDecimal(Linker.ValidPairNum*100/Tool.ToDouble(LinkerFilterStat.InputNum),1,2)}+'%'">
               &nbsp;
+              
             </td>
           </tr>
           <!--
@@ -199,6 +185,7 @@
             <td th:text="${#numbers.formatInteger(LinkerFilterStat.LinkerUnmatchableNum,1,'COMMA')}">&nbsp;</td>
             <td th:text="${#numbers.formatDecimal(LinkerFilterStat.LinkerUnmatchableNum*100/Tool.ToDouble(LinkerFilterStat.InputNum),1,2)}+'%'">
               &nbsp;
+              
             </td>
           </tr>
           <tr>
@@ -208,10 +195,31 @@
           </tbody>
         </table>
       </h2>
+      <div class="line"></div>
+      <h2 id="LF_Base_distribution_in_adapter_detection">Base distribution in adapter detection</h2>
+      <h2 align="center">
+        <img src="./images/test.adapter_detection.base.freq.png"
+             th:src="'data:image/png;base64,'+${Report.GetBase64(LinkerFilterStat.AdapterBaseDisPng)}" alt=""/>
+      </h2>
+
+      <div class="line"></div>
+      <h2 id="LF_LinkerAlignScoreDis">Linker alignment score distribution</h2>
+      <h2 align="center">
+        <img src="./images/test-jh.png"
+             th:src="'data:image/png;base64,'+${Report.GetBase64(LinkerFilterStat.LinkerScoreDisPng)}" alt=""/>
+      </h2>
+
+      <div class="line"></div>
+      <h2 id="LF_Tag_Length_dis">Tag length distribution</h2>
+      <h2 align="center" th:each="ReadsLenDis : ${LinkerFilterStat.linkers}">
+        <img src="./images/Test.AA.reads_length_distribution.png"
+             th:src="'data:image/png;base64,'+${Report.GetBase64(ReadsLenDis.ReadLengthDisPng)}" alt=""/>
+      </h2>
       <hr>
-      <h2 id="RI_Mapping"><strong>Mapping</strong></h2>
+      <h1 class="title" id="Alignment">Alignment</h1>
+      <h2 id="AL_Basic_statistics"><strong>Basic statistics</strong></h2>
       <li style="list-style: none" th:each="Linker : ${AlignmentStat.linkers}">
-        <h3 th:text="${Linker.Linker.getType()}">AA</h3>
+        <h3 th:text="'Linker '+${Linker.Linker.getType()}+': '+${Linker.Linker.getSeq()}">AA</h3>
         <h2>
           <table align="center" width="200" border="1">
             <tbody>
@@ -253,12 +261,14 @@
               <td nowrap="nowrap"
                   th:text="${#numbers.formatDecimal(Linker.R1MultiMapped*100/Tool.ToDouble(Linker.InputNum),1,2)}+'%'">
                 &nbsp;
+                
               </td>
               <td nowrap="nowrap">Multi map R2:</td>
               <td th:text="${#numbers.formatInteger(Linker.R2MultiMapped,1,'COMMA')}">&nbsp;</td>
               <td nowrap="nowrap"
                   th:text="${#numbers.formatDecimal(Linker.R2MultiMapped*100/Tool.ToDouble(Linker.InputNum),1,2)}+'%'">
                 &nbsp;
+                
               </td>
             </tr>
             <tr>
@@ -267,6 +277,7 @@
               <td nowrap="nowrap"
                   th:text="${#numbers.formatDecimal(Linker.R1Unmapped*100/Tool.ToDouble(Linker.InputNum),1,2)}+'%'">
                 &nbsp;
+                
               </td>
               <td nowrap="nowrap">Unmap R2:</td>
               <td th:text="${#numbers.formatInteger(Linker.R2Unmapped,1,'COMMA')}">&nbsp;</td>
@@ -296,30 +307,30 @@
       <h2>
         <hr>
       </h2>
-      <h2 id="RI_LigationFilter"><strong>Noise Reduce</strong></h2>
+      <h1 class="title" id="Noise_reduce">Noise reduce</h1>
+      <h2 id="NR_Basic_statistics"><strong>Basic statistics</strong></h2>
       <li style="list-style: none" th:each="Ligation : ${NoiseReduceStat.linkers}">
-        <h3 th:text="${Ligation.Linker.getType()}">AA</h3>
+        <h3 th:text="'Linker '+${Ligation.Linker.getType()}+': '+${Ligation.Linker.getSeq()}">AA</h3>
+        <h4 th:text="'Input: '+${#numbers.formatInteger(Ligation.RawDataNum,1,'COMMA')}">Input:</h4>
         <h2>
           <table align="center" width="200" border="1" style="table-layout: fixed">
             <tbody>
             <tr>
-              <td width="127" align="center" nowrap="nowrap">Item</td>
-              <td width="394" align="center">File path</td>
-              <td width="77" align="center" nowrap="nowrap">Number</td>
-              <td width="74" align="center" nowrap="nowrap">Percentage</td>
+              <td width="91" align="center" nowrap="nowrap">Item</td>
+              <td width="70" align="center">Number</td>
+              <td width="90" align="center" nowrap="nowrap">Percentage</td>
+              <td width="90" align="center" nowrap="nowrap">Item</td>
+              <td width="66" align="center" nowrap="nowrap">Number</td>
+              <td width="94" align="center" nowrap="nowrap">Percentage</td>
             </tr>
             <tr>
-              <td nowrap="nowrap">Self-Ligation:</td>
-              <td th:text="${Ligation.SelfLigationFile}">&nbsp;</td>
+              <td align="center" nowrap="nowrap">Self-Ligation:</td>
               <td nowrap="nowrap" th:text="${#numbers.formatInteger(Ligation.SelfLigationNum,1,'COMMA')}">&nbsp;</td>
               <td nowrap="nowrap"
                   th:text="${#numbers.formatDecimal(Ligation.SelfLigationNum*100/Tool.ToDouble(Ligation.RawDataNum),1,2)}+'%'">
                 &nbsp;
               </td>
-            </tr>
-            <tr>
-              <td nowrap="nowrap">RelLigation:</td>
-              <td th:text="${Ligation.ReLigationFile}">&nbsp;</td>
+              <td align="center" nowrap="nowrap">ReLigation:</td>
               <td nowrap="nowrap" th:text="${#numbers.formatInteger(Ligation.ReLigationNum,1,'COMMA')}">&nbsp;</td>
               <td nowrap="nowrap"
                   th:text="${#numbers.formatDecimal(Ligation.ReLigationNum*100/Tool.ToDouble(Ligation.RawDataNum),1,2)}+'%'">
@@ -327,91 +338,144 @@
               </td>
             </tr>
             <tr>
-              <td nowrap="nowrap">Duplicate:</td>
-              <td th:text="${Ligation.DuplicateFile}">&nbsp;</td>
+              <td align="center" nowrap="nowrap">Duplicate:</td>
               <td nowrap="nowrap" th:text="${#numbers.formatInteger(Ligation.DuplicateNum,1,'COMMA')}">&nbsp;</td>
               <td nowrap="nowrap"
                   th:text="${#numbers.formatDecimal(Ligation.DuplicateNum*100/Tool.ToDouble(Ligation.RawDataNum),1,2)}+'%'">
                 &nbsp;
               </td>
+              <td nowrap="nowrap">&nbsp;</td>
+              <td nowrap="nowrap">&nbsp;</td>
+              <td nowrap="nowrap">&nbsp;</td>
             </tr>
             <tr>
-              <td nowrap="nowrap">No duplicate:</td>
-              <td th:text="${Ligation.CleanFile}">&nbsp;</td>
+              <td align="center" nowrap="nowrap">Clean data:</td>
               <td nowrap="nowrap" th:text="${#numbers.formatInteger(Ligation.CleanNum,1,'COMMA')}">&nbsp;</td>
               <td nowrap="nowrap"
                   th:text="${#numbers.formatDecimal(Ligation.CleanNum*100/Tool.ToDouble(Ligation.RawDataNum),1,2)}+'%'">
                 &nbsp;
               </td>
+              <td nowrap="nowrap">&nbsp;</td>
+              <td nowrap="nowrap">&nbsp;</td>
+              <td nowrap="nowrap">&nbsp;</td>
             </tr>
             <tr>
-              <td nowrap="nowrap">Inter chromosome:</td>
-              <td th:text="${Ligation.DiffCleanFile}">&nbsp;</td>
-              <td nowrap="nowrap" th:text="${#numbers.formatInteger(Ligation.DiffCleanNum,1,'COMMA')}">&nbsp;</td>
-              <td nowrap="nowrap"
-                  th:text="${#numbers.formatDecimal(Ligation.DiffCleanNum*100/Tool.ToDouble(Ligation.RawDataNum),1,2)}+'%'">
-                &nbsp;
-              </td>
-            </tr>
-            <tr>
-              <td nowrap="nowrap">Intra chromosome:</td>
-              <td th:text="${Ligation.SameCleanFile}">&nbsp;</td>
+              <td align="center" nowrap="nowrap">Intra-chrom:</td>
               <td nowrap="nowrap" th:text="${#numbers.formatInteger(Ligation.SameCleanNum,1,'COMMA')}">&nbsp;</td>
               <td nowrap="nowrap"
-                  th:text="${#numbers.formatDecimal(Ligation.SameCleanNum*100/Tool.ToDouble(Ligation.RawDataNum),1,2)}+'%'">
+                  th:text="${#numbers.formatDecimal(Ligation.SameCleanNum*100/Tool.ToDouble(Ligation.CleanNum),1,2)}+'%'">
+                &nbsp;
+              </td>
+              <td align="center" nowrap="nowrap">Inter-chrom:</td>
+              <td nowrap="nowrap" th:text="${#numbers.formatInteger(Ligation.DiffCleanNum,1,'COMMA')}">&nbsp;</td>
+              <td nowrap="nowrap"
+                  th:text="${#numbers.formatDecimal(Ligation.DiffCleanNum*100/Tool.ToDouble(Ligation.CleanNum),1,2)}+'%'">
                 &nbsp;
               </td>
             </tr>
             <tr>
-              <td nowrap="nowrap">Output folder:</td>
-              <td colspan="3" th:text="${NoiseReduceStat.OutDir}">&nbsp;</td>
+              <td align="center" nowrap="nowrap">Short range:</td>
+              <td nowrap="nowrap" th:text="${#numbers.formatInteger(Ligation.ShortRangeNum,1,'COMMA')}">&nbsp;</td>
+              <td nowrap="nowrap"
+                  th:text="${#numbers.formatDecimal(Ligation.ShortRangeNum*100/Tool.ToDouble(Ligation.SameCleanNum),1,2)}+'%'">
+                &nbsp;
+              </td>
+              <td align="center" nowrap="nowrap">Long range:</td>
+              <td nowrap="nowrap" th:text="${#numbers.formatInteger(Ligation.LongRangeNum,1,'COMMA')}">&nbsp;</td>
+              <td nowrap="nowrap"
+                  th:text="${#numbers.formatDecimal(Ligation.LongRangeNum*100/Tool.ToDouble(Ligation.SameCleanNum),1,2)}+'%'">
+                &nbsp;
+              </td>
             </tr>
             </tbody>
           </table>
         </h2>
       </li>
-      <hr>
-      <h2 id="RI_InterAction"><strong>InterAction</strong></h2>
+      <div class="line"></div>
+      <h2 id="NR_OriPosStat">Orientation-Position statistics</h2>
       <h2>
-        <table align="center" width="200" border="1" style="table-layout: fixed">
-          <tr>
-            <td width="78" align="center" nowrap="nowrap">Item</td>
-            <td width="403" align="center" nowrap="nowrap">Number</td>
-            <td width="197" align="center" nowrap="nowrap">Percentage</td>
-          </tr>
+        <table align="center" width="200" border="1">
           <tbody>
           <tr>
-            <td nowrap="nowrap">Total action:</td>
-            <td th:text="${#numbers.formatInteger(NoiseReduceStat.total.CleanNum,1,'COMMA')}">&nbsp;</td>
-            <td th:text="${#numbers.formatDecimal(NoiseReduceStat.total.CleanNum*100/Tool.ToDouble(LinkerFilterStat.InputNum),1,2)}+'%'">
+            <td>&nbsp;</td>
+            <td align="center">s,s</td>
+            <td align="center">s,t</td>
+            <td align="center">t,s</td>
+            <td align="center">t,t</td>
+          </tr>
+          <tr>
+            <td align="center">+,+</td>
+            <td align="center" nowrap="bowrap"
+                th:text="${#numbers.formatInteger(NoiseReduceStat.OrientationPositionStat.get('+,+').get('s,s')[0],1,'COMMA')}">
+              &nbsp;
+            </td>
+            <td align="center" nowrap="bowrap"
+                th:text="${#numbers.formatInteger(NoiseReduceStat.OrientationPositionStat.get('+,+').get('s,t')[0],1,'COMMA')}">
+              &nbsp;
+            </td>
+            <td align="center" nowrap="bowrap"
+                th:text="${#numbers.formatInteger(NoiseReduceStat.OrientationPositionStat.get('+,+').get('t,s')[0],1,'COMMA')}">
+              &nbsp;
+            </td>
+            <td align="center" nowrap="bowrap"
+                th:text="${#numbers.formatInteger(NoiseReduceStat.OrientationPositionStat.get('+,+').get('t,t')[0],1,'COMMA')}">
               &nbsp;
             </td>
           </tr>
           <tr>
-            <td nowrap="nowrap">Inter chromosome:</td>
-            <td th:text="${#numbers.formatInteger(NoiseReduceStat.total.DiffCleanNum,1,'COMMA')}">&nbsp;</td>
-            <td th:text="${#numbers.formatDecimal(NoiseReduceStat.total.DiffCleanNum*100/Tool.ToDouble(NoiseReduceStat.total.CleanNum),1,2)}+'%'">
+            <td align="center">+,-</td>
+            <td align="center" nowrap="bowrap"
+                th:text="${#numbers.formatInteger(NoiseReduceStat.OrientationPositionStat.get('+,-').get('s,s')[0],1,'COMMA')}">
+              &nbsp;
+            </td>
+            <td align="center" nowrap="bowrap"
+                th:text="${#numbers.formatInteger(NoiseReduceStat.OrientationPositionStat.get('+,-').get('s,t')[0],1,'COMMA')}">
+              &nbsp;
+            </td>
+            <td align="center" nowrap="bowrap"
+                th:text="${#numbers.formatInteger(NoiseReduceStat.OrientationPositionStat.get('+,-').get('t,s')[0],1,'COMMA')}">
+              &nbsp;
+            </td>
+            <td align="center" nowrap="bowrap"
+                th:text="${#numbers.formatInteger(NoiseReduceStat.OrientationPositionStat.get('+,-').get('t,t')[0],1,'COMMA')}">
               &nbsp;
             </td>
           </tr>
           <tr>
-            <td nowrap="nowrap">Intra chromosome:</td>
-            <td th:text="${#numbers.formatInteger(NoiseReduceStat.total.SameCleanNum,1,'COMMA')}">&nbsp;</td>
-            <td th:text="${#numbers.formatDecimal(NoiseReduceStat.total.SameCleanNum*100/Tool.ToDouble(NoiseReduceStat.total.CleanNum),1,2)}+'%'">
+            <td align="center">-,+</td>
+            <td align="center" nowrap="bowrap"
+                th:text="${#numbers.formatInteger(NoiseReduceStat.OrientationPositionStat.get('-,+').get('s,s')[0],1,'COMMA')}">
+              &nbsp;
+            </td>
+            <td align="center" nowrap="bowrap"
+                th:text="${#numbers.formatInteger(NoiseReduceStat.OrientationPositionStat.get('-,+').get('s,t')[0],1,'COMMA')}">
+              &nbsp;
+            </td>
+            <td align="center" nowrap="bowrap"
+                th:text="${#numbers.formatInteger(NoiseReduceStat.OrientationPositionStat.get('-,+').get('t,s')[0],1,'COMMA')}">
+              &nbsp;
+            </td>
+            <td align="center" nowrap="bowrap"
+                th:text="${#numbers.formatInteger(NoiseReduceStat.OrientationPositionStat.get('-,+').get('t,t')[0],1,'COMMA')}">
               &nbsp;
             </td>
           </tr>
           <tr>
-            <td nowrap="nowrap">Short range:</td>
-            <td th:text="${#numbers.formatInteger(NoiseReduceStat.total.ShortRangeNum,1,'COMMA')}">&nbsp;</td>
-            <td th:text="${#numbers.formatDecimal(NoiseReduceStat.total.ShortRangeNum*100/Tool.ToDouble(NoiseReduceStat.total.SameCleanNum),1,2)}+'%'">
+            <td align="center">-,-</td>
+            <td align="center" nowrap="bowrap"
+                th:text="${#numbers.formatInteger(NoiseReduceStat.OrientationPositionStat.get('-,-').get('s,s')[0],1,'COMMA')}">
               &nbsp;
             </td>
-          </tr>
-          <tr>
-            <td nowrap="nowrap">Long range:</td>
-            <td th:text="${#numbers.formatInteger(NoiseReduceStat.total.LongRangeNum,1,'COMMA')}">&nbsp;</td>
-            <td th:text="${#numbers.formatDecimal(NoiseReduceStat.total.LongRangeNum*100/Tool.ToDouble(NoiseReduceStat.total.SameCleanNum),1,2)}+'%'">
+            <td align="center" nowrap="bowrap"
+                th:text="${#numbers.formatInteger(NoiseReduceStat.OrientationPositionStat.get('-,-').get('s,t')[0],1,'COMMA')}">
+              &nbsp;
+            </td>
+            <td align="center" nowrap="bowrap"
+                th:text="${#numbers.formatInteger(NoiseReduceStat.OrientationPositionStat.get('-,-').get('t,s')[0],1,'COMMA')}">
+              &nbsp;
+            </td>
+            <td align="center" nowrap="bowrap"
+                th:text="${#numbers.formatInteger(NoiseReduceStat.OrientationPositionStat.get('-,-').get('t,t')[0],1,'COMMA')}">
               &nbsp;
             </td>
           </tr>
@@ -419,7 +483,24 @@
         </table>
       </h2>
 
-      <h1 class="title" id="Running_statistics">Running statistics</h1>
+      <div class="line"></div>
+      <h2 id="NR_Annotation_statistics">Annotation statistics</h2>
+
+      <div class="line"></div>
+
+      <h2 id="NR_InteractionDistanceDistribution">Interaction distance distribution</h2>
+      <h2 align="center">
+        <img src="./images/InterActionLengthDistribution.png"
+             th:src="'data:image/png;base64,'+${Report.GetBase64(NoiseReduceStat.InteractionRangeDistributionPng)}"
+             alt=""/>
+      </h2>
+      <h2 align="center">
+        <img src="./images/InterActionLengthDistribution.png"
+             th:src="'data:image/png;base64,'+${Report.GetBase64(NoiseReduceStat.ShortInteractionRangeDistributionPng)}"
+             alt=""/>
+      </h2>
+
+      <h1 class="title" id="Matrix report">Matrix report</h1>
       <div class="line"></div>
 
       <h3 id="Rplot2">Basic statistics</h3>
@@ -428,24 +509,14 @@
         <!--        <iframe width=8 00 height=3 50 src="images/Rplot2.html"></iframe>-->
       </h2>
 
-
-      <h3 id="Rplot3">Mapping statistics of read1 (horizental) and read2 (vertical)</h3>
-      <h4>A_A</h4>
-      <h2>
-        <!--        <iframe width=8 00 height=1 40 src="images/Rplot3_1.html"></iframe>-->
-      </h2>
-      <h4>B_B</h4>
-      <h2>
-        <!--        <iframe width=8 00 height=1 40 src="images/Rplot3_2.html"></iframe>-->
-      </h2>
-      <h4>A_B</h4>
-      <h2>
-        <!--        <iframe width=8 00 height=1 40 src="images/Rplot3_3.html"></iframe>-->
-      </h2>
-      <h4>B_A</h4>
-      <h2>
-        <!--        <iframe width=8 00 height=1 40 src="images/Rplot3_4.html"></iframe>-->
-      </h2>
+      <h2 id="MR_Heatmap">Interaction heatmap</h2>
+      <li style="list-style: none" th:each="HeatMap : ${DrawResolutionHeatMap}">
+        <h4 th:text="'Resolution '+${#numbers.formatInteger(HeatMap.Resolution,1,'COMMA')}">Resolution 1,000,000</h4>
+        <h2 align="center">
+          <img src="./images/Test.interaction.1.0M.png" alt="" width="667"
+               height="546" th:src="'data:image/png;base64,'+${HeatMap.Figure}"/>
+        </h2>
+      </li>
 
       <h3 id="RS_Running_Time">Running time</h3>
       <h2>
@@ -484,29 +555,6 @@
       </h2>
 
 
-      <h1 id="Linker_filtering_report">Linker filtering report</h1>
-      <div class="line"></div>
-
-      <h2 id="LFR_LinkerAlignScoreDis">Linker alignment score distribution</h2>
-      <h2 align="center">
-        <img src="../../../DLO-HIC-AnalysisTools/resource/images/test-jh.png"
-             th:src="'data:image/png;base64,'+${LinkerAliScoreDis}" alt=""/>
-      </h2>
-      <hr>
-      <h2 id="LFR_Tag_Len_Dis">Tag length distribution</h2>
-      <h2 align="center" th:each="ReadsLenDis : ${ReadsLenDiss}">
-        <img src="../../../DLO-HIC-AnalysisTools/resource/images/Test.AA.reads_length_distribution.png"
-             th:src="'data:image/png;base64,'+${ReadsLenDis}" alt=""/>
-      </h2>
-
-      <h1 id="Mapping_report">Mapping report</h1>
-      <!--   <h3>After mapping to genome, .sam format files are converted to .bedpe files.</h3> -->
-      <div class="line"></div>
-
-      <h1 id="PET_span">Span distribution</h1>
-      <div class="line"></div>
-
-
       <h3 id="Rplot12">PETs span distribution</h3>
       <h2>
         <img src="../../../DLO-HIC-AnalysisTools/resource/images/Rplot12.png" alt=""
@@ -525,37 +573,9 @@
       </h2>
 
       <h1 id="Cluster_visual">Cluster visualization</h1>
-      <div class="line"></div>
 
-      <h2 id="IV_InteractionDistanceDistribution">Interaction distance distribution</h2>
-      <h2 align="center">
-        <img src="../../../DLO-HIC-AnalysisTools/resource/images/InterActionLengthDistribution.png"
-             th:src="'data:image/png;base64,'+${InteractionDistanceDis}" alt=""/>
-      </h2>
       <hr>
-      <h2 id="IV_InteractionHeatMap">Interaction heatmap</h2>
-      <li style="list-style: none" th:each="HeatMap : ${DrawResolutionHeatMap}">
-        <h3 th:text="'Resolution '+${#numbers.formatInteger(HeatMap.Resolution,1,'COMMA')}">Resolution 1,000,000</h3>
-        <h2 align="center">
-          <img src="../../../DLO-HIC-AnalysisTools/resource/images/Test.interaction.1.0M.png" alt="" width="667"
-               height="546" th:src="'data:image/png;base64,'+${HeatMap.Figure}"/>
-        </h2>
-      </li>
 
-      <h3 id="Rplot14">Intra-chromosomal interactions visualization</h3>
-      <div class="intro">
-        Blue peaks above chromosomes are transcription factor binding sites<br/>
-        Red curves under chromosomes are intra-chromosomal interactions
-      </div>
-      <h2>
-        <img width="750" height="1000" src="../../../DLO-HIC-AnalysisTools/resource/images/Rplot14.png" alt=""/>
-      </h2>
-
-      <h3 id="Rplot15">Circular view</h3>
-      <div class="intro">Circular view of inter-chromosomal interactions</div>
-      <h2>
-        <!--        <img width=7 50 height=7 50 src="images/Rplot15.png" alt="" />-->
-      </h2>
 
       <div id="footer">
         <p>1. Please use Chrome, Firefox or Safari for better browsing experience.</p>

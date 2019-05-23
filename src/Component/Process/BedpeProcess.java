@@ -54,6 +54,8 @@ public class BedpeProcess {
     private BedpeFile RepeatFile;//最终的重复片段
     private BedpeFile FinalFile;//最终文件=SameNoDumpFile+DiffNoDumpFile
     //============================================================
+    private HashMap<String, HashMap<String, long[]>>[] SameOriPosStat, DiffOriPosStat;
+//    private HashMap<Integer, long[]> InteractionDistanceDistribution = new HashMap<>();
 
     public static void main(String[] args) throws IOException, ParseException {
         BedpeProcess bedpe = new BedpeProcess(args);
@@ -122,7 +124,8 @@ public class BedpeProcess {
         //将bedpe分成染色体内的交互和染色体间的交互
         BedpeToSameAndDiff(BedpeFile, SameFile, DiffFile);
         ChrSameFile = SameFile.SeparateBedpe(Chromosomes, OutPath + "/" + Prefix, Threads);
-        HashMap<String, HashMap<String, long[]>>[] SameOriPosStat = new HashMap[Chromosomes.length], DiffOriPosStat = new HashMap[1];
+        SameOriPosStat = new HashMap[Chromosomes.length];
+        DiffOriPosStat = new HashMap[1];
         //=====================================染色体内的交互处理=========================================
         ThreadIndex index = new ThreadIndex(-2);
         Thread[] t = new Thread[Threads];
@@ -163,7 +166,7 @@ public class BedpeProcess {
         }
         Tools.ThreadsWait(t);
         //==============================================================================================================
-        synchronized (BedpeProcess.class) {
+        synchronized (Opts.NRStat) {
             for (int i = 0; i < SameOriPosStat.length; i++) {
                 for (String k1 : NoiseReduceStat.OriList) {
                     for (String k2 : NoiseReduceStat.PosList) {

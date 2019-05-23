@@ -37,6 +37,9 @@ public class LinkerFilterStat extends AbstractStat {
     public long AdapterMatchableNum;
     public long AdapterUnmatchableNum;
 
+    public File AdapterBaseDisPng;
+    public File LinkerScoreDisPng;
+
 
     public int ThreadNum;
 

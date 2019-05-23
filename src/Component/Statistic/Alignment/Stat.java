@@ -5,6 +5,8 @@ import Component.File.FastQFile.FastqFile;
 import Component.File.SamFile.SamFile;
 import Component.unit.LinkerSequence;
 
+import java.io.File;
+
 public class Stat {
     public LinkerSequence Linker;
     public long InputNum;
@@ -16,6 +18,7 @@ public class Stat {
     public SamFile UniqueSamFile2, MultiSamFile2, UnmappedSamFile2;
     public BedpeFile BedPeFile;
     public final String[] lock = new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"};
+
 
     public void clear() {
         Linker = null;

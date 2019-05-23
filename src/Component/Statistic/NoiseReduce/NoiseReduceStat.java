@@ -1,5 +1,6 @@
 package Component.Statistic.NoiseReduce;
 
+import Component.File.AbstractFile;
 import Component.File.BedPeFile.BedpeFile;
 import Component.Statistic.AbstractStat;
 import Component.tool.Tools;
@@ -7,19 +8,18 @@ import Component.File.BedPeFile.BedpeItem;
 import Component.unit.LinkerSequence;
 import Component.unit.Region;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.*;
 
 
 public class NoiseReduceStat extends AbstractStat {
     public LinkerSequence[] Linkers;
     public Stat[] linkers;
     public Stat total = new Stat();
-    public HashMap<Integer, Integer> InteractionRangeDistribution = new HashMap<>();
+    public HashMap<Integer, long[]> InteractionRangeDistribution = new HashMap<>();
     public Region ShortRegion, LongRegion;
     public File OutDir;
     public HashMap<String, HashMap<String, long[]>> OrientationPositionStat = new HashMap<>();
@@ -27,6 +27,9 @@ public class NoiseReduceStat extends AbstractStat {
     public HashMap<String, HashMap<String, long[]>> DiffOriPosStat = new HashMap<>();
     public static final String[] OriList = new String[]{"+,+", "+,-", "-,+", "-,-"};
     public static final String[] PosList = new String[]{"s,s", "s,t", "t,s", "t,t"};
+
+    public File InteractionRangeDistributionPng;
+    public File ShortInteractionRangeDistributionPng;
 
     public static HashMap<String, HashMap<String, long[]>> CreateOrientationPositionStat() {
         HashMap<String, HashMap<String, long[]>> OrientationPositionStat = new HashMap<>();
@@ -179,9 +182,9 @@ public class NoiseReduceStat extends AbstractStat {
             }
             synchronized (this) {
                 if (!InteractionRangeDistribution.containsKey(distance)) {
-                    InteractionRangeDistribution.put(distance, 0);
+                    InteractionRangeDistribution.put(distance, new long[]{0});
                 }
-                InteractionRangeDistribution.put(distance, InteractionRangeDistribution.get(distance) + 1);
+                InteractionRangeDistribution.get(distance)[0]++;
             }
             inFile.ItemNum++;
         }
@@ -276,5 +279,40 @@ public class NoiseReduceStat extends AbstractStat {
             show.append("\n");
         }
         return show.toString();
+    }
+
+    public void WriteInterRangeDis(AbstractFile f, Region reg, String bin, boolean log) throws IOException {
+        BufferedWriter output = f.WriteOpen();
+        int Bin = 1000000;
+        if (bin.equals("M") | bin.equals("m")) {
+            Bin = 1000000;
+            output.write("Distance/(M)\tCount");
+        } else if (bin.equals("K") | bin.equals("k")) {
+            Bin = 1000;
+            output.write("Distance/(K)\tCount");
+        }
+        if (log) {
+            output.write("/(log10)\n");
+        }
+        HashMap<Integer, Integer> CountMap = new HashMap<>();
+        for (int key : InteractionRangeDistribution.keySet()) {
+            if (reg.IsContain(key)) {
+                Integer i = (int) Math.ceil((float) key / Bin);
+                if (!CountMap.containsKey(i)) {
+                    CountMap.put(i, 0);
+                }
+                CountMap.put(i, CountMap.get(i) + 1);
+            }
+        }
+        ArrayList<Integer> Keys = new ArrayList<>(CountMap.keySet());
+        Collections.sort(Keys);
+        for (int key : Keys) {
+            if (log) {
+                output.write(key + "\t" + Math.log10(CountMap.get(key)) + "\n");
+            } else {
+                output.write(key + "\t" + CountMap.get(key) + "\n");
+            }
+        }
+        output.close();
     }
 }
