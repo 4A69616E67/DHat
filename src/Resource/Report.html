@@ -163,23 +163,7 @@
               
             </td>
           </tr>
-          <!--
-                      <tr>
-                        <td nowrap="nowrap">BB:</td>
-                        <td th:text="${BBLinkerNum}">&nbsp;</td>
-                        <td th:text="${BBLinkerPercent}">&nbsp;</td>
-                      </tr>
-                      <tr>
-                        <td nowrap="nowrap">AB:</td>
-                        <td th:text="${ABLinkerNum}">&nbsp;</td>
-                        <td th:text="${ABLinkerPercent}">&nbsp;</td>
-                      </tr>
-                      <tr>
-                        <td nowrap="nowrap">BA:</td>
-                        <td th:text="${BALinkerNum}">&nbsp;</td>
-                        <td th:text="${BALinkerPercent}">&nbsp;</td>
-                      </tr>
-          -->
+
           <tr>
             <td nowrap="nowrap">Ambiguous:</td>
             <td th:text="${#numbers.formatInteger(LinkerFilterStat.LinkerUnmatchableNum,1,'COMMA')}">&nbsp;</td>
@@ -205,7 +189,7 @@
       <div class="line"></div>
       <h2 id="LF_LinkerAlignScoreDis">Linker alignment score distribution</h2>
       <h2 align="center">
-        <img src="./images/test-jh.png"
+        <img src="./images/test.linker_score_distribution.png"
              th:src="'data:image/png;base64,'+${Report.GetBase64(LinkerFilterStat.LinkerScoreDisPng)}" alt=""/>
       </h2>
 
@@ -309,9 +293,8 @@
       </h2>
       <h1 class="title" id="Noise_reduce">Noise reduce</h1>
       <h2 id="NR_Basic_statistics"><strong>Basic statistics</strong></h2>
-      <li style="list-style: none" th:each="Ligation : ${NoiseReduceStat.linkers}">
-        <h3 th:text="'Linker '+${Ligation.Linker.getType()}+': '+${Ligation.Linker.getSeq()}">AA</h3>
-        <h4 th:text="'Input: '+${#numbers.formatInteger(Ligation.RawDataNum,1,'COMMA')}">Input:</h4>
+
+      <p th:text="'Input: '+${#numbers.formatInteger(NoiseReduceStat.total.RawDataNum,1,'COMMA')}">Input:</p>
         <h2>
           <table align="center" width="200" border="1" style="table-layout: fixed">
             <tbody>
@@ -325,23 +308,29 @@
             </tr>
             <tr>
               <td align="center" nowrap="nowrap">Self-Ligation:</td>
-              <td nowrap="nowrap" th:text="${#numbers.formatInteger(Ligation.SelfLigationNum,1,'COMMA')}">&nbsp;</td>
+              <td nowrap="nowrap" th:text="${#numbers.formatInteger(NoiseReduceStat.total.SelfLigationNum,1,'COMMA')}">
+                &nbsp;
+              </td>
               <td nowrap="nowrap"
-                  th:text="${#numbers.formatDecimal(Ligation.SelfLigationNum*100/Tool.ToDouble(Ligation.RawDataNum),1,2)}+'%'">
+                  th:text="${#numbers.formatDecimal(NoiseReduceStat.total.SelfLigationNum*100/Tool.ToDouble(NoiseReduceStat.total.RawDataNum),1,2)}+'%'">
                 &nbsp;
               </td>
               <td align="center" nowrap="nowrap">ReLigation:</td>
-              <td nowrap="nowrap" th:text="${#numbers.formatInteger(Ligation.ReLigationNum,1,'COMMA')}">&nbsp;</td>
+              <td nowrap="nowrap" th:text="${#numbers.formatInteger(NoiseReduceStat.total.ReLigationNum,1,'COMMA')}">
+                &nbsp;
+              </td>
               <td nowrap="nowrap"
-                  th:text="${#numbers.formatDecimal(Ligation.ReLigationNum*100/Tool.ToDouble(Ligation.RawDataNum),1,2)}+'%'">
+                  th:text="${#numbers.formatDecimal(NoiseReduceStat.total.ReLigationNum*100/Tool.ToDouble(NoiseReduceStat.total.RawDataNum),1,2)}+'%'">
                 &nbsp;
               </td>
             </tr>
             <tr>
               <td align="center" nowrap="nowrap">Duplicate:</td>
-              <td nowrap="nowrap" th:text="${#numbers.formatInteger(Ligation.DuplicateNum,1,'COMMA')}">&nbsp;</td>
+              <td nowrap="nowrap" th:text="${#numbers.formatInteger(NoiseReduceStat.total.DuplicateNum,1,'COMMA')}">
+                &nbsp;
+              </td>
               <td nowrap="nowrap"
-                  th:text="${#numbers.formatDecimal(Ligation.DuplicateNum*100/Tool.ToDouble(Ligation.RawDataNum),1,2)}+'%'">
+                  th:text="${#numbers.formatDecimal(NoiseReduceStat.total.DuplicateNum*100/Tool.ToDouble(NoiseReduceStat.total.RawDataNum),1,2)}+'%'">
                 &nbsp;
               </td>
               <td nowrap="nowrap">&nbsp;</td>
@@ -350,9 +339,10 @@
             </tr>
             <tr>
               <td align="center" nowrap="nowrap">Clean data:</td>
-              <td nowrap="nowrap" th:text="${#numbers.formatInteger(Ligation.CleanNum,1,'COMMA')}">&nbsp;</td>
+              <td nowrap="nowrap" th:text="${#numbers.formatInteger(NoiseReduceStat.total.CleanNum,1,'COMMA')}">&nbsp;
+              </td>
               <td nowrap="nowrap"
-                  th:text="${#numbers.formatDecimal(Ligation.CleanNum*100/Tool.ToDouble(Ligation.RawDataNum),1,2)}+'%'">
+                  th:text="${#numbers.formatDecimal(NoiseReduceStat.total.CleanNum*100/Tool.ToDouble(NoiseReduceStat.total.RawDataNum),1,2)}+'%'">
                 &nbsp;
               </td>
               <td nowrap="nowrap">&nbsp;</td>
@@ -361,38 +351,48 @@
             </tr>
             <tr>
               <td align="center" nowrap="nowrap">Intra-chrom:</td>
-              <td nowrap="nowrap" th:text="${#numbers.formatInteger(Ligation.SameCleanNum,1,'COMMA')}">&nbsp;</td>
+              <td nowrap="nowrap" th:text="${#numbers.formatInteger(NoiseReduceStat.total.SameCleanNum,1,'COMMA')}">
+                &nbsp;
+              </td>
               <td nowrap="nowrap"
-                  th:text="${#numbers.formatDecimal(Ligation.SameCleanNum*100/Tool.ToDouble(Ligation.CleanNum),1,2)}+'%'">
+                  th:text="${#numbers.formatDecimal(NoiseReduceStat.total.SameCleanNum*100/Tool.ToDouble(NoiseReduceStat.total.CleanNum),1,2)}+'%'">
                 &nbsp;
               </td>
               <td align="center" nowrap="nowrap">Inter-chrom:</td>
-              <td nowrap="nowrap" th:text="${#numbers.formatInteger(Ligation.DiffCleanNum,1,'COMMA')}">&nbsp;</td>
+              <td nowrap="nowrap" th:text="${#numbers.formatInteger(NoiseReduceStat.total.DiffCleanNum,1,'COMMA')}">
+                &nbsp;
+              </td>
               <td nowrap="nowrap"
-                  th:text="${#numbers.formatDecimal(Ligation.DiffCleanNum*100/Tool.ToDouble(Ligation.CleanNum),1,2)}+'%'">
+                  th:text="${#numbers.formatDecimal(NoiseReduceStat.total.DiffCleanNum*100/Tool.ToDouble(NoiseReduceStat.total.CleanNum),1,2)}+'%'">
                 &nbsp;
               </td>
             </tr>
             <tr>
               <td align="center" nowrap="nowrap">Short range:</td>
-              <td nowrap="nowrap" th:text="${#numbers.formatInteger(Ligation.ShortRangeNum,1,'COMMA')}">&nbsp;</td>
+              <td nowrap="nowrap" th:text="${#numbers.formatInteger(NoiseReduceStat.total.ShortRangeNum,1,'COMMA')}">
+                &nbsp;
+              </td>
               <td nowrap="nowrap"
-                  th:text="${#numbers.formatDecimal(Ligation.ShortRangeNum*100/Tool.ToDouble(Ligation.SameCleanNum),1,2)}+'%'">
+                  th:text="${#numbers.formatDecimal(NoiseReduceStat.total.ShortRangeNum*100/Tool.ToDouble(NoiseReduceStat.total.SameCleanNum),1,2)}+'%'">
                 &nbsp;
               </td>
               <td align="center" nowrap="nowrap">Long range:</td>
-              <td nowrap="nowrap" th:text="${#numbers.formatInteger(Ligation.LongRangeNum,1,'COMMA')}">&nbsp;</td>
+              <td nowrap="nowrap" th:text="${#numbers.formatInteger(NoiseReduceStat.total.LongRangeNum,1,'COMMA')}">
+                &nbsp;
+              </td>
               <td nowrap="nowrap"
-                  th:text="${#numbers.formatDecimal(Ligation.LongRangeNum*100/Tool.ToDouble(Ligation.SameCleanNum),1,2)}+'%'">
+                  th:text="${#numbers.formatDecimal(NoiseReduceStat.total.LongRangeNum*100/Tool.ToDouble(NoiseReduceStat.total.SameCleanNum),1,2)}+'%'">
                 &nbsp;
               </td>
             </tr>
             </tbody>
           </table>
         </h2>
-      </li>
+      <!--      </li>-->
       <div class="line"></div>
       <h2 id="NR_OriPosStat">Orientation-Position statistics</h2>
+      <p>'+' and '-' represent the orientation of alignment, 's' means reads located in the 5' end of restriction
+        fragment and 't' means reads located in the 3' end of restriction fragment </p>
       <h2>
         <table align="center" width="200" border="1">
           <tbody>
@@ -490,13 +490,23 @@
 
       <h2 id="NR_InteractionDistanceDistribution">Interaction distance distribution</h2>
       <h2 align="center">
-        <img src="./images/InterActionLengthDistribution.png"
+        <img src="./images/test.all.interaction_distance_distribution.png"
              th:src="'data:image/png;base64,'+${Report.GetBase64(NoiseReduceStat.InteractionRangeDistributionPng)}"
              alt=""/>
       </h2>
       <h2 align="center">
-        <img src="./images/InterActionLengthDistribution.png"
-             th:src="'data:image/png;base64,'+${Report.GetBase64(NoiseReduceStat.ShortInteractionRangeDistributionPng)}"
+        <img src="./images/test.50M.interaction_distance_distribution.png"
+             th:src="'data:image/png;base64,'+${Report.GetBase64(NoiseReduceStat._50M_InteractionRangeDistributionPng)}"
+             alt=""/>
+      </h2>
+      <h2 align="center">
+        <img src="./images/test.10M.interaction_distance_distribution.png"
+             th:src="'data:image/png;base64,'+${Report.GetBase64(NoiseReduceStat._10M_InteractionRangeDistributionPng)}"
+             alt=""/>
+      </h2>
+      <h2 align="center">
+        <img src="./images/test.5M.interaction_distance_distribution.png"
+             th:src="'data:image/png;base64,'+${Report.GetBase64(NoiseReduceStat._2M_InteractionRangeDistributionPng)}"
              alt=""/>
       </h2>
 

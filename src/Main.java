@@ -451,18 +451,35 @@ public class Main {
             new BedpeToInter(FinalBedpeFile.getPath(), InterBedpeFile.getPath());//将交互区间转换成交互点
         }
         //==============================================================================================================
-        CommonFile InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".interaction_distance_distribution.data");
-        Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, Integer.MAX_VALUE), "M", true);
-        Opts.NRStat.InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + Prefix + ".interaction_distance_distribution.png");
+        CommonFile InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".all.interaction_distance_distribution.data");
+        Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, Integer.MAX_VALUE), "1M", 0, 10);
+        Opts.NRStat.InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
         ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat.InteractionRangeDistributionPng;
         Opts.CommandOutFile.Append(ComLine + "\n");
         Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
-        InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".short.interaction_distance_distribution.data");
-        Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, 50000000), "m", true);
-        Opts.NRStat.ShortInteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + Prefix + ".short.interaction_distance_distribution.png");
-        ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat.ShortInteractionRangeDistributionPng;
+        //----------------------------------
+        InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".50M.interaction_distance_distribution.data");
+        Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, 50000000), "1M", 0, 10);
+        Opts.NRStat._50M_InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
+        ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._50M_InteractionRangeDistributionPng;
         Opts.CommandOutFile.Append(ComLine + "\n");
         Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
+        //------------------------------------
+        InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".10M.interaction_distance_distribution.data");
+        Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, 10000000), "100k", 2, 10);
+        Opts.NRStat._10M_InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
+        ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._10M_InteractionRangeDistributionPng;
+        Opts.CommandOutFile.Append(ComLine + "\n");
+        Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
+        //---------------------------------------
+        InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".2M.interaction_distance_distribution.data");
+        Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, 2000000), "10k", 2, 10);
+        Opts.NRStat._2M_InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
+        ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._2M_InteractionRangeDistributionPng;
+        Opts.CommandOutFile.Append(ComLine + "\n");
+        Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
+
+        //---------------------------------------
 //                Stat.InterAction.FinalBedpeFile = new BedpeFile(FinalBedpeFile);
 //                Stat.InterAction.FinalBedpeNum = Stat.InterAction.FinalBedpeFile.getItemNum();
 //                Stat.InterAction.IntraActionNum = new BedpeFile(SameBedpeFile).getItemNum();
@@ -531,7 +548,7 @@ public class Main {
                 }
             }
         }
-        Opts.StatisticFile.Append(Opts.MMStat.Show() + "\n");
+        Opts.StatisticFile.Append(Opts.CMStat.Show() + "\n");
         //==============================================================================================================
         ST = new Thread(() -> {
 //            Stat.HeatMapInit(DrawResolution.length);
@@ -549,7 +566,7 @@ public class Main {
         //==============================================================================================================
         Date endTime = new Date();
         System.err.println("Create matrix: " + matrixTime + " - " + endTime);
-        Opts.MMStat.Time = endTime.getTime() - matrixTime.getTime();
+        Opts.CMStat.Time = endTime.getTime() - matrixTime.getTime();
         System.out.println("\n-------------------------------Time----------------------------------------");
         System.out.println("PreProcess:\t" + Tools.DateFormat((seTime.getTime() - preTime.getTime()) / 1000));
         System.out.println("SeProcess:\t" + Tools.DateFormat((bedpeTime.getTime() - seTime.getTime()) / 1000));
@@ -768,9 +785,7 @@ public class Main {
         Opts.StatisticFile = new CommonFile(Configure.OutPath + "/" + Opts.StatisticFile.getName());
         Opts.ResourceStatFile = new CommonFile(Configure.OutPath + "/" + Opts.ResourceStatFile.getName());
         Prefix = Opts.OVStat.Prefix = Configure.Prefix;
-        Resolution = Opts.MMStat.Resolutions = Configure.Resolution;
         Threads = Configure.Thread;
-        DrawResolution = Configure.DrawResolution;
 //        Step.addAll(Arrays.asList(Configure.Step.trim().split("\\s+")));
         if (Configure.AdapterSeq != null && Configure.AdapterSeq.length > 0) {
             AdapterSeq = Configure.AdapterSeq;
@@ -786,6 +801,9 @@ public class Main {
             Chromosomes = Tools.CheckChromosome(Chromosomes, GenomeFile);
             Configure.Chromosome = Chromosomes;
         }
+        Resolution = Opts.CMStat.Resolutions = Configure.Resolution;
+        DrawResolution = Opts.CMStat.DrawResolutions = Configure.DrawResolution;
+        Opts.CMStat.Init();
         ChrEnzyFile = new CommonFile[Chromosomes.length];
 
         //-------------------------------------------高级参数赋值--------------------------------------------------------
@@ -828,7 +846,7 @@ public class Main {
         PreProcessDir = Opts.LFStat.OutDir = new File(OutPath + "/" + Opts.OutDir.PreDir);
         SeProcessDir = Opts.ALStat.OutDir = new File(OutPath + "/" + Opts.OutDir.SeDir);
         BedpeProcessDir = Opts.NRStat.OutDir = new File(OutPath + "/" + Opts.OutDir.BedpeDir);
-        MakeMatrixDir = Opts.MMStat.OutDir = new File(OutPath + "/" + Opts.OutDir.MatrixDir);
+        MakeMatrixDir = Opts.CMStat.OutDir = new File(OutPath + "/" + Opts.OutDir.MatrixDir);
         ReportDir = new File(OutPath + "/" + Opts.OutDir.ReportDir);
         EnzyPath = new File(OutPath + "/" + Opts.OutDir.EnzyFragDir);
         Opts.Step.FindEnzymeFragment.Execute = true;

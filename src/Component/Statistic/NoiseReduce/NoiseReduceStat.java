@@ -29,7 +29,9 @@ public class NoiseReduceStat extends AbstractStat {
     public static final String[] PosList = new String[]{"s,s", "s,t", "t,s", "t,t"};
 
     public File InteractionRangeDistributionPng;
-    public File ShortInteractionRangeDistributionPng;
+    public File _50M_InteractionRangeDistributionPng;
+    public File _10M_InteractionRangeDistributionPng;
+    public File _2M_InteractionRangeDistributionPng;
 
     public static HashMap<String, HashMap<String, long[]>> CreateOrientationPositionStat() {
         HashMap<String, HashMap<String, long[]>> OrientationPositionStat = new HashMap<>();
@@ -281,36 +283,50 @@ public class NoiseReduceStat extends AbstractStat {
         return show.toString();
     }
 
-    public void WriteInterRangeDis(AbstractFile f, Region reg, String bin, boolean log) throws IOException {
+    public void WriteInterRangeDis(AbstractFile f, Region reg, String bin, int x_log, int y_log) throws IOException {
         BufferedWriter output = f.WriteOpen();
-        int Bin = 1000000;
-        if (bin.equals("M") | bin.equals("m")) {
-            Bin = 1000000;
-            output.write("Distance/(M)\tCount");
-        } else if (bin.equals("K") | bin.equals("k")) {
-            Bin = 1000;
-            output.write("Distance/(K)\tCount");
+        int Bin = 1;
+        if (bin != null) {
+            if (bin.matches(".*M") | bin.matches(".*m")) {
+                Bin = Integer.parseInt(bin.substring(0, bin.length() - 1)) * 1000000;
+            } else if (bin.matches(".*K") | bin.matches(".*k")) {
+                Bin = Integer.parseInt(bin.substring(0, bin.length() - 1)) * 1000;
+            }
+        } else {
+            bin = "";
         }
-        if (log) {
-            output.write("/(log10)\n");
+        output.write("Distance/(" + bin);
+        if (x_log > 1) {
+            output.write("log" + x_log + ")");
+        } else {
+            output.write(")");
         }
-        HashMap<Integer, Integer> CountMap = new HashMap<>();
+        output.write(new DecimalFormat("#,###").format(reg.Start) + ":" + new DecimalFormat("#,###").format(reg.End));
+        if (y_log > 1) {
+            output.write("\tCount/(log" + y_log + ")\n");
+        } else {
+            output.write("\tCount/\n");
+        }
+        HashMap<Float, long[]> CountMap = new HashMap<>();
         for (int key : InteractionRangeDistribution.keySet()) {
             if (reg.IsContain(key)) {
-                Integer i = (int) Math.ceil((float) key / Bin);
-                if (!CountMap.containsKey(i)) {
-                    CountMap.put(i, 0);
+                float i = (int) Math.ceil((float) key / Bin);
+                if (x_log > 1) {
+                    i = (float) (Math.log10(i) / Math.log10(x_log));
                 }
-                CountMap.put(i, CountMap.get(i) + 1);
+                if (!CountMap.containsKey(i)) {
+                    CountMap.put(i, new long[]{0});
+                }
+                CountMap.get(i)[0] += InteractionRangeDistribution.get(key)[0];
             }
         }
-        ArrayList<Integer> Keys = new ArrayList<>(CountMap.keySet());
+        ArrayList<Float> Keys = new ArrayList<>(CountMap.keySet());
         Collections.sort(Keys);
-        for (int key : Keys) {
-            if (log) {
-                output.write(key + "\t" + Math.log10(CountMap.get(key)) + "\n");
+        for (float key : Keys) {
+            if (y_log > 1) {
+                output.write(key + "\t" + Math.log10(CountMap.get(key)[0] / Math.log10(y_log)) + "\n");
             } else {
-                output.write(key + "\t" + CountMap.get(key) + "\n");
+                output.write(key + "\t" + CountMap.get(key)[0] + "\n");
             }
         }
         output.close();

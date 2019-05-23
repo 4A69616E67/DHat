@@ -92,8 +92,8 @@ public class Report {
         map.put("LinkerFilterTime", Tools.DateFormat(Opts.LFStat.Time / 1000));
         map.put("MappingTime", Tools.DateFormat(Opts.ALStat.Time / 1000));
         map.put("NoiseReduceTime", Tools.DateFormat(Opts.NRStat.Time / 1000));
-        map.put("MakeMatrixTime", Tools.DateFormat(Opts.MMStat.Time / 1000));
-        map.put("TotalTime", Tools.DateFormat((Opts.LFStat.Time + Opts.ALStat.Time + Opts.NRStat.Time + Opts.MMStat.Time) / 1000));
+        map.put("MakeMatrixTime", Tools.DateFormat(Opts.CMStat.Time / 1000));
+        map.put("TotalTime", Tools.DateFormat((Opts.LFStat.Time + Opts.ALStat.Time + Opts.NRStat.Time + Opts.CMStat.Time) / 1000));
 
         context.setVariable("Report", this);
         context.setVariable("LinkerFilterStat", Opts.LFStat);
@@ -101,8 +101,6 @@ public class Report {
         context.setVariable("NoiseReduceStat", Opts.NRStat);
         context.setVariable("OverViewStat", Opts.OVStat);
         context.setVariable("AdapterSeq", String.join(" ", Configure.AdapterSeq).replaceAll("\\s+", "<br/>"));
-//        context.setVariable("AdapterDetectionDis", GetBase64(Opts.LFStat.AdapterBaseDisPng));
-//        context.setVariable("TotalReads", RawDataReadsNum);
         context.setVariables(map);
 //        context.setVariable("LinkerAliScoreDis", GetBase64(Opts.LFStat.LinkerScoreDisPng));
 //        context.setVariable("ReadsLenDiss", ReadsLengthDisBase64);

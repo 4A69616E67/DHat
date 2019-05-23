@@ -3,6 +3,7 @@ package Component.unit;
 import Component.File.CommonFile;
 import Component.Statistic.*;
 import Component.Statistic.Alignment.AlignmentStat;
+import Component.Statistic.CreateMatrix.CreateMatrixStat;
 import Component.Statistic.LinkerFilter.LinkerFilterStat;
 import Component.Statistic.NoiseReduce.NoiseReduceStat;
 import org.apache.commons.cli.CommandLine;
@@ -187,7 +188,7 @@ public class Opts {
     public static final LinkerFilterStat LFStat = new LinkerFilterStat();
     public static final AlignmentStat ALStat = new AlignmentStat();
     public static final NoiseReduceStat NRStat = new NoiseReduceStat();
-    public static final MakeMatrixStat MMStat = new MakeMatrixStat();
+    public static final CreateMatrixStat CMStat = new CreateMatrixStat();
     public static final OverviewStat OVStat = new OverviewStat();
     public static final ResourceStat RSStat = new ResourceStat();
 
