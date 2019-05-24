@@ -13,5 +13,5 @@ public class Stat {
     public File[] ChromHeatMapPng;
     public MatrixFile[] ChromMatrixFile;
     public File GenomeWildHeatMapPng;
-    public File GenomeWildMatrixFile;
+    public MatrixFile GenomeWildMatrixFile;
 }

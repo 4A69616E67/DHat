@@ -7,7 +7,6 @@ import Component.File.*;
 import Component.File.BedFile.BedFile;
 import Component.File.BedPeFile.BedpeFile;
 import Component.File.FastQFile.FastqFile;
-import Component.File.MatrixFile.MatrixFile;
 import Component.File.SamFile.SamFile;
 import Component.Process.BedpeProcess;
 import Component.Process.PreProcess;
@@ -527,7 +526,8 @@ public class Main {
                 mmt[i].join();
             }
             //------------------------------------------------------画热图-----------------------------------------
-            for (int aDrawResolution : DrawResolution) {
+            for (int i = 0; i < DrawResolution.length; i++) {
+                int aDrawResolution = DrawResolution[i];
                 File OutDir = new File(MakeMatrixDir + "/img_" + Tools.UnitTrans(aDrawResolution, "B", "M") + "M");
                 if (!OutDir.isDirectory() && !OutDir.mkdir()) {
                     System.err.println(new Date() + "\tWarning! Can't Create " + OutDir);
@@ -536,14 +536,16 @@ public class Main {
                 if (!new File(MakeMatrixDir + "/" + aDrawResolution).isDirectory()) {
                     matrix.Run();
                 }
-                if (matrix.getDenseMatrixFile().PlotHeatMap(matrix.getBinSizeFile(), aDrawResolution, new File(OutDir + "/" + Prefix + ".interaction." + Tools.UnitTrans(aDrawResolution, "B", "M") + "M.png")) != 0) {
+                Opts.CMStat.draw_resolutions[i].GenomeWildMatrixFile = matrix.getDenseMatrixFile();
+                Opts.CMStat.draw_resolutions[i].GenomeWildHeatMapPng = new File(OutDir + "/" + Prefix + ".interaction_" + Tools.UnitTrans(aDrawResolution, "B", "M") + "M.png");
+                if (Opts.CMStat.draw_resolutions[i].GenomeWildMatrixFile.PlotHeatMap(matrix.getBinSizeFile(), aDrawResolution, Opts.CMStat.draw_resolutions[i].GenomeWildHeatMapPng) != 0) {
                     System.err.println("There are some worried in plot heatmap : " + matrix.getDenseMatrixFile());
                 }
-
-                MatrixFile[] DenseMatrixFile = matrix.getChrDenseMatrixFile();
+                Opts.CMStat.draw_resolutions[i].ChromMatrixFile = matrix.getChrDenseMatrixFile();
                 for (int j = 0; j < Chromosomes.length; j++) {
-                    if (DenseMatrixFile[j].PlotHeatMap(new String[]{Chromosomes[j].Name + ":0", Chromosomes[j].Name + ":0"}, aDrawResolution, new File(OutDir + "/" + Prefix + "." + Chromosomes[j].Name + "." + Tools.UnitTrans(aDrawResolution, "B", "M") + "M.png")) != 0) {
-                        System.err.println("There are some worried in plot heatmap : " + DenseMatrixFile[j]);
+                    Opts.CMStat.draw_resolutions[i].ChromHeatMapPng[j] = new File(OutDir + "/" + Prefix + "." + Chromosomes[j].Name + "." + Tools.UnitTrans(aDrawResolution, "B", "M") + "M.png");
+                    if (Opts.CMStat.draw_resolutions[i].ChromMatrixFile[j].PlotHeatMap(new String[]{Chromosomes[j].Name + ":0", Chromosomes[j].Name + ":0"}, aDrawResolution, Opts.CMStat.draw_resolutions[i].ChromHeatMapPng[j]) != 0) {
+                        System.err.println("There are some worried in plot heatmap : " + Opts.CMStat.draw_resolutions[i].ChromMatrixFile[j]);
                     }
                 }
             }
