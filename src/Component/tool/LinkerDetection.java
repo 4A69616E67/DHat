@@ -2,6 +2,7 @@ package Component.tool;
 
 import Component.File.FastQFile.FastqFile;
 import Component.File.FastQFile.FastqItem;
+import Component.FragmentDigested.RestrictionEnzyme;
 import Component.Sequence.DNASequence;
 import Component.Sequence.KmerStructure;
 import Component.Statistic.StatUtil;

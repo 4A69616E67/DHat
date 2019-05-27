@@ -1,6 +1,7 @@
 package Component.unit;
 
 import Component.File.CommonFile;
+import Component.FragmentDigested.FragmentDigested;
 import Component.Statistic.*;
 import Component.Statistic.Alignment.AlignmentStat;
 import Component.Statistic.CreateMatrix.CreateMatrixStat;
@@ -191,6 +192,7 @@ public class Opts {
     public static final CreateMatrixStat CMStat = new CreateMatrixStat();
     public static final OverviewStat OVStat = new OverviewStat();
     public static final ResourceStat RSStat = new ResourceStat();
+    public static FragmentDigested fragmentDigestedModule;
 
 }
 

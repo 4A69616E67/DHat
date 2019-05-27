@@ -7,12 +7,14 @@ import Component.File.*;
 import Component.File.BedFile.BedFile;
 import Component.File.BedPeFile.BedpeFile;
 import Component.File.FastQFile.FastqFile;
+import Component.File.FastaFile.FastaFile;
 import Component.File.SamFile.SamFile;
+import Component.FragmentDigested.FragmentDigested;
+import Component.FragmentDigested.RestrictionEnzyme;
 import Component.Process.BedpeProcess;
 import Component.Process.PreProcess;
 import Component.Process.SeProcess;
 import Component.tool.*;
-import Component.tool.FindRestrictionSite;
 import Component.unit.*;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
@@ -49,7 +51,7 @@ public class Main {
     private int MinLinkerFilterQuality;
     private File EnzyPath;//酶切位点文件目录
     private String EnzyFilePrefix;//酶切位点文件前缀
-    private CommonFile[] ChrEnzyFile;//每条染色体的酶切位点位置文件
+    private BedFile[] ChrEnzyFile;//每条染色体的酶切位点位置文件
     private File PreProcessDir;//预处理输出目录
     private File SeProcessDir;//单端处理输出目录
     private File BedpeProcessDir;//bedpe处理输出目录
@@ -58,6 +60,7 @@ public class Main {
     private Report Stat;
     private File OutPath;
     private int DeBugLevel;
+
 
     private Main(String[] args) throws IOException {
         Options Argument = new Options();
@@ -351,7 +354,7 @@ public class Main {
         Thread[] LinkerProcess = new Thread[ValidLinkerSeq.length];//不同linker类型并行
         BedpeProcess[] bedpe = new BedpeProcess[ValidLinkerSeq.length];//不同linker类型并行
         for (int i = 0; i < LinkerProcess.length; i++) {
-            bedpe[i] = new BedpeProcess(new File(BedpeProcessDir + "/" + ValidLinkerSeq[i].getType()), Prefix + "." + ValidLinkerSeq[i].getType(), Chromosomes, ChrEnzyFile, SeBedpeFile[i]);//bedpe文件处理类
+            bedpe[i] = new BedpeProcess(new File(BedpeProcessDir + "/" + ValidLinkerSeq[i].getType()), Prefix + "." + ValidLinkerSeq[i].getType(), Chromosomes, SeBedpeFile[i]);//bedpe文件处理类
             bedpe[i].Threads = Math.max(1, Threads / LinkerProcess.length);//设置线程数
         }
         if (Opts.Step.BedPeProcess.Execute) {
@@ -610,30 +613,34 @@ public class Main {
     private Thread FindRestrictionFragment() {
         return new Thread(() -> {
             try {
-                System.out.println(new Date() + "\tStart to find restriction fragment");
-                if (!EnzyPath.isDirectory() && !EnzyPath.mkdir()) {
-                    System.err.println(new Date() + "\tCreate " + EnzyPath + " false !");
-                }
-                FindRestrictionSite fr = new FindRestrictionSite(GenomeFile, EnzyPath, Restriction, EnzyFilePrefix);
-                ArrayList<Chromosome> TempChrs = fr.Run();//取出基因组文件中所有染色体的大小信息
-                File[] TempChrEnzyFile = fr.getChrFragmentFile();
-//                    ChrSizeFile = fr.getChrSizeFile();
-                //
-                for (int i = 0; i < Chromosomes.length; i++) {
-                    boolean flag = false;
-                    for (int j = 0; j < TempChrs.size(); j++) {
-                        if (TempChrs.get(j).Name.equals(Chromosomes[i].Name)) {
-                            Chromosomes[i] = TempChrs.get(j);
-                            ChrEnzyFile[i] = new CommonFile(TempChrEnzyFile[j]);
-                            flag = true;
-                            break;
-                        }
-                    }
-                    if (!flag) {
-                        System.err.println(new Date() + "\t[Main:FindRestrictionFragment]\tWarning! No " + Chromosomes[i].Name + " in genomic file");
-                    }
-                }
-                System.out.println(new Date() + "\tEnd find restriction fragment");
+                FragmentDigested FDM = Opts.fragmentDigestedModule;
+                FDM.Threads = Threads;
+                FDM.run(new FastaFile(GenomeFile.getPath()));
+                Chromosomes = FDM.getChromosomes();
+//                System.out.println(new Date() + "\tStart to find restriction fragment");
+//                if (!EnzyPath.isDirectory() && !EnzyPath.mkdir()) {
+//                    System.err.println(new Date() + "\tCreate " + EnzyPath + " false !");
+//                }
+//                FindRestrictionSite fr = new FindRestrictionSite(GenomeFile, EnzyPath, Restriction, EnzyFilePrefix);
+//                ArrayList<Chromosome> TempChrs = fr.Run();//取出基因组文件中所有染色体的大小信息
+//                File[] TempChrEnzyFile = fr.getChrFragmentFile();
+////                    ChrSizeFile = fr.getChrSizeFile();
+//                //
+//                for (int i = 0; i < Chromosomes.length; i++) {
+//                    boolean flag = false;
+//                    for (int j = 0; j < TempChrs.size(); j++) {
+//                        if (TempChrs.get(j).Name.equals(Chromosomes[i].Name)) {
+//                            Chromosomes[i] = TempChrs.get(j);
+//                            ChrEnzyFile[i] = new CommonFile(TempChrEnzyFile[j]);
+//                            flag = true;
+//                            break;
+//                        }
+//                    }
+//                    if (!flag) {
+//                        System.err.println(new Date() + "\t[Main:FindRestrictionFragment]\tWarning! No " + Chromosomes[i].Name + " in genomic file");
+//                    }
+//                }
+//                System.out.println(new Date() + "\tEnd find restriction fragment");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -740,7 +747,7 @@ public class Main {
     private Thread BedpeProcess(String UseLinker, BedpeFile SeBedpeFile, int threads) {
         return new Thread(() -> {
             try {
-                BedpeProcess bedpe = new BedpeProcess(new File(BedpeProcessDir + "/" + UseLinker), Prefix + "." + UseLinker, Chromosomes, ChrEnzyFile, SeBedpeFile);//bedpe文件处理类
+                BedpeProcess bedpe = new BedpeProcess(new File(BedpeProcessDir + "/" + UseLinker), Prefix + "." + UseLinker, Chromosomes, SeBedpeFile);//bedpe文件处理类
                 bedpe.Threads = threads;//设置线程数
                 bedpe.Run();//运行
 
@@ -806,7 +813,7 @@ public class Main {
         Resolution = Opts.CMStat.Resolutions = Configure.Resolution;
         DrawResolution = Opts.CMStat.DrawResolutions = Configure.DrawResolution;
         Opts.CMStat.Init();
-        ChrEnzyFile = new CommonFile[Chromosomes.length];
+        ChrEnzyFile = new BedFile[Chromosomes.length];
 
         //-------------------------------------------高级参数赋值--------------------------------------------------------
 //        Python = Configure.Python;
@@ -859,7 +866,7 @@ public class Main {
                 System.exit(1);
             }
         }
-
+        Opts.fragmentDigestedModule = new FragmentDigested(EnzyPath, Chromosomes, new RestrictionEnzyme(Restriction), Prefix);
         tempstrs = new String[]{"A", "B", "C", "D", "E", "F", "G"};
         //构建Linker序列
         if (halfLinker.length > tempstrs.length) {

@@ -7,10 +7,11 @@ import java.util.HashMap;
 import java.util.Hashtable;
 
 import Component.File.AbstractFile;
+import Component.File.BedFile.BedFile;
+import Component.File.BedFile.BedItem;
 import Component.File.BedPeFile.BedpeFile;
-import Component.File.CommonFile;
+import Component.File.BedPeFile.BedpeItem;
 import Component.Statistic.NoiseReduce.NoiseReduceStat;
-import Component.tool.FindRestrictionSite;
 import Component.tool.Tools;
 import Component.unit.*;
 import org.apache.commons.cli.*;
@@ -22,8 +23,8 @@ public class BedpeProcess {
     private File OutPath = new File("./");
     private String Prefix = Configure.Prefix;
     private BedpeFile BedpeFile;
-    private CommonFile[] EnzyFile;
-    private CommonFile AllEnzyFile;
+    private BedFile[] EnzyFile;
+    private BedFile AllEnzyFile;
     private String Restriction;
     public int Threads = 1;
     private Chromosome[] Chromosomes;
@@ -96,30 +97,31 @@ public class BedpeProcess {
         Init();
     }
 
-    public BedpeProcess(File OutPath, String Prefix, Chromosome[] Chrs, CommonFile[] EnzyFile, BedpeFile BedpeFile) {
+    public BedpeProcess(File OutPath, String Prefix, Chromosome[] Chrs, BedpeFile BedpeFile) {
         this.OutPath = OutPath;
         this.Prefix = Prefix;
         this.Chromosomes = Chrs;
         this.BedpeFile = BedpeFile;
-        this.EnzyFile = EnzyFile;
+        this.EnzyFile = Opts.fragmentDigestedModule.getChrsFragmentFile();
+        this.AllEnzyFile = Opts.fragmentDigestedModule.getAllChrsFragmentFile();
         Init();
     }
 
     public void Run() throws IOException {
         ArrayList<Thread> ThreadList = new ArrayList<>();
-        if (EnzyFile == null) {
-            FindRestrictionSite fd = new FindRestrictionSite(GenomeFile, OutPath, Restriction, Prefix);
-            fd.Run();
-            File[] EnzyFileTemps = fd.getChrFragmentFile();
-            EnzyFile = new CommonFile[Chromosomes.length];
-            for (int i = 0; i < Chromosomes.length; i++) {
-                for (File EnzyFileTemp : EnzyFileTemps) {
-                    if (EnzyFileTemp.getName().matches(".*\\." + Chromosomes[i].Name + "\\..*")) {
-                        EnzyFile[i] = new CommonFile(EnzyFileTemp);
-                    }
-                }
-            }
-        }
+//        if (EnzyFile == null) {
+//            FindRestrictionSite fd = new FindRestrictionSite(GenomeFile, OutPath, Restriction, Prefix);
+//            fd.Run();
+//            File[] EnzyFileTemps = fd.getChrFragmentFile();
+//            EnzyFile = new BedFile[Chromosomes.length];
+//            for (int i = 0; i < Chromosomes.length; i++) {
+//                for (File EnzyFileTemp : EnzyFileTemps) {
+//                    if (EnzyFileTemp.getName().matches(".*\\." + Chromosomes[i].Name + "\\..*")) {
+//                        EnzyFile[i] = new BedFile(EnzyFileTemp);
+//                    }
+//                }
+//            }
+//        }
         //===============================================================================================
         //将bedpe分成染色体内的交互和染色体间的交互
         BedpeToSameAndDiff(BedpeFile, SameFile, DiffFile);
@@ -136,8 +138,8 @@ public class BedpeProcess {
                     //===========================================染色体间的交互处理======================================
                     if (finalI < 0) {
                         BedpeFile SortDiffFile = new BedpeFile(FragmentDiffFile + ".sort");
-                        AllEnzyFile.Merge(EnzyFile);
-                        FragmentLocation(DiffFile, AllEnzyFile, FragmentDiffFile);
+//                        AllEnzyFile.Merge(EnzyFile);
+                        FragmentLocation(DiffFile, new BedFile(AllEnzyFile.getPath()), FragmentDiffFile);
                         FragmentDiffFile.SplitSortFile(SortDiffFile);
                         DiffOriPosStat[0] = RemoveRepeat(SortDiffFile, DiffNoDumpFile, DiffRepeatFile);//去duplication
                         finalI = index.Add(1);
@@ -145,7 +147,7 @@ public class BedpeProcess {
                     //=======================================染色体内的交互处理==========================================
                     while (finalI < Chromosomes.length) {
                         //定位交互发生在哪个酶切片段
-                        FragmentLocation(ChrSameFile[finalI], EnzyFile[finalI], ChrFragLocationFile[finalI]);
+                        FragmentLocation(ChrSameFile[finalI], new BedFile(EnzyFile[finalI].getPath()), ChrFragLocationFile[finalI]);
                         //区分不同的连接类型（自连接，再连接，有效数据）
                         SeparateLigationType(ChrFragLocationFile[finalI], ChrLigationFile[0][finalI], ChrLigationFile[1][finalI], ChrLigationFile[2][finalI]);
                         BedpeFile SortChrLigationFile = new BedpeFile(ChrLigationFile[2][finalI] + ".sort");
@@ -255,27 +257,27 @@ public class BedpeProcess {
                 }
             }
         }
-        if (EnzyDir == null && GenomeFile == null && EnzyFile == null) {
-            System.err.println(BedpeProcess.class.getName() + ":\tError! No Enzyme fragment file and Genome file");
-            System.exit(1);
-        }
-        if (EnzyDir != null) {
-            File[] files = EnzyDir.listFiles();
-            if (files == null) {
-                System.err.println(EnzyDir + " is not a directory");
-                System.exit(1);
-            }
-            EnzyFile = new CommonFile[Chromosomes.length];
-            for (int i = 0; i < Chromosomes.length; i++) {
-                for (File file : files) {
-                    if (file.getName().matches(".*\\." + Chromosomes[i].Name + "\\..*")) {
-                        EnzyFile[i] = new CommonFile(file);
-                    }
-                }
-            }
-        }
+//        if (EnzyDir == null && GenomeFile == null && EnzyFile == null) {
+//            System.err.println(BedpeProcess.class.getName() + ":\tError! No Enzyme fragment file and Genome file");
+//            System.exit(1);
+//        }
+//        if (EnzyDir != null) {
+//            File[] files = EnzyDir.listFiles();
+//            if (files == null) {
+//                System.err.println(EnzyDir + " is not a directory");
+//                System.exit(1);
+//            }
+//            EnzyFile = new CommonFile[Chromosomes.length];
+//            for (int i = 0; i < Chromosomes.length; i++) {
+//                for (File file : files) {
+//                    if (file.getName().matches(".*\\." + Chromosomes[i].Name + "\\..*")) {
+//                        EnzyFile[i] = new CommonFile(file);
+//                    }
+//                }
+//            }
+//        }
         //===========================================================================
-        AllEnzyFile = new CommonFile(OutPath + "/" + Prefix + ".restriction_fragment.bed");
+//        AllEnzyFile = new BedFile(OutPath + "/" + Prefix + ".restriction_fragment.bed");
         SameFile = new BedpeFile(OutPath + "/" + Prefix + ".same.bedpe");
         DiffFile = new BedpeFile(OutPath + "/" + Prefix + ".diff.bedpe");
         FragmentDiffFile = new BedpeFile(OutPath + "/" + Prefix + ".diff.frag.bedpe");
@@ -303,27 +305,28 @@ public class BedpeProcess {
         RepeatFile = new BedpeFile(FinalDir + "/" + Prefix + ".repeat.bedpe");
     }
 
-    private void FragmentLocation(File BedpeFile, File EnySiteFile, File OutFile) throws IOException {
+    private void FragmentLocation(BedpeFile BedpeFile, BedFile EnySiteFile, File OutFile) throws IOException {
         Hashtable<String, ArrayList<Region>> EnySiteList = new Hashtable<>();
-        BufferedReader EnySiteRead = new BufferedReader(new FileReader(EnySiteFile));
-        BufferedReader SeqRead = new BufferedReader(new FileReader(BedpeFile));
+//        BufferedReader EnySiteRead = new BufferedReader(new FileReader(EnySiteFile));
+//        BufferedReader SeqRead = new BufferedReader(new FileReader(BedpeFile));
         BufferedWriter OutWrite = new BufferedWriter(new FileWriter(OutFile));
-        String line;
+        BedItem bedItem;
+        BedpeItem bedpeItem;
         String[] str;
         System.out.println(new Date() + "\tBegin to find eny site\t" + BedpeFile.getName());
         //---------------------------------------------------
-        while ((line = EnySiteRead.readLine()) != null) {
-            str = line.split("\\s+");
-            if (!EnySiteList.containsKey(str[2])) {
-                EnySiteList.put(str[2], new ArrayList<>());
+        EnySiteFile.ReadOpen();
+        while ((bedItem = EnySiteFile.ReadItem()) != null) {
+            if (!EnySiteList.containsKey(bedItem.getLocation().Chr)) {
+                EnySiteList.put(bedItem.getLocation().Chr, new ArrayList<>());
             }
-            EnySiteList.get(str[2]).add(new Region(Integer.parseInt(str[str.length - 2]), Integer.parseInt(str[str.length - 1])));
+            EnySiteList.get(bedItem.getLocation().Chr).add(bedItem.getLocation().region);
         }
-        EnySiteRead.close();
-        while ((line = SeqRead.readLine()) != null) {
-            str = line.split("\\s+");
-            String[] chr = new String[]{str[0], str[3]};
-            Region[] position = new Region[]{new Region(Integer.parseInt(str[1]), Integer.parseInt(str[2])), new Region(Integer.parseInt(str[4]), Integer.parseInt(str[5]))};
+        EnySiteFile.ReadClose();
+        BedpeFile.ReadOpen();
+        while ((bedpeItem = BedpeFile.ReadItem()) != null) {
+            String[] chr = new String[]{bedpeItem.getLocation().getLeft().Chr, bedpeItem.getLocation().getRight().Chr};
+            Region[] position = new Region[]{bedpeItem.getLocation().getLeft().region, bedpeItem.getLocation().getRight().region};
             FragSite[] index = new FragSite[position.length];
             //-------------------------------------------------
             for (int i = 0; i < position.length; i++) {
@@ -340,14 +343,14 @@ public class BedpeProcess {
                 index[i] = Location(EnySiteList.get(chr[i]), position[i]);
             }
             //-----------------------------------------------------------------
-            OutWrite.write(line);
+            OutWrite.write(bedpeItem.toString());
             for (FragSite anIndex : index) {
                 OutWrite.write("\t" + anIndex);
             }
             OutWrite.write("\n");
         }
         //----------------------------------------------------
-        SeqRead.close();
+        BedpeFile.ReadClose();
         OutWrite.close();
         System.out.println(new Date() + "\tEnd to find eny site\t" + BedpeFile.getName());
     }//OK

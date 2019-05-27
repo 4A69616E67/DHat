@@ -1,5 +1,6 @@
-package Component.tool;
+package Component.FragmentDigested;
 
+import Component.tool.Tools;
 import Component.unit.Chromosome;
 import Component.unit.Configure;
 
@@ -41,9 +42,6 @@ public class FindRestrictionSite {
         StringBuilder Seq = new StringBuilder();
         String line;
         String Chr = "";
-//        int Site = Restriction.indexOf("^");
-//        Restriction = Restriction.replace("^", "");
-//        int ResLength = Restriction.length();
         //找到第一个以 ">" 开头的行
         while ((line = fastfile.readLine()) != null) {
             if (line.matches("^>.+")) {
@@ -66,14 +64,6 @@ public class FindRestrictionSite {
                     int[] item = list1.get(i);
                     chrwrite.write(Count + "\t+\t" + Chr + "\t" + item[0] + "\t" + item[1] + "\n");
                 }
-//                chrwrite.write(Score + "\t+\t" + Chr + "\t0\n");
-//                for (int i = 0; i <= len - ResLength; i++) {
-//                    if (Seq.substring(i, i + ResLength).equals(Restriction)) {
-//                        Score++;
-//                        chrwrite.write(Score + "\t+\t" + Chr + "\t" + (i + Site) + "\n");
-//                    }
-//                }
-//                chrwrite.write((++Score) + "\t+\t" + Chr + "\t" + len + "\n");
                 chrwrite.close();
                 Seq.setLength(0);
                 Chr = line.split("\\s+")[0].replace(">", "");

@@ -6,7 +6,7 @@ import Component.Software.Python;
 import Component.tool.Tools;
 import Component.unit.Chromosome;
 import Component.unit.Configure;
-import Component.unit.RestrictionEnzyme;
+import Component.FragmentDigested.RestrictionEnzyme;
 
 import javax.swing.*;
 import java.awt.event.*;

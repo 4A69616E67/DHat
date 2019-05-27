@@ -2,6 +2,7 @@ package Component.unit;
 
 
 import Component.File.FastQFile.FastqFile;
+import Component.FragmentDigested.RestrictionEnzyme;
 import Component.Sequence.DNASequence;
 import Component.Software.Bwa;
 import Component.Software.Python;
