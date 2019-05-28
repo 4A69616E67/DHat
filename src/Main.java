@@ -96,21 +96,20 @@ public class Main {
         Configure.GetOption(ConfigureFile, AdvConfigFile);//读取配置信息
         //获取命令行参数信息
         if (ComLine.hasOption("i"))
-            Configure.InputFile = new FastqFile(ComLine.getOptionValue("i"));
+            Configure.Require.InputFile.Value = ComLine.getOptionValue("i");
         if (ComLine.hasOption("p"))
-            Configure.Prefix = ComLine.getOptionValue("p");
+            Configure.Optional.Prefix.Value = ComLine.getOptionValue("p");
         if (ComLine.hasOption("o"))
-            Configure.OutPath = new File(ComLine.getOptionValue("o"));
+            Configure.Optional.OutPath.Value = ComLine.getOptionValue("o");
         if (ComLine.hasOption("s")) {
-            Configure.Step = String.join(" ", ComLine.getOptionValues("s"));
-            Opts.StepCheck(Configure.Step);
+            Configure.Optional.Step.Value = String.join(" ", ComLine.getOptionValues("s"));
         }
         if (ComLine.hasOption("t"))
-            Configure.Thread = Integer.parseInt(ComLine.getOptionValue("t"));
+            Configure.Optional.Thread.Value = ComLine.getOptionValue("t");
         if (ComLine.hasOption("r"))
-            Configure.Resolution = StringArrays.toInteger(ComLine.getOptionValues("r"));
+            Configure.Optional.Resolutions.Value = String.join(" ", ComLine.getOptionValues("r"));
         if (ComLine.hasOption("D"))
-            Configure.DeBugLevel = Integer.parseInt(ComLine.getOptionValue("D"));
+            Configure.Advance.DeBugLevel.Value = ComLine.getOptionValue("D");
         if (ComLine.hasOption("pbs")) {
             try {
                 String comline = "java -Xmx" + (int) Math.ceil(Opts.MaxMemory / Math.pow(10, 9)) + "G -jar " + Opts.JarFile + " " + String.join(" ", args).replace("-pbs", "");
@@ -128,6 +127,7 @@ public class Main {
                 e.printStackTrace();
             }
         }
+        Configure.Init();
         Init();//变量初始化
     }
 

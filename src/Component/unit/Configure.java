@@ -73,7 +73,7 @@ public class Configure {
         }
     }
 
-    private enum Optional {
+    public enum Optional {
         OutPath("OutPath", Configure.OutPath), Prefix("Prefix", Configure.Prefix), Index("Index", Configure.Index), Chromosomes("Chromosomes", Tools.ArraysToString(Configure.Chromosome)), AdapterSeq("AdapterSeq", Tools.ArraysToString(Configure.AdapterSeq)), Resolutions("Resolutions", Tools.ArraysToString(Configure.Resolution)), DrawResolutions("DrawResolutions", Tools.ArraysToString(Configure.DrawResolution)), Thread("Thread", Configure.Thread), Step("Step", Configure.Step);
         private String Key;
         public Object Value;
@@ -93,7 +93,7 @@ public class Configure {
         }
     }
 
-    private enum Advance {
+    public enum Advance {
         Python("Python", Configure.Python), BWA("Bwa", Configure.Bwa), Bowtie("Bowtie", Configure.Bowtie), MatchScore("MatchScore", Configure.MatchScore), MisMatchScore("MisMatchScore", Configure.MisMatchScore), InDelScore("InDelScore", Configure.InDelScore), MinLinkerLen("MinLinkerLen", Configure.MinLinkerLen), MinReadsLength("MinReadsLength", Configure.MinReadsLen), MaxReadsLength("MaxReadsLength", Configure.MaxReadsLen), AlignThread("AlignThread", Configure.AlignThread), AlignType("AlignType", Configure.AlignType), AlignMisMatch("AlignMisMatch", Configure.AlignMisMatch), MinUniqueScore("MinUniqueScore", Configure.MinUniqueScore), Iteration("Iteration", Configure.Iteration), DeBugLevel("DeBugLevel", Configure.DeBugLevel);
         private String Key;
         public Object Value;
@@ -131,7 +131,7 @@ public class Configure {
             if (Config.getProperty(a.getKey()) != null && !Config.getProperty(a.getKey()).trim().equals(""))
                 a.Value = Config.getProperty(a.getKey()).trim();
         }
-        Init();
+//        Init();
     }
 
     public static boolean DependenceCheck() {
@@ -211,7 +211,7 @@ public class Configure {
         Advance.DeBugLevel.Value = DeBugLevel;
     }
 
-    private static void Init() throws IOException {
+    public static void Init() throws IOException {
         InputFile = Require.InputFile.Value != null ? new FastqFile(Require.InputFile.Value.toString().trim()) : null;
         Restriction = Require.Restriction.Value != null ? new RestrictionEnzyme(Require.Restriction.Value.toString().trim()) : null;
         HalfLinker = Require.HalfLinker.Value != null ? Require.HalfLinker.Value.toString().trim().split("\\s+") : null;

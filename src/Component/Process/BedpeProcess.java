@@ -109,19 +109,6 @@ public class BedpeProcess {
 
     public void Run() throws IOException {
         ArrayList<Thread> ThreadList = new ArrayList<>();
-//        if (EnzyFile == null) {
-//            FindRestrictionSite fd = new FindRestrictionSite(GenomeFile, OutPath, Restriction, Prefix);
-//            fd.Run();
-//            File[] EnzyFileTemps = fd.getChrFragmentFile();
-//            EnzyFile = new BedFile[Chromosomes.length];
-//            for (int i = 0; i < Chromosomes.length; i++) {
-//                for (File EnzyFileTemp : EnzyFileTemps) {
-//                    if (EnzyFileTemp.getName().matches(".*\\." + Chromosomes[i].Name + "\\..*")) {
-//                        EnzyFile[i] = new BedFile(EnzyFileTemp);
-//                    }
-//                }
-//            }
-//        }
         //===============================================================================================
         //将bedpe分成染色体内的交互和染色体间的交互
         BedpeToSameAndDiff(BedpeFile, SameFile, DiffFile);
@@ -257,27 +244,7 @@ public class BedpeProcess {
                 }
             }
         }
-//        if (EnzyDir == null && GenomeFile == null && EnzyFile == null) {
-//            System.err.println(BedpeProcess.class.getName() + ":\tError! No Enzyme fragment file and Genome file");
-//            System.exit(1);
-//        }
-//        if (EnzyDir != null) {
-//            File[] files = EnzyDir.listFiles();
-//            if (files == null) {
-//                System.err.println(EnzyDir + " is not a directory");
-//                System.exit(1);
-//            }
-//            EnzyFile = new CommonFile[Chromosomes.length];
-//            for (int i = 0; i < Chromosomes.length; i++) {
-//                for (File file : files) {
-//                    if (file.getName().matches(".*\\." + Chromosomes[i].Name + "\\..*")) {
-//                        EnzyFile[i] = new CommonFile(file);
-//                    }
-//                }
-//            }
-//        }
         //===========================================================================
-//        AllEnzyFile = new BedFile(OutPath + "/" + Prefix + ".restriction_fragment.bed");
         SameFile = new BedpeFile(OutPath + "/" + Prefix + ".same.bedpe");
         DiffFile = new BedpeFile(OutPath + "/" + Prefix + ".diff.bedpe");
         FragmentDiffFile = new BedpeFile(OutPath + "/" + Prefix + ".diff.frag.bedpe");
