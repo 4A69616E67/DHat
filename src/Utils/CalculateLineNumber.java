@@ -4,6 +4,7 @@ import java.util.Date;
 
 import Component.File.CommonFile;
 import Component.tool.Tools;
+import Component.unit.Opts;
 
 /**
  * Created by snowf on 2019/2/17.
@@ -11,8 +12,8 @@ import Component.tool.Tools;
 public class CalculateLineNumber {
     public static void main(String[] args) {
         if (args.length < 1) {
-            System.out.println("Usage: java -cp DLO-HIC-AnalysisTools CalculateItemNumber <File1 [File2] ...>");
-            System.exit(0);
+            System.err.println("Usage: java -cp " + Opts.JarFile + " " + CalculateLineNumber.class.getName() + " <File1 [File2] ...>");
+            System.exit(1);
         }
         Thread[] t = new Thread[args.length];
         for (int i = 0; i < args.length; i++) {

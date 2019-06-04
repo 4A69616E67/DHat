@@ -73,12 +73,13 @@ $ java -jar DHat.jar -conf <configure file>
     $ cp Resource/default.conf ./test.conf
     ```
     edit *test.conf* and set value like following figure
-    *Note:* The *OutPath* you set must be existed
     ```
     $ vi test.conf
     ```
     ![](src/Resource/images/configure.png)
-
+    
+    *Note:* The *OutPath* you set must be existed.  
+    *Note:* If you don't know the **HalfLinker** or **Restriction**, you can set these parameters *blank*. The detail see [Linker detection](#Linker detection).
 1. Save your set and execute **DHat**
 
     ```
@@ -90,13 +91,13 @@ $ java -jar DHat.jar -conf <configure file>
 ---
 
 \#-------------------------ConfigFile: Such as follow----------------------------  
-
-\#------------------------------required parameters----------------------------  
+```
+#------------------------------required parameters----------------------------  
 InputFile = DLO-test.fastq  
 Restriction = T^TAA  
 HalfLinker = GTCGGAGAACCAGTAGCT  
 GenomeFile = Hg19.clean.fna  
-\#------------------------------optional parameters---------------------------  
+#------------------------------optional parameters---------------------------  
 OutPath = ./  
 Prefix = out  
 Index = Hg19  
@@ -106,7 +107,7 @@ Resolutions = 1000000
 DrawResolutions = 1000000  
 Thread = 4  
 Step = -  
-\#------------------------------advance parameters---------------------------  
+#------------------------------advance parameters---------------------------  
 MatchScore = 1  
 MisMatchScore = -1  
 InDelScore = -1  
@@ -119,8 +120,8 @@ AlignMisMatch = 0
 MinUniqueScore =  
 Iteration = true  
 DeBugLevel = 0  
-
-=================================================================================  
+```
+explain
 ```
 InputFile           String      Input File with Fastq Format
 Restriction         String      Sequence of restriction, enzyme cutting site expressed by "^"
@@ -148,17 +149,55 @@ AlignThread         Int         Threads in alignment (default    "2")
 AlignType           String      Reads type include ["Short","Long"] (default    "Short")
 AlignMisMatch       Int         MisMatch number in alignment    (default    "0")
 MinUniqueScore      Int         Minimum mapQ what reads mapQ less than it will be removed
-Iteration           Bool      "true" or "false" represent whether do iteration alignment
+Iteration           Bool        "true" or "false" represent whether do iteration alignment
 DeBugLevel          Int         0 means remain base output, 1 means more output, 2 means all output (default    "0")
 ```
 
-//if we set ReadsType "Short", we will align with "bwa aln",and if set "Long",we will align with "bwa mem"  
+*Note*: If we set **ReadsType** "Short", we will align with `bwa aln`,and if set "Long",we will align with `bwa mem`.  
+*Note*: **Step** include "PreProcess" "Alignment" "Bed2BedPe" "NoiseReduce" "BedPe2Inter" "MakeMatrix"  
+*Note*: If we want to run from "Alignment" to "MakeMatrix", we can set "Alignment - MakeMatrix"  
+*Note*: If we only want to run from "Alignment" to end, we can set "Alignment -"  
+*Note*: If we want to run all, we can set "-"
 
-//Step include "PreProcess" "Alignment" "Bed2BedPe" "NoiseReduce" "BedPe2Inter" "MakeMatrix"  
-//If we want to run from "Bed2BedPe" to "MakeMatrix", we can set "Bed2BedPe - MakeMatrix"  
-//If we only want to run from "Alignment" to end, we can set "SeProcess -"  
-//If we want to run all, we can set "-"
+##Other Script
+```
+java -cp DHat.jar Utils.BedToBedpe
+java -cp DHat.jar Utils.CalculateLineNumber
+java -cp DHat.jar Utils.CreateMatrix
+java -cp DHat.jar Utils.FastqExtract
+java -cp DHat.jar Utils.PetCluster
+java -cp DHat.jar Utils.RangeCount
+java -cp DHat.jar Utils.SamFilter
+java -cp DHat.jar Component.tool.Annotation
+java -cp DHat.jar Component.tool.LinkerDetection
+java -cp DHat.jar Bin.Guide    (need visual interface)
+```
 
-\#------------------------------Other Script-------------------------------  
-java -cp DLO-HIC-AnalysisTools.jar Utils.CreateMatrix  
-java -cp DLO-HIC-AnalysisTools.jar Bin.Guide    (need visual interface)  
+##Linker detection
+If you don't know the value of parameter **Restriction** or **HalfLinker**, you can try to use the follow methods.  
+1. use `java -cp DHat.jar Component.tool.LinkerDetection`  
+    **argument**  
+    ```
+    -i      input file (fastq or fastq.gz format)
+    -e      restriction sequence such as A^AGCTT (default 'autiomatic detection', 
+            if you don't want to detect restriction sequence, please set 'no')
+    -f      threshold (default 0.05, highter value means less data remain)
+    -k      k-mer length (default 10)
+    -n      sequence number use to processing (default 5000)
+    ```
+    **result**  
+    The first line is restriction sequence, following is linker sequence
+    ```
+    C^CGG
+    CGTCGGATTAGGTGTATCTAGATACACCTAATCCGACG	+	760.0
+    CGTCGGAGAACCAGTAGCTAGCTACTGGTTCTCCGACG	+	800.0
+    ```
+2. set **"Restriction"** or **"HalfLinker"** blank.  
+    for example 
+    ```
+    #------------------------------required parameters----------------------------  
+    InputFile = DLO-test.fastq  
+    Restriction = 
+    HalfLinker = 
+    GenomeFile = Hg19.clean.fna  
+    ```

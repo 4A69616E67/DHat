@@ -5,7 +5,6 @@ import Component.File.GffFile.GffFile;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.Date;
 import java.util.HashMap;
 
 /**
@@ -14,6 +13,9 @@ import java.util.HashMap;
 
 public class Annotation {
     public static void main(String[] args) throws IOException {
+        if (args.length <= 3) {
+
+        }
         BedpeFile inFile = new BedpeFile(args[0]);
         GffFile gffFile = new GffFile(args[1]);
         BedpeFile outFile = new BedpeFile(args[2]);
