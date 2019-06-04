@@ -2,6 +2,7 @@ package Component.tool;
 
 import Component.File.BedPeFile.BedpeFile;
 import Component.File.GffFile.GffFile;
+import Component.unit.Opts;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -14,7 +15,8 @@ import java.util.HashMap;
 public class Annotation {
     public static void main(String[] args) throws IOException {
         if (args.length <= 3) {
-
+            System.err.println("usage: java -cp " + Opts.JarFile + " " + Annotation.class.getName() + " <inpute bedpe file> <gff file> <output bedpe file>");
+            System.exit(1);
         }
         BedpeFile inFile = new BedpeFile(args[0]);
         GffFile gffFile = new GffFile(args[1]);
