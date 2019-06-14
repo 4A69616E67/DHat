@@ -121,6 +121,7 @@ public class LinkerFilterStat extends AbstractStat {
         UpDate();
         StringBuilder show = new StringBuilder();
         show.append("===================================Linker filter statistic======================================\n");
+        show.append("Multiple sequence alignment software:\t").append(Configure.Mafft).append("\n");
         show.append("Enzyme cutting site:\t").append(EnzymeCuttingSite).append("\n");
         show.append("Half-Linkers:\t").append(String.join(" ", HalfLinkers)).append("\n");
         show.append("Adapters:\t").append(String.join(" ", Adapters)).append("\n");

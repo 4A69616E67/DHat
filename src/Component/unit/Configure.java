@@ -2,9 +2,11 @@ package Component.unit;
 
 
 import Component.File.FastQFile.FastqFile;
+import Component.FragmentDigested.FragmentDigested;
 import Component.FragmentDigested.RestrictionEnzyme;
 import Component.Sequence.DNASequence;
 import Component.Software.Bwa;
+import Component.Software.MAFFT;
 import Component.Software.Python;
 import Component.tool.LinkerDetection;
 import Component.tool.Tools;
@@ -29,6 +31,7 @@ public class Configure {
     public static File OutPath = new File("./");
     public static String Prefix = "out";
     public static File Index;
+    public static File EnzymeFragmentPath = new File(OutPath + "/" + Opts.OutDir.EnzyFragDir);
     public static Chromosome[] Chromosome;
     public static String[] AdapterSeq;
     public static int[] Resolution = new int[]{1000000};
@@ -38,7 +41,8 @@ public class Configure {
     public static String Step = "-";
     //-----------------------------------------------------------------
     public static Component.Software.Python Python;
-    public static Component.Software.Bwa Bwa;//bwa
+    public static Component.Software.Bwa Bwa;//
+    public static MAFFT Mafft;
     public static String Bowtie = "";//bowtie
     public static int MatchScore = 1;
     public static int MisMatchScore = -1;
@@ -74,7 +78,7 @@ public class Configure {
     }
 
     public enum Optional {
-        OutPath("OutPath", Configure.OutPath), Prefix("Prefix", Configure.Prefix), Index("Index", Configure.Index), Chromosomes("Chromosomes", Tools.ArraysToString(Configure.Chromosome)), AdapterSeq("AdapterSeq", Tools.ArraysToString(Configure.AdapterSeq)), Resolutions("Resolutions", Tools.ArraysToString(Configure.Resolution)), DrawResolutions("DrawResolutions", Tools.ArraysToString(Configure.DrawResolution)), Thread("Thread", Configure.Thread), Step("Step", Configure.Step);
+        OutPath("OutPath", Configure.OutPath), Prefix("Prefix", Configure.Prefix), Index("Index", Configure.Index), EnzymeFragmentPath("EnzymeFragmentPath", Configure.EnzymeFragmentPath), Chromosomes("Chromosomes", Tools.ArraysToString(Configure.Chromosome)), AdapterSeq("AdapterSeq", Tools.ArraysToString(Configure.AdapterSeq)), Resolutions("Resolutions", Tools.ArraysToString(Configure.Resolution)), DrawResolutions("DrawResolutions", Tools.ArraysToString(Configure.DrawResolution)), Thread("Thread", Configure.Thread), Step("Step", Configure.Step);
         private String Key;
         public Object Value;
 
@@ -94,7 +98,7 @@ public class Configure {
     }
 
     public enum Advance {
-        Python("Python", Configure.Python), BWA("Bwa", Configure.Bwa), Bowtie("Bowtie", Configure.Bowtie), MatchScore("MatchScore", Configure.MatchScore), MisMatchScore("MisMatchScore", Configure.MisMatchScore), InDelScore("InDelScore", Configure.InDelScore), MinLinkerLen("MinLinkerLen", Configure.MinLinkerLen), MinReadsLength("MinReadsLength", Configure.MinReadsLen), MaxReadsLength("MaxReadsLength", Configure.MaxReadsLen), AlignThread("AlignThread", Configure.AlignThread), AlignType("AlignType", Configure.AlignType), AlignMisMatch("AlignMisMatch", Configure.AlignMisMatch), MinUniqueScore("MinUniqueScore", Configure.MinUniqueScore), Iteration("Iteration", Configure.Iteration), DeBugLevel("DeBugLevel", Configure.DeBugLevel);
+        Python("Python", Configure.Python), BWA("Bwa", Configure.Bwa), MAFFT("Mafft", Configure.Mafft), Bowtie("Bowtie", Configure.Bowtie), MatchScore("MatchScore", Configure.MatchScore), MisMatchScore("MisMatchScore", Configure.MisMatchScore), InDelScore("InDelScore", Configure.InDelScore), MinLinkerLen("MinLinkerLen", Configure.MinLinkerLen), MinReadsLength("MinReadsLength", Configure.MinReadsLen), MaxReadsLength("MaxReadsLength", Configure.MaxReadsLen), AlignThread("AlignThread", Configure.AlignThread), AlignType("AlignType", Configure.AlignType), AlignMisMatch("AlignMisMatch", Configure.AlignMisMatch), MinUniqueScore("MinUniqueScore", Configure.MinUniqueScore), Iteration("Iteration", Configure.Iteration), DeBugLevel("DeBugLevel", Configure.DeBugLevel);
         private String Key;
         public Object Value;
 
@@ -187,6 +191,7 @@ public class Configure {
         Optional.OutPath.Value = OutPath;
         Optional.Prefix.Value = Prefix;
         Optional.Index.Value = Index;
+        Optional.EnzymeFragmentPath.Value = EnzymeFragmentPath;
         Optional.Chromosomes.Value = Tools.ArraysToString(Chromosome);
         Optional.AdapterSeq.Value = Tools.ArraysToString(AdapterSeq);
         Optional.Resolutions.Value = Tools.ArraysToString(Resolution);
@@ -197,6 +202,7 @@ public class Configure {
         //----------------------------------------------
         Advance.Python.Value = Python;
         Advance.BWA.Value = Bwa;
+        Advance.MAFFT.Value = Mafft;
         Advance.MatchScore.Value = MatchScore;
         Advance.MisMatchScore.Value = MisMatchScore;
         Advance.MinLinkerLen.Value = MinLinkerLen;
@@ -232,6 +238,7 @@ public class Configure {
         OutPath = Optional.OutPath.Value != null ? new File(Optional.OutPath.Value.toString().trim()) : OutPath;
         Prefix = Optional.Prefix.Value != null ? Optional.Prefix.Value.toString().trim() : Prefix;
         Index = Optional.Index.Value != null ? new File(Optional.Index.Value.toString().trim()) : Index;
+        EnzymeFragmentPath = Optional.EnzymeFragmentPath.Value != null ? new File(Optional.EnzymeFragmentPath.Value.toString().trim()) : EnzymeFragmentPath;
         if (Optional.Chromosomes.Value != null && !Optional.Chromosomes.Value.toString().trim().equals("")) {
             String[] str = Optional.Chromosomes.Value.toString().trim().split("\\s+");
             Chromosome = new Chromosome[str.length];
@@ -246,6 +253,7 @@ public class Configure {
         Thread = GetIntItem(Optional.Thread.Value, Thread);
         Step = Optional.Step.Value != null ? Optional.Step.Value.toString() : Step;
         Opts.StepCheck(Step);
+        Opts.Step.FindEnzymeFragment.Execute = (EnzymeFragmentPath == null || !EnzymeFragmentPath.isDirectory());
         //----------------------------------------------------------------------------------------------------
         MatchScore = GetIntItem(Advance.MatchScore.Value, MatchScore);
         MisMatchScore = GetIntItem(Advance.MisMatchScore.Value, MisMatchScore);
@@ -260,6 +268,7 @@ public class Configure {
         Bwa = new Bwa(Advance.BWA.Value.toString());
         Bowtie = Advance.Bowtie.Value.toString();
         Python = new Python(Advance.Python.Value.toString());
+        Mafft = new MAFFT(Advance.MAFFT.Value.toString());
         DeBugLevel = Integer.parseInt(Advance.DeBugLevel.Value.toString());
     }
 

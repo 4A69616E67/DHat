@@ -137,7 +137,7 @@ public class FileTool {
         int[] CountArrays = new int[255];
         FastaItem[] ResItems;
         //----------------------------------------------------------------------
-        String ComLine = "mafft " + file.getPath();
+        String ComLine = Configure.Mafft.Exe() + " " + file.getPath();
         Opts.CommandOutFile.Append(ComLine + "\n");
         PrintWriter msa = new PrintWriter(MsaFile);
         if (Configure.DeBugLevel < 1) {

@@ -858,7 +858,6 @@ public class Main {
         MakeMatrixDir = Opts.CMStat.OutDir = new File(OutPath + "/" + Opts.OutDir.MatrixDir);
         ReportDir = new File(OutPath + "/" + Opts.OutDir.ReportDir);
         EnzyPath = new File(OutPath + "/" + Opts.OutDir.EnzyFragDir);
-        Opts.Step.FindEnzymeFragment.Execute = true;
         File[] CheckDir = new File[]{PreProcessDir, SeProcessDir, BedpeProcessDir, MakeMatrixDir, EnzyPath, ReportDir};
         for (File s : CheckDir) {
             if (!s.isDirectory() && !s.mkdir()) {
