@@ -31,7 +31,7 @@ public class MAFFT extends AbstractSoftware {
     protected String getVersion() {
         CommonFile temporaryFile = new CommonFile(Configure.OutPath + "/mafft.version.tmp");
         try {
-            Tools.ExecuteCommandStr(Execution + " --version", null, new PrintWriter(temporaryFile));
+            Component.System.CommandLine.run(Execution + " --version", null, new PrintWriter(temporaryFile));
             ArrayList<char[]> tempLines = temporaryFile.Read();
             Version = String.valueOf(tempLines.get(0));
         } catch (IOException | InterruptedException e) {

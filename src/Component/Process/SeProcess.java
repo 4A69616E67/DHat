@@ -188,9 +188,9 @@ public class SeProcess {
         }
         try {
             if (Configure.DeBugLevel < 1) {
-                Tools.ExecuteCommandStr(s, null, null);
+                Component.System.CommandLine.run(s, null, null);
             } else {
-                Tools.ExecuteCommandStr(s, null, new PrintWriter(System.err));
+                Component.System.CommandLine.run(s, null, new PrintWriter(System.err));
             }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -208,17 +208,17 @@ public class SeProcess {
                 CommandStr = Configure.Bwa.aln(IndexPrefix, fastqFile, SaiFile, MisMatchNum, Threads);
                 Opts.CommandOutFile.Append(CommandStr + "\n");
                 if (Configure.DeBugLevel < 1) {
-                    Tools.ExecuteCommandStr(CommandStr);//执行命令行
+                    Component.System.CommandLine.run(CommandStr);//执行命令行
                 } else {
-                    Tools.ExecuteCommandStr(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
+                    Component.System.CommandLine.run(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
                 }
                 System.out.println(new Date() + "\tsai to sam\t" + fastqFile.getName());
                 CommandStr = Configure.Bwa.samse(samFile, IndexPrefix, SaiFile, fastqFile);
                 Opts.CommandOutFile.Append(CommandStr + "\n");
                 if (Configure.DeBugLevel < 1) {
-                    Tools.ExecuteCommandStr(CommandStr, null, null);//执行命令行
+                    Component.System.CommandLine.run(CommandStr, null, null);//执行命令行
                 } else {
-                    Tools.ExecuteCommandStr(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
+                    Component.System.CommandLine.run(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
                 }
                 if (Configure.DeBugLevel < 1) {
                     System.out.println(new Date() + "\tDelete " + SaiFile.getName());
@@ -229,9 +229,9 @@ public class SeProcess {
                 Opts.CommandOutFile.Append(CommandStr + "\n");
                 PrintWriter sam = new PrintWriter(samFile);
                 if (Configure.DeBugLevel < 1) {
-                    Tools.ExecuteCommandStr(CommandStr, sam, null);//执行命令
+                    Component.System.CommandLine.run(CommandStr, sam, null);//执行命令
                 } else {
-                    Tools.ExecuteCommandStr(CommandStr, sam, new PrintWriter(System.err));//执行命令
+                    Component.System.CommandLine.run(CommandStr, sam, new PrintWriter(System.err));//执行命令
                 }
                 sam.close();
             } else {
@@ -242,9 +242,9 @@ public class SeProcess {
             CommandStr = Configure.Bowtie + " " + (fastqFile.FastqPhred() == Opts.FileFormat.Phred33 ? "--phred33" : "--phred64") + " -p " + Threads + " -x " + IndexPrefix + " -U " + fastqFile + " -S " + samFile;
             Opts.CommandOutFile.Append(CommandStr + "\n");
             if (Configure.DeBugLevel < 1) {
-                Tools.ExecuteCommandStr(CommandStr, null, null);//执行命令行
+                Component.System.CommandLine.run(CommandStr, null, null);//执行命令行
             } else {
-                Tools.ExecuteCommandStr(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
+                Component.System.CommandLine.run(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
             }
         } else {
             System.err.println(new Date() + ":\tError! No alignment software");

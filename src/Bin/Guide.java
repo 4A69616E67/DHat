@@ -1,6 +1,6 @@
 package Bin;
 
-import Component.tool.Tools;
+import Component.System.CommandLine;
 import Component.unit.Configure;
 import Component.unit.Opts;
 
@@ -9,9 +9,9 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.*;
+
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 public class Guide {
     private JButton Button_Configure;
@@ -65,7 +65,7 @@ public class Guide {
                             PrintWriter err = new PrintWriter(new PrintStream(new GuideOutStream(TextArea_Err)));
                             File configfile = new File(Opts.JarFile.getParent() + "/" + Configure.Prefix + ".conf");
                             Configure.SaveParameter(configfile);
-                            Tools.ExecuteCommandStr("java -jar " + Opts.JarFile + " -conf " + configfile, out, err);
+                            CommandLine.run("java -jar " + Opts.JarFile + " -conf " + configfile, out, err);
 
                         } catch (InterruptedException | IOException exp) {
                             exp.printStackTrace();
@@ -119,12 +119,12 @@ class GuideOutStream extends OutputStream {
     }
 
     @Override
-    public void write( byte[] b) throws IOException {
+    public void write(byte[] b) throws IOException {
         J.append(new String(b));
     }
 
     @Override
-    public void write( byte[] b, int off, int len) throws IOException {
+    public void write(byte[] b, int off, int len) throws IOException {
         J.append(new String(b, off, len));
         J.setCaretPosition(J.getText().length());
     }

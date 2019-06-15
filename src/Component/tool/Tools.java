@@ -173,69 +173,6 @@ public class Tools {
         return Num * UnitMap.get(PrimaryUint) / UnitMap.get(TransedUint);
     }
 
-    /**
-     * close the io stream when you redirect to a file
-     */
-    public static int ExecuteCommandStr(String CommandStr) throws IOException, InterruptedException {
-        return ExecuteCommandStr(CommandStr, null, null);
-    }
-
-    /**
-     * close the io stream when you redirect to a file
-     */
-
-    public static int ExecuteCommandStr(String CommandStr, PrintWriter Out, PrintWriter Error) throws IOException, InterruptedException {
-        int ExitValue;
-//        System.out.println(new Date() + "\t" + CommandStr);
-        Process P = Runtime.getRuntime().exec(CommandStr);
-        Thread OutThread = new Thread(() -> {
-            try {
-                String line;
-                BufferedReader bufferedReaderIn = new BufferedReader(new InputStreamReader(P.getInputStream()));
-                if (Out != null) {
-                    while ((line = bufferedReaderIn.readLine()) != null) {
-                        Out.print(line + "\n");
-                        Out.flush();
-                    }
-                    bufferedReaderIn.close();
-                } else {
-                    while (true) {
-                        if (bufferedReaderIn.readLine() == null) break;
-                    }
-                    bufferedReaderIn.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        Thread ErrThread = new Thread(() -> {
-            try {
-                String line;
-                BufferedReader bufferedReaderIn = new BufferedReader(new InputStreamReader(P.getErrorStream()));
-                if (Error != null) {
-                    while ((line = bufferedReaderIn.readLine()) != null) {
-                        Error.write(line + "\n");
-                        Error.flush();
-                    }
-                    bufferedReaderIn.close();
-                } else {
-                    while (true) {
-                        if (bufferedReaderIn.readLine() == null) break;
-                    }
-                    bufferedReaderIn.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        OutThread.start();
-        ErrThread.start();
-        OutThread.join();
-        ErrThread.join();
-        ExitValue = P.waitFor();
-        return ExitValue;
-    }
-
     public static int RemoveEmptyFile(File Dir) {
         int Count = 0;
         File[] FileList = Dir.listFiles();

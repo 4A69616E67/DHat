@@ -141,9 +141,9 @@ public class FileTool {
         Opts.CommandOutFile.Append(ComLine + "\n");
         PrintWriter msa = new PrintWriter(MsaFile);
         if (Configure.DeBugLevel < 1) {
-            Tools.ExecuteCommandStr(ComLine, msa, null);
+            Component.System.CommandLine.run(ComLine, msa, null);
         } else {
-            Tools.ExecuteCommandStr(ComLine, msa, new PrintWriter(System.err));
+            Component.System.CommandLine.run(ComLine, msa, new PrintWriter(System.err));
         }
         msa.close();
         MsaFile.ReadOpen();

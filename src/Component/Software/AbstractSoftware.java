@@ -44,7 +44,7 @@ public abstract class AbstractSoftware {
                 ComLine = "which " + Execution;
             }
             Opts.CommandOutFile.Append(ComLine + "\n");
-            Tools.ExecuteCommandStr(ComLine, new PrintWriter(temporaryFile), null);
+            Component.System.CommandLine.run(ComLine, new PrintWriter(temporaryFile), null);
             ArrayList<char[]> tempLines = temporaryFile.Read();
             Path = new File(String.valueOf(tempLines.get(0))).getParentFile();
             Valid = true;

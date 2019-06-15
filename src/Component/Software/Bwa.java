@@ -33,7 +33,7 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
     protected String getVersion() {
         CommonFile temporaryFile = new CommonFile(Configure.OutPath + "/bwa.version.tmp");
         try {
-            Tools.ExecuteCommandStr(Execution, null, new PrintWriter(temporaryFile));
+            Component.System.CommandLine.run(Execution, null, new PrintWriter(temporaryFile));
             ArrayList<char[]> tempLines = temporaryFile.Read();
             for (char[] tempLine : tempLines) {
                 String[] s = String.valueOf(tempLine).split("\\s*:\\s*");
