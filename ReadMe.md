@@ -102,6 +102,7 @@ OutPath = ./
 Prefix = out  
 Index = Hg19  
 Chromosomes =  
+EnzymeFragmentPath =
 AdapterSeq =  
 Resolutions = 1000000  
 DrawResolutions = 1000000  
@@ -134,6 +135,7 @@ Index               String      Index prefix of reference genome
 Chromosomes         String[]    Chromosome name must same as Chromosome name in reference genome    (default all in reference genome)
 AdapterSeq          String[]    Adapter sequence, null means don't remove adapter   (default    "")
                                 If you want to remove adapter but you don't know the adapter seq, you can set "Auto"
+EnzymeFragmentPath  Path        Enzyme fragment path, created by this tool. If you set it, program will not create  Enzyme fragment file.
 Resolutions         Int[]       Bin size when create interaction matrix  (default    "1000000" byte)
 DrawResolution      Int[]       Resolution for you draw heat-map    (default    "100000")
 Thread              Int         Number of threads    (default    "4")
@@ -154,8 +156,8 @@ DeBugLevel          Int         0 means remain base output, 1 means more output,
 ```
 
 *Note*: If we set **ReadsType** "Short", we will align with `bwa aln`,and if set "Long",we will align with `bwa mem`.  
-*Note*: **Step** include "PreProcess" "Alignment" "Bed2BedPe" "NoiseReduce" "BedPe2Inter" "MakeMatrix"  
-*Note*: If we want to run from "Alignment" to "MakeMatrix", we can set "Alignment - MakeMatrix"  
+*Note*: **Step** include "PreProcess" "Alignment" "Bed2BedPe" "NoiseReduce" "BedPe2Inter" "CreateMatrix"  
+*Note*: If we want to run from "Alignment" to "CreateMatrix", we can set "Alignment - CreateMatrix"  
 *Note*: If we only want to run from "Alignment" to end, we can set "Alignment -"  
 *Note*: If we want to run all, we can set "-"
 

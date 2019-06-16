@@ -81,26 +81,26 @@ $ java -jar DHat.jar -conf <configure file>
 
     Program will print the configure information shortly
 
----
 
-\#-------------------------ConfigFile: Such as follow----------------------------  
+#-------------------------ConfigFile: Such as follow----------------------------
 
-\#------------------------------required parameters----------------------------  
+#------------------------------required parameters----------------------------
 InputFile = DLO-test.fastq  
 Restriction = T^TAA  
 HalfLinker = GTCGGAGAACCAGTAGCT
 GenomeFile = Hg19.clean.fna  
-\#------------------------------optional parameters---------------------------  
+#------------------------------optional parameters---------------------------
 OutPath = ./  
 Prefix = out  
 Index = Hg19  
 Chromosomes =  
 AdapterSeq =  auto
+EnzymeFragmentPath =
 Resolutions = 1000000  
 DrawResolutions = 1000000  
 Thread = 4  
 Step = -  
-\#------------------------------advance parameters---------------------------  
+#------------------------------advance parameters---------------------------
 MatchScore = 1  
 MisMatchScore = -1  
 InDelScore = -1  
@@ -114,8 +114,7 @@ MinUniqueScore =
 Iteration = true  
 DeBugLevel = 0  
 
-=================================================================================  
-```
+=================================================================================
 InputFile           String      Input File with Fastq Format
 Restriction         String      Sequence of restriction, enzyme cutting site expressed by "^"
 HalfLinker          String[]    Halflinker sequences (different half-linker separated with a space)
@@ -127,6 +126,7 @@ Index               String      Index prefix of reference genome
 Chromosomes         String[]    Chromosome name must same as Chromosome name in reference genome    (default all in reference genome)
 AdapterSeq          String[]    Adapter sequence, null means don't remove adapter   (default    "")
                                 If you want to remove adapter but you don't know the adapter seq, you can set "Auto"
+EnzymeFragmentPath  Path        Enzyme fragment path, created by this tool. If you set it, program will not create  Enzyme fragment file
 Resolutions         Int[]       Bin size when create interaction matrix  (default    "1000000" byte)
 DrawResolution      Int[]       Resolution for you draw heat-map    (default    "100000")
 Thread              Int         Number of threads    (default    "4")
@@ -144,16 +144,22 @@ AlignMisMatch       Int         MisMatch number in alignment    (default    "0")
 MinUniqueScore      Int         Minimum mapQ what reads mapQ less than it will be removed
 Iteration           Bool      "true" or "false" represent whether do iteration alignment
 DeBugLevel          Int         0 means remain base output, 1 means more output, 2 means all output (default    "0")
-```
 
 //if we set ReadsType "Short", we will align with "bwa aln",and if set "Long",we will align with "bwa mem"  
 
-//Step include "PreProcess" "Alignment" "NoiseReduce" "BedPe2Inter" "MakeMatrix"
-//If we want to run from "PreProcess" to "MakeMatrix", we can set "PreProcess - MakeMatrix"
+//Step include "PreProcess" "Alignment" "NoiseReduce" "BedPe2Inter" "CreateMatrix"
+//If we want to run from "PreProcess" to "CreateMatrix", we can set "PreProcess - CreateMatrix"
 //If we only want to run from "Alignment" to end, we can set "Alignment -"
 //If we want to run all, we can set "-"
 
-\#------------------------------Other Script-------------------------------  
-java -cp DLO-HIC-AnalysisTools.jar Utils.CreateMatrix  
-java -cp DLO-HIC-AnalysisTools.jar Component.tool.AdapterDetection
-java -cp DLO-HIC-AnalysisTools.jar Bin.Guide    (need visual interface)
+#------------------------------Other Script-------------------------------
+java -cp DHat.jar Utils.BedToBedpe
+java -cp DHat.jar Utils.CalculateLineNumber
+java -cp DHat.jar Utils.CreateMatrix
+java -cp DHat.jar Utils.FastqExtract
+java -cp DHat.jar Utils.PetCluster
+java -cp DHat.jar Utils.RangeCount
+java -cp DHat.jar Utils.SamFilter
+java -cp DHat.jar Component.tool.Annotation
+java -cp DHat.jar Component.tool.LinkerDetection
+java -cp DHat.jar Bin.Guide    (need visual interface)
