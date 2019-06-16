@@ -460,14 +460,14 @@ public class Main {
         }
         //==============================================================================================================
         CommonFile InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".all.interaction_distance_distribution.data");
-        Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, Integer.MAX_VALUE), "1M", 0, 10);
+        Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, Integer.MAX_VALUE), "1M", 2, 10);
         Opts.NRStat.InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
         ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat.InteractionRangeDistributionPng;
         Opts.CommandOutFile.Append(ComLine + "\n");
         Component.System.CommandLine.run(ComLine, null, new PrintWriter(System.err));
         //----------------------------------
         InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".50M.interaction_distance_distribution.data");
-        Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, 50000000), "1M", 0, 10);
+        Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, 50000000), "1M", 2, 10);
         Opts.NRStat._50M_InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
         ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._50M_InteractionRangeDistributionPng;
         Opts.CommandOutFile.Append(ComLine + "\n");
@@ -488,24 +488,6 @@ public class Main {
         Component.System.CommandLine.run(ComLine, null, new PrintWriter(System.err));
 
         //---------------------------------------
-//                Stat.InterAction.FinalBedpeFile = new BedpeFile(FinalBedpeFile);
-//                Stat.InterAction.FinalBedpeNum = Stat.InterAction.FinalBedpeFile.getItemNum();
-//                Stat.InterAction.IntraActionNum = new BedpeFile(SameBedpeFile).getItemNum();
-//                Stat.InterAction.InterActionNum = Stat.InterAction.FinalBedpeNum - Stat.InterAction.IntraActionNum;
-
-//            Opts.OVStat.RangeThreshold = 5000;
-//                    long[] range = SameBedpeFile.RangeCount(new Region(0, 5000), new Region(5000, Integer.MAX_VALUE), 1);
-//            Opts.OVStat.ShortRange = SameBedpeFile.DistanceCount(0, 5000, 1);
-
-//                Opts.OVStat.ShortRange = (long) Stat.InterAction.ShortRegionNum;
-//                Stat.InterAction.LongRegionNum = Stat.InterAction.IntraActionNum - Stat.InterAction.ShortRegionNum;
-//                File InterActionLengthDisData = new File(Stat.getDataDir() + "/InterActionLengthDistribution.data");
-//                Statistic.PowerLaw(SameBedpeFile, 1000000, InterActionLengthDisData);
-//                File InterActionLengthDisPng = new File(Stat.getImageDir() + "/" + InterActionLengthDisData.getName().replace(".data", ".png"));
-//                String ComLine = Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterActionLengthDisData + " -o " + InterActionLengthDisPng;
-//                Opts.CommandOutFile.Append(ComLine + "\n");
-//                Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
-//                Configure.InterActionDistanceDisPng = InterActionLengthDisPng;
 
         //=================================================Make Matrix==================================================
         Date matrixTime = new Date();
@@ -607,7 +589,6 @@ public class Main {
             System.exit(1);
         }
         IndexPrefix = new File(IndexDir + "/" + genomefile.getName());
-//        Stat.ComInfor.IndexPrefix = IndexPrefix;
         SeProcess.CreateIndex(genomefile, IndexPrefix, Threads);
     }
 
@@ -623,30 +604,6 @@ public class Main {
                 FDM.Threads = Threads;
                 FDM.run(new FastaFile(GenomeFile.getPath()));
                 Chromosomes = FDM.getChromosomes();
-//                System.out.println(new Date() + "\tStart to find restriction fragment");
-//                if (!EnzyPath.isDirectory() && !EnzyPath.mkdir()) {
-//                    System.err.println(new Date() + "\tCreate " + EnzyPath + " false !");
-//                }
-//                FindRestrictionSite fr = new FindRestrictionSite(GenomeFile, EnzyPath, Restriction, EnzyFilePrefix);
-//                ArrayList<Chromosome> TempChrs = fr.Run();//取出基因组文件中所有染色体的大小信息
-//                File[] TempChrEnzyFile = fr.getChrFragmentFile();
-////                    ChrSizeFile = fr.getChrSizeFile();
-//                //
-//                for (int i = 0; i < Chromosomes.length; i++) {
-//                    boolean flag = false;
-//                    for (int j = 0; j < TempChrs.size(); j++) {
-//                        if (TempChrs.get(j).Name.equals(Chromosomes[i].Name)) {
-//                            Chromosomes[i] = TempChrs.get(j);
-//                            ChrEnzyFile[i] = new CommonFile(TempChrEnzyFile[j]);
-//                            flag = true;
-//                            break;
-//                        }
-//                    }
-//                    if (!flag) {
-//                        System.err.println(new Date() + "\t[Main:FindRestrictionFragment]\tWarning! No " + Chromosomes[i].Name + " in genomic file");
-//                    }
-//                }
-//                System.out.println(new Date() + "\tEnd find restriction fragment");
             } catch (IOException e) {
                 e.printStackTrace();
             }
