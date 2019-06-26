@@ -1,3 +1,4 @@
+import java.awt.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -8,13 +9,16 @@ import Component.File.BedFile.BedFile;
 import Component.File.BedPeFile.BedpeFile;
 import Component.File.FastQFile.FastqFile;
 import Component.File.FastaFile.FastaFile;
+import Component.File.MatrixFile.MatrixFile;
 import Component.File.SamFile.SamFile;
 import Component.FragmentDigested.FragmentDigested;
 import Component.FragmentDigested.RestrictionEnzyme;
 import Component.Process.BedpeProcess;
 import Component.Process.PreProcess;
 import Component.Process.SeProcess;
-import Component.System.Qsub;
+import Component.Software.Bwa;
+import Component.SystemDhat.CommandLineDhat;
+import Component.SystemDhat.Qsub;
 import Component.tool.*;
 import Component.unit.*;
 import org.apache.commons.cli.*;
@@ -126,8 +130,8 @@ public class Main {
                 String SubmitId = new Qsub(PbsFile, "1", Integer.parseInt(Configure.Optional.Thread.Value.toString()), Opts.MaxMemory, Configure.Optional.Prefix.Value.toString()).run();
                 System.out.println(SubmitId);
 //                comline = "qsub -d ./ -l nodes=1:ppn=" + Configure.Optional.Thread.Value.toString() + ",mem=" + (int) Math.ceil(Opts.MaxMemory / Math.pow(10, 9)) + "g -N " + Configure.Optional.Prefix.Value.toString() + " " + PbsFile;
-//                System.out.println(comline);
-//                Component.System.CommandLine.run(comline, new PrintWriter(System.out), new PrintWriter(System.err));
+//                SystemDhat.out.println(comline);
+//                Component.SystemDhat.CommandLine.run(comline, new PrintWriter(SystemDhat.out), new PrintWriter(SystemDhat.err));
                 System.exit(0);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -143,14 +147,6 @@ public class Main {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         //==============================================测试区==========================================================
-//        TestFile.ReadOpen();
-//        String[] Lines;
-//        while ((Lines = TestFile.ReadItemLine()) != null) {
-//            for (int i = 0; i < Lines.length; i++) {
-//                System.out.println(Lines[i]);
-//            }
-//        }
-
 //        MemoryUsage memoryUsage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
 //        long maxMemorySize = memoryUsage.getMax();
 //        long usedMemorySize = memoryUsage.getUsed();
@@ -228,7 +224,7 @@ public class Main {
                     Opts.LFStat.AdapterBaseDisPng = new File(Stat.getImageDir() + "/" + StatFile.getName() + ".png");
                     String ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t stackbar -y Percentage --title Base_Frequency" + " -i " + StatFile + " -o " + Opts.LFStat.AdapterBaseDisPng;
                     Opts.CommandOutFile.Append(ComLine + "\n");
-                    Component.System.CommandLine.run(ComLine, null, new PrintWriter(System.err));
+                    CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
                     System.out.println(new Date() + "\tDetected adapter seq:\t" + AdapterSeq[0]);
                 }
                 //将Adapter序列输出到文件中
@@ -253,7 +249,7 @@ public class Main {
         Opts.LFStat.LinkerScoreDisPng = new File(Stat.getImageDir() + "/" + LinkerDisFile.getName().replace(".data", ".png"));
         String ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -i " + LinkerDisFile + " -t bar -o " + Opts.LFStat.LinkerScoreDisPng;
         Opts.CommandOutFile.Append(ComLine + "\n");
-        Component.System.CommandLine.run(ComLine, null, new PrintWriter(System.err));
+        CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
         CommonFile[] ReadsLenDisFile = new CommonFile[LinkerSeq.length];
         Stat.ReadsLengthDisBase64 = new String[LinkerSeq.length];
         for (int i = 0; i < ReadsLenDisFile.length; i++) {
@@ -264,7 +260,7 @@ public class Main {
             Opts.LFStat.linkers[i].ReadLengthDisPng = new File(Stat.getImageDir() + "/" + ReadsLenDisFile[i].getName().replace(".data", ".png"));
             ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t bar -y Count --title " + LinkerSeq[i].getType() + " -i " + ReadsLenDisFile[i] + " -o " + Opts.LFStat.linkers[i].ReadLengthDisPng;
             Opts.CommandOutFile.Append(ComLine + "\n");
-            Component.System.CommandLine.run(ComLine, null, new PrintWriter(System.err));
+            CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
         }
         //==============================================================================================================
         LinkerFastqFileR1 = preprocess.getFastqR1File();
@@ -301,7 +297,7 @@ public class Main {
             for (int i = 0; i < ValidLinkerSeq.length; i++) {
                 System.out.println(new Date() + "\tStart Alignment");
                 //==========================================Create Index========================================================
-                if (IndexPrefix == null || IndexPrefix.getName().equals("")) {
+                if (IndexPrefix == null || !Bwa.IndexCheck(IndexPrefix)) {
                     CreateIndex(GenomeFile);
                 }
                 Opts.ALStat.GenomeIndex = IndexPrefix;
@@ -464,28 +460,28 @@ public class Main {
         Opts.NRStat.InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
         ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat.InteractionRangeDistributionPng;
         Opts.CommandOutFile.Append(ComLine + "\n");
-        Component.System.CommandLine.run(ComLine, null, new PrintWriter(System.err));
+        CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
         //----------------------------------
         InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".50M.interaction_distance_distribution.data");
         Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, 50000000), "1M", 2, 10);
         Opts.NRStat._50M_InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
         ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._50M_InteractionRangeDistributionPng;
         Opts.CommandOutFile.Append(ComLine + "\n");
-        Component.System.CommandLine.run(ComLine, null, new PrintWriter(System.err));
+        CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
         //------------------------------------
         InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".10M.interaction_distance_distribution.data");
         Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, 10000000), "100k", 2, 10);
         Opts.NRStat._10M_InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
         ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._10M_InteractionRangeDistributionPng;
         Opts.CommandOutFile.Append(ComLine + "\n");
-        Component.System.CommandLine.run(ComLine, null, new PrintWriter(System.err));
+        CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
         //---------------------------------------
         InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".2M.interaction_distance_distribution.data");
         Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, 2000000), "10k", 2, 10);
         Opts.NRStat._2M_InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
         ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._2M_InteractionRangeDistributionPng;
         Opts.CommandOutFile.Append(ComLine + "\n");
-        Component.System.CommandLine.run(ComLine, null, new PrintWriter(System.err));
+        CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
 
         //---------------------------------------
 
@@ -762,7 +758,7 @@ public class Main {
         if (Configure.AdapterSeq != null && Configure.AdapterSeq.length > 0) {
             AdapterSeq = Configure.AdapterSeq;
         }
-        if (Configure.Index != null && !Configure.Index.toString().trim().equals("")) {
+        if (Configure.Index != null && Bwa.IndexCheck(Configure.Index)) {
             IndexPrefix = Configure.Index;
             Opts.Step.CreateIndex.Execute = false;
         }

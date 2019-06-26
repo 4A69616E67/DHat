@@ -1,6 +1,6 @@
 package Bin;
 
-import Component.System.CommandLine;
+import Component.SystemDhat.CommandLineDhat;
 import Component.unit.Configure;
 import Component.unit.Opts;
 
@@ -36,8 +36,8 @@ public class Guide {
     }
 
     public Guide() {
-//        System.setOut(new PrintStream(new GuideOutStream(TextArea_Out)));
-//        System.setErr(new PrintStream(new GuideOutStream(TextArea_Err)));
+//        SystemDhat.setOut(new PrintStream(new GuideOutStream(TextArea_Out)));
+//        SystemDhat.setErr(new PrintStream(new GuideOutStream(TextArea_Err)));
         Button_Configure.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -65,7 +65,7 @@ public class Guide {
                             PrintWriter err = new PrintWriter(new PrintStream(new GuideOutStream(TextArea_Err)));
                             File configfile = new File(Opts.JarFile.getParent() + "/" + Configure.Prefix + ".conf");
                             Configure.SaveParameter(configfile);
-                            CommandLine.run("java -jar " + Opts.JarFile + " -conf " + configfile, out, err);
+                            CommandLineDhat.run("java -jar " + Opts.JarFile + " -conf " + configfile, out, err);
 
                         } catch (InterruptedException | IOException exp) {
                             exp.printStackTrace();

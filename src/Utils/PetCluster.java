@@ -65,8 +65,8 @@ public class PetCluster {
 //            switch (InFile.BedpeDetect()) {
 //                case BedpePointFormat:
 //                    if (Length == 0) {
-//                        System.err.println("Error! extend length is 0");
-//                        System.exit(1);
+//                        SystemDhat.err.println("Error! extend length is 0");
+//                        SystemDhat.exit(1);
 //                    }
 //                    ChrIndex = new int[]{0, 2};
 //                    RegionIndex = new int[]{1, 1, 3, 3};
@@ -80,8 +80,8 @@ public class PetCluster {
 //                    MaxLength = 7;
 //                    break;
 //                default:
-//                    System.err.println(PetCluster.class.getName() + ":\tError format !");
-//                    System.exit(1);
+//                    SystemDhat.err.println(PetCluster.class.getName() + ":\tError format !");
+//                    SystemDhat.exit(1);
 //            }
 //            //---------------------对每两条染色体的交创建一个cluster列表--------------------
 //            String Line;

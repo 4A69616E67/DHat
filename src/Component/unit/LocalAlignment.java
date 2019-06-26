@@ -175,7 +175,7 @@ public class LocalAlignment {
 //            }
 //        }
 //        if (debugLevel > 2) {
-//            System.out.println("SeqIndex = " + (SeqIndex + 1) + "; LinkerIndex = " + (LinkerIndex + 1));
+//            SystemDhat.out.println("SeqIndex = " + (SeqIndex + 1) + "; LinkerIndex = " + (LinkerIndex + 1));
 //        }
 //    }
 //        alignedStr1.reverse();
@@ -184,12 +184,12 @@ public class LocalAlignment {
 //        if(debugLevel >2)
 //
 //    {
-//        System.out.println("seq: " + seq);
-//        System.out.println("linker: " + linker);
-//        System.out.println("aligned Score: " + Score);
-//        System.out.println("aligned seq      : " + getAlignedStr1());
-//        System.out.println("aligned strStatus : " + getAlignedStatus());
-//        System.out.println("aligned linker      : " + getAlignedStr2());
+//        SystemDhat.out.println("seq: " + seq);
+//        SystemDhat.out.println("linker: " + linker);
+//        SystemDhat.out.println("aligned Score: " + Score);
+//        SystemDhat.out.println("aligned seq      : " + getAlignedStr1());
+//        SystemDhat.out.println("aligned strStatus : " + getAlignedStatus());
+//        SystemDhat.out.println("aligned linker      : " + getAlignedStr2());
 //    }
 
     public void PrintMatrix() {

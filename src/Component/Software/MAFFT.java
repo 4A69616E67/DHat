@@ -1,7 +1,7 @@
 package Component.Software;
 
 import Component.File.CommonFile;
-import Component.tool.Tools;
+import Component.SystemDhat.CommandLineDhat;
 import Component.unit.Configure;
 
 import java.io.IOException;
@@ -31,7 +31,7 @@ public class MAFFT extends AbstractSoftware {
     protected String getVersion() {
         CommonFile temporaryFile = new CommonFile(Configure.OutPath + "/mafft.version.tmp");
         try {
-            Component.System.CommandLine.run(Execution + " --version", null, new PrintWriter(temporaryFile));
+            CommandLineDhat.run(Execution + " --version", null, new PrintWriter(temporaryFile));
             ArrayList<char[]> tempLines = temporaryFile.Read();
             Version = String.valueOf(tempLines.get(0));
         } catch (IOException | InterruptedException e) {

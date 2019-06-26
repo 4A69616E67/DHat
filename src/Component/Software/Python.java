@@ -1,7 +1,7 @@
 package Component.Software;
 
 import Component.File.CommonFile;
-import Component.tool.Tools;
+import Component.SystemDhat.CommandLineDhat;
 import Component.unit.Configure;
 
 import java.io.IOException;
@@ -31,7 +31,7 @@ public class Python extends AbstractSoftware {
     protected String getVersion() {
         CommonFile temporaryFile = new CommonFile(Configure.OutPath + "/python.version.tmp");
         try {
-            Component.System.CommandLine.run(Execution + " -V", null, new PrintWriter(temporaryFile));
+            CommandLineDhat.run(Execution + " -V", null, new PrintWriter(temporaryFile));
             ArrayList<char[]> lines = temporaryFile.Read();
             Version = String.valueOf(lines.get(0)).split("\\s+")[1];
         } catch (IOException | InterruptedException | IndexOutOfBoundsException e) {
@@ -51,7 +51,7 @@ public class Python extends AbstractSoftware {
         String commandLine = Path + "/Scripts/pip list";
         CommonFile temporaryFile = new CommonFile(Configure.OutPath + "/python.package_list.tmp");
         try {
-            Component.System.CommandLine.run(commandLine, new PrintWriter(temporaryFile), null);
+            CommandLineDhat.run(commandLine, new PrintWriter(temporaryFile), null);
             ArrayList<char[]> lines = temporaryFile.Read();
             temporaryFile.delete();
             for (char[] c : lines) {

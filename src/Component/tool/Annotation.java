@@ -32,9 +32,9 @@ public class Annotation {
         if (thread <= 0) {
             thread = 1;
         }
-//        System.out.println(new Date() + "\tStart");
+//        SystemDhat.out.println(new Date() + "\tStart");
         HashMap<String, HashMap<String, long[]>> StatMAp = inFile.Annotation(gffFile, outFile, thread);
-//        System.out.println(new Date() + "\tSuccess");
+//        SystemDhat.out.println(new Date() + "\tSuccess");
         System.out.print("Item");
         for (String s : StatMAp.keySet()) {
             System.out.print("\t" + s);

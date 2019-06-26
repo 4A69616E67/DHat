@@ -4,7 +4,7 @@ import Component.File.FastQFile.FastqFile;
 import Component.File.FastQFile.FastqItem;
 import Component.File.FastaFile.FastaFile;
 import Component.File.FastaFile.FastaItem;
-import Component.tool.Tools;
+import Component.SystemDhat.CommandLineDhat;
 import Component.unit.*;
 
 import java.io.*;
@@ -141,9 +141,9 @@ public class FileTool {
         Opts.CommandOutFile.Append(ComLine + "\n");
         PrintWriter msa = new PrintWriter(MsaFile);
         if (Configure.DeBugLevel < 1) {
-            Component.System.CommandLine.run(ComLine, msa, null);
+            CommandLineDhat.run(ComLine, msa, null);
         } else {
-            Component.System.CommandLine.run(ComLine, msa, new PrintWriter(System.err));
+            CommandLineDhat.run(ComLine, msa, new PrintWriter(System.err));
         }
         msa.close();
         MsaFile.ReadOpen();

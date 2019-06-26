@@ -2,7 +2,7 @@ package Component.Software;
 
 
 import Component.File.CommonFile;
-import Component.tool.Tools;
+import Component.SystemDhat.CommandLineDhat;
 import Component.unit.Configure;
 
 import java.io.File;
@@ -33,7 +33,7 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
     protected String getVersion() {
         CommonFile temporaryFile = new CommonFile(Configure.OutPath + "/bwa.version.tmp");
         try {
-            Component.System.CommandLine.run(Execution, null, new PrintWriter(temporaryFile));
+            CommandLineDhat.run(Execution, null, new PrintWriter(temporaryFile));
             ArrayList<char[]> tempLines = temporaryFile.Read();
             for (char[] tempLine : tempLines) {
                 String[] s = String.valueOf(tempLine).split("\\s*:\\s*");
@@ -52,7 +52,9 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
     /**
      * Usage:   bwa index [options] <in.fasta>
      * <p>
-     * Options: -a STR    BWT construction algorithm: bwtsw, is or rb2 [auto]
+     * Options:
+     * </p>
+     * -a STR    BWT construction algorithm: bwtsw, is or rb2 [auto]
      * -p STR    prefix of the index [same as fasta name]
      * -b INT    block size for the bwtsw algorithm (effective with -a bwtsw) [10000000]
      * -6        index files named as <in.fasta>.64.* instead of <in.fasta>.*
@@ -97,6 +99,26 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
 
     public String samse(File samFile, File index, File saiFile, File fastqFile) {
         return Execution + " samse -f " + samFile + " " + index + " " + saiFile + " " + fastqFile;
+    }
+
+    public static boolean IndexCheck(File prefix) {
+        File amb, ann, bwt, pac, sa;
+        amb = new File(prefix + ".amb");
+        ann = new File(prefix + ".ann");
+        bwt = new File(prefix + ".bwt");
+        pac = new File(prefix + ".pac");
+        sa = new File(prefix + ".sa");
+        File[] list = new File[]{amb, ann, bwt, pac, sa};
+        System.out.println("[Check index]\tCheck index file ......");
+        for (File l : list) {
+            System.out.println("[Check index]\tCheck " + l);
+            if (!l.isFile()) {
+                System.err.println("[Check index]\tWarning! Can't find " + l);
+                return false;
+            }
+        }
+        System.out.println("[Check index]\tComplete index file");
+        return true;
     }
 
     @Override

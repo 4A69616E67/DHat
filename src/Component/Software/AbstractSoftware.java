@@ -1,11 +1,10 @@
 package Component.Software;
 
 import Component.File.CommonFile;
-import Component.tool.Tools;
+import Component.SystemDhat.CommandLineDhat;
 import Component.unit.Configure;
 import Component.unit.Opts;
 
-import javax.sound.midi.SoundbankResource;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -44,7 +43,7 @@ public abstract class AbstractSoftware {
                 ComLine = "which " + Execution;
             }
             Opts.CommandOutFile.Append(ComLine + "\n");
-            Component.System.CommandLine.run(ComLine, new PrintWriter(temporaryFile), null);
+            CommandLineDhat.run(ComLine, new PrintWriter(temporaryFile), null);
             ArrayList<char[]> tempLines = temporaryFile.Read();
             Path = new File(String.valueOf(tempLines.get(0))).getParentFile();
             Valid = true;

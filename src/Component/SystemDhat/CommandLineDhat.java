@@ -1,4 +1,4 @@
-package Component.System;
+package Component.SystemDhat;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,13 +9,13 @@ import java.io.PrintWriter;
  * Created by snowf on 2019/6/15.
  */
 
-public class CommandLine {
+public class CommandLineDhat {
     /**
      * close the io stream when you redirect to a file
      */
     public static int run(String CommandStr, PrintWriter Out, PrintWriter Error) throws IOException, InterruptedException {
         int ExitValue;
-//        System.out.println(new Date() + "\t" + CommandStr);
+//        SystemDhat.out.println(new Date() + "\t" + CommandStr);
         Process P = Runtime.getRuntime().exec(CommandStr);
         Thread OutThread = new Thread(() -> {
             try {

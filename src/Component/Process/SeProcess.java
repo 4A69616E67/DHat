@@ -8,6 +8,8 @@ import Component.File.*;
 import Component.File.BedFile.BedFile;
 import Component.File.FastQFile.FastqFile;
 import Component.File.SamFile.SamFile;
+import Component.Software.Bwa;
+import Component.SystemDhat.CommandLineDhat;
 import Component.tool.Tools;
 import Component.unit.Configure;
 import Component.unit.Opts;
@@ -95,7 +97,7 @@ public class SeProcess {
      */
     public void Run() throws IOException, InterruptedException {
         //========================================================================================
-        if (IndexPrefix == null) {
+        if (IndexPrefix == null || !Bwa.IndexCheck(IndexPrefix)) {
             CreateIndex(GenomeFile, GenomeFile, Threads);
         }
         //比对
@@ -188,9 +190,9 @@ public class SeProcess {
         }
         try {
             if (Configure.DeBugLevel < 1) {
-                Component.System.CommandLine.run(s, null, null);
+                CommandLineDhat.run(s, null, null);
             } else {
-                Component.System.CommandLine.run(s, null, new PrintWriter(System.err));
+                CommandLineDhat.run(s, null, new PrintWriter(System.err));
             }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -208,17 +210,17 @@ public class SeProcess {
                 CommandStr = Configure.Bwa.aln(IndexPrefix, fastqFile, SaiFile, MisMatchNum, Threads);
                 Opts.CommandOutFile.Append(CommandStr + "\n");
                 if (Configure.DeBugLevel < 1) {
-                    Component.System.CommandLine.run(CommandStr);//执行命令行
+                    CommandLineDhat.run(CommandStr);//执行命令行
                 } else {
-                    Component.System.CommandLine.run(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
+                    CommandLineDhat.run(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
                 }
                 System.out.println(new Date() + "\tsai to sam\t" + fastqFile.getName());
                 CommandStr = Configure.Bwa.samse(samFile, IndexPrefix, SaiFile, fastqFile);
                 Opts.CommandOutFile.Append(CommandStr + "\n");
                 if (Configure.DeBugLevel < 1) {
-                    Component.System.CommandLine.run(CommandStr, null, null);//执行命令行
+                    CommandLineDhat.run(CommandStr, null, null);//执行命令行
                 } else {
-                    Component.System.CommandLine.run(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
+                    CommandLineDhat.run(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
                 }
                 if (Configure.DeBugLevel < 1) {
                     System.out.println(new Date() + "\tDelete " + SaiFile.getName());
@@ -229,9 +231,9 @@ public class SeProcess {
                 Opts.CommandOutFile.Append(CommandStr + "\n");
                 PrintWriter sam = new PrintWriter(samFile);
                 if (Configure.DeBugLevel < 1) {
-                    Component.System.CommandLine.run(CommandStr, sam, null);//执行命令
+                    CommandLineDhat.run(CommandStr, sam, null);//执行命令
                 } else {
-                    Component.System.CommandLine.run(CommandStr, sam, new PrintWriter(System.err));//执行命令
+                    CommandLineDhat.run(CommandStr, sam, new PrintWriter(System.err));//执行命令
                 }
                 sam.close();
             } else {
@@ -242,9 +244,9 @@ public class SeProcess {
             CommandStr = Configure.Bowtie + " " + (fastqFile.FastqPhred() == Opts.FileFormat.Phred33 ? "--phred33" : "--phred64") + " -p " + Threads + " -x " + IndexPrefix + " -U " + fastqFile + " -S " + samFile;
             Opts.CommandOutFile.Append(CommandStr + "\n");
             if (Configure.DeBugLevel < 1) {
-                Component.System.CommandLine.run(CommandStr, null, null);//执行命令行
+                CommandLineDhat.run(CommandStr, null, null);//执行命令行
             } else {
-                Component.System.CommandLine.run(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
+                CommandLineDhat.run(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
             }
         } else {
             System.err.println(new Date() + ":\tError! No alignment software");

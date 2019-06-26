@@ -1,7 +1,7 @@
 package Component.File.MatrixFile;
 
 import Component.File.AbstractFile;
-import Component.tool.Tools;
+import Component.SystemDhat.CommandLineDhat;
 import Component.unit.*;
 
 import java.io.BufferedReader;
@@ -97,9 +97,9 @@ public class MatrixFile extends AbstractFile<MatrixItem> {
         String ComLine = "python " + Opts.PlotHeatMapScriptFile + " -m A -i " + getPath() + " -o " + outFile + " -r " + resolution + " -c " + binSizeFile + " -q 98";
         Opts.CommandOutFile.Append(ComLine + "\n");
         if (Configure.DeBugLevel < 1) {
-            return Component.System.CommandLine.run(ComLine);
+            return CommandLineDhat.run(ComLine);
         } else {
-            return Component.System.CommandLine.run(ComLine, null, new PrintWriter(System.err));
+            return CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
         }
     }
 
@@ -107,9 +107,9 @@ public class MatrixFile extends AbstractFile<MatrixItem> {
         String ComLine = "python " + Opts.PlotHeatMapScriptFile + " -t localGenome -m A -i " + getPath() + " -o " + outFile + " -r " + resolution + " -p " + String.join(":", Region) + " -q 95";
         Opts.CommandOutFile.Append(ComLine + "\n");
         if (Configure.DeBugLevel < 1) {
-            return Component.System.CommandLine.run(ComLine);
+            return CommandLineDhat.run(ComLine);
         } else {
-            return Component.System.CommandLine.run(ComLine, null, new PrintWriter(System.err));
+            return CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
         }
     }
 }
