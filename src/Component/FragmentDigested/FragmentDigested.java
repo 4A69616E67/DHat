@@ -49,7 +49,7 @@ public class FragmentDigested {
         genomeFile.ReadOpen();
         FastaItem item;
         while ((item = genomeFile.ReadItem()) != null) {
-            int chrIndex = ContainChromosome(item.Title.replace(">", ""));
+            int chrIndex = ContainChromosome(item.Title);
             if (chrIndex != -1) {
                 GenomeList.add(item);
                 Chrs[chrIndex].Size = item.Sequence.length();
@@ -66,7 +66,7 @@ public class FragmentDigested {
                     if (index >= GenomeList.size()) {
                         break;
                     }
-                    int chrIndex = ContainChromosome(GenomeList.get(index).Title.replace(">", ""));
+                    int chrIndex = ContainChromosome(GenomeList.get(index).Title);
                     if (chrIndex != -1) {
                         ArrayList<BedItem> FragmentList = FindFragment(GenomeList.get(index), Enzyme);
                         try {
@@ -142,7 +142,7 @@ public class FragmentDigested {
             System.err.println("Null enzyme sequence!");
             System.exit(1);
         }
-        Chromosome Chr = new Chromosome(refSeq.Title.replace(">", ""), refSeq.Sequence.length());
+        Chromosome Chr = new Chromosome(refSeq.Title, refSeq.Sequence.length());
         ArrayList<BedItem> List = new ArrayList<>();
         int Count = 1;
         List.add(new BedItem("fragment" + Count, new ChrRegion(Chr.Name, 1, 0), Count, new String[0]));

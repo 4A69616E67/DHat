@@ -1,5 +1,5 @@
 <component name="ArtifactManager">
-  <artifact type="jar" build-on-make="true" name="DHat-src">
+  <artifact type="jar" name="DHat-src">
     <output-path>$PROJECT_DIR$/out/artifacts/DHat_src</output-path>
     <root id="archive" name="DHat-src.jar">
       <element id="dir-copy" path="$PROJECT_DIR$" />

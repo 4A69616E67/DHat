@@ -111,7 +111,6 @@ public class LinkerFilterStat extends AbstractStat {
                     System.out.println(new Date() + " [Linker filter statistic]:\t" + InputNum / 1000000 + " Million has been statistic");
                 }
             }
-
         }
     }
 

@@ -24,7 +24,7 @@ public class FastaFile extends AbstractFile<FastaItem> {
         if (s == null) {
             Item = null;
         } else {
-            Item = new FastaItem(s[0]);
+            Item = new FastaItem(s[0].replaceAll("^>\\s*", "").trim());
             for (int i = 1; i < s.length; i++) {
                 Item.Sequence.append(s[i]);
             }
