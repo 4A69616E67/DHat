@@ -24,8 +24,9 @@ import Utils.SamFilter;
 public class SeProcess {
     //========================================================================
     private Component.File.FastQFile.FastqFile FastqFile;//Fastq文件
-    private File IndexPrefix;//比对索引前缀
-    private File GenomeFile;
+    private Bwa bwa;
+    //    private File IndexPrefix;//比对索引前缀
+//    private File GenomeFile;
     private String Prefix = Configure.Prefix;
     private File OutPath = new File("./");//输出路径
     private Opts.FileFormat ReadsType = Opts.FileFormat.Undefine;//reads类型Long or Short
@@ -49,9 +50,9 @@ public class SeProcess {
 //    private long UnMappedNum;
 
 
-    public SeProcess(FastqFile fastqfile, File index, int mismatch, int minquality, File outpath, String prefix, Opts.FileFormat readstype) throws IOException {
+    public SeProcess(FastqFile fastqfile, Bwa bwa, int mismatch, int minquality, File outpath, String prefix, Opts.FileFormat readstype) throws IOException {
         FastqFile = fastqfile;
-        IndexPrefix = index;
+        this.bwa = bwa;
         MisMatchNum = mismatch;
         MinQuality = minquality;
         OutPath = outpath;
@@ -77,8 +78,8 @@ public class SeProcess {
         }
         CommandLine ComLine = new DefaultParser().parse(Argument, args);
         FastqFile = new FastqFile(ComLine.getOptionValue("in"));
-        IndexPrefix = ComLine.hasOption("index") ? new File(ComLine.getOptionValue("index")) : IndexPrefix;
-        GenomeFile = ComLine.hasOption("g") ? new File(ComLine.getOptionValue("g")) : GenomeFile;
+        bwa.IndexPrefix = ComLine.hasOption("index") ? new File(ComLine.getOptionValue("index")) : null;
+        bwa.GenomeFile = ComLine.hasOption("g") ? new File(ComLine.getOptionValue("g")) : null;
         OutPath = ComLine.hasOption("out") ? new File(ComLine.getOptionValue("out")) : OutPath;
         Prefix = ComLine.hasOption("p") ? ComLine.getOptionValue("p") : Prefix;
         MisMatchNum = ComLine.hasOption("d") ? Integer.parseInt(ComLine.getOptionValue("d")) : MisMatchNum;
@@ -97,8 +98,11 @@ public class SeProcess {
      */
     public void Run() throws IOException, InterruptedException {
         //========================================================================================
-        if (IndexPrefix == null || !Bwa.IndexCheck(IndexPrefix)) {
-            CreateIndex(GenomeFile, GenomeFile, Threads);
+        if (Configure.Bwa.IndexCheck == Opts.FileFormat.Undefine) {
+            Configure.Bwa.IndexCheck();
+        }
+        if (bwa.IndexPrefix == null || Configure.Bwa.IndexCheck == Opts.FileFormat.ErrorFormat) {
+            Configure.Bwa.CreateIndex(bwa.GenomeFile, new File(Configure.OutPath + "/" + Opts.OutDir.IndexDir.toString() + "/" + bwa.GenomeFile.getName()), Threads);
         }
         //比对
         Align(FastqFile, SamFile, ReadsType);
@@ -148,7 +152,7 @@ public class SeProcess {
                 System.err.println("Can't create Directory " + IterationDir);
                 System.exit(1);
             }
-            if (IndexPrefix == null && GenomeFile == null) {
+            if (bwa.IndexPrefix == null && bwa.GenomeFile == null) {
                 System.err.println("Error! No Genome file or index!");
                 System.exit(1);
             }
@@ -177,28 +181,6 @@ public class SeProcess {
         SortBedFile = new BedFile(FilePrefix + ".sort.bed");
     }
 
-    public static void CreateIndex(File genomeFile, File prefix, int threads) {
-        System.out.println("Create index ......");
-        String s = "";
-        if (Configure.Bwa != null && Configure.Bwa.isValid()) {
-            s = Configure.Bwa.index(genomeFile, prefix);
-        } else if (Configure.Bowtie != null && !Configure.Bowtie.equals("")) {
-            s = Configure.Bowtie + "-build --threads " + threads + " " + genomeFile + " " + prefix;
-        } else {
-            System.err.println(new Date() + ":[Create Index]\tError! no alignment tools");
-            System.exit(1);
-        }
-        try {
-            if (Configure.DeBugLevel < 1) {
-                CommandLineDhat.run(s, null, null);
-            } else {
-                CommandLineDhat.run(s, null, new PrintWriter(System.err));
-            }
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
     private void Align(FastqFile fastqFile, File samFile, Opts.FileFormat ReadsType) throws IOException, InterruptedException {
         //比对
         String CommandStr;
@@ -207,7 +189,7 @@ public class SeProcess {
             Opts.ALStat.AlignmentSoftware = Configure.Bwa;
             if (ReadsType == Opts.FileFormat.ShortReads) {
                 File SaiFile = new File(fastqFile + ".sai");
-                CommandStr = Configure.Bwa.aln(IndexPrefix, fastqFile, SaiFile, MisMatchNum, Threads);
+                CommandStr = Configure.Bwa.aln(fastqFile, SaiFile, MisMatchNum, Threads);
                 Opts.CommandOutFile.Append(CommandStr + "\n");
                 if (Configure.DeBugLevel < 1) {
                     CommandLineDhat.run(CommandStr);//执行命令行
@@ -215,7 +197,7 @@ public class SeProcess {
                     CommandLineDhat.run(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
                 }
                 System.out.println(new Date() + "\tsai to sam\t" + fastqFile.getName());
-                CommandStr = Configure.Bwa.samse(samFile, IndexPrefix, SaiFile, fastqFile);
+                CommandStr = Configure.Bwa.samse(samFile, bwa.IndexPrefix, SaiFile, fastqFile);
                 Opts.CommandOutFile.Append(CommandStr + "\n");
                 if (Configure.DeBugLevel < 1) {
                     CommandLineDhat.run(CommandStr, null, null);//执行命令行
@@ -227,7 +209,7 @@ public class SeProcess {
                     SaiFile.delete();//删除sai文件
                 }
             } else if (ReadsType == Opts.FileFormat.LongReads) {
-                CommandStr = Configure.Bwa.mem(IndexPrefix, fastqFile, Threads);
+                CommandStr = Configure.Bwa.mem(fastqFile, Threads);
                 Opts.CommandOutFile.Append(CommandStr + "\n");
                 PrintWriter sam = new PrintWriter(samFile);
                 if (Configure.DeBugLevel < 1) {
@@ -241,7 +223,7 @@ public class SeProcess {
                 System.exit(1);
             }
         } else if (Configure.Bowtie != null && !Configure.Bowtie.equals("")) {
-            CommandStr = Configure.Bowtie + " " + (fastqFile.FastqPhred() == Opts.FileFormat.Phred33 ? "--phred33" : "--phred64") + " -p " + Threads + " -x " + IndexPrefix + " -U " + fastqFile + " -S " + samFile;
+            CommandStr = Configure.Bowtie + " " + (fastqFile.FastqPhred() == Opts.FileFormat.Phred33 ? "--phred33" : "--phred64") + " -p " + Threads + " -x " + bwa.IndexPrefix + " -U " + fastqFile + " -S " + samFile;
             Opts.CommandOutFile.Append(CommandStr + "\n");
             if (Configure.DeBugLevel < 1) {
                 CommandLineDhat.run(CommandStr, null, null);//执行命令行

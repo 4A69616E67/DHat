@@ -24,7 +24,14 @@ public class FastaFile extends AbstractFile<FastaItem> {
         if (s == null) {
             Item = null;
         } else {
-            Item = new FastaItem(s[0].replaceAll("^>\\s*", "").trim());
+            String title;
+            String[] str = s[0].split("\\s+");
+            if (str[0].equals(">")) {
+                title = str[0] + str[1];
+            } else {
+                title = str[0];
+            }
+            Item = new FastaItem(title.replaceAll("^>\\s*", "").trim());
             for (int i = 1; i < s.length; i++) {
                 Item.Sequence.append(s[i]);
             }

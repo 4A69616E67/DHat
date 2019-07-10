@@ -3,6 +3,7 @@ package Component.Process;
 import Component.File.CommonFile;
 import Component.File.FastQFile.FastqFile;
 import Component.File.FastQFile.FastqItem;
+import Component.File.FileManager.PreManager;
 import Component.tool.DivideLinker;
 import Component.tool.LinkerFiltering;
 import Component.tool.Tools;
@@ -16,6 +17,8 @@ import java.util.Date;
  * Created by snowf on 2019/2/17.
  */
 public class PreProcess extends AbstractProcess {
+
+    private PreManager PreM = new PreManager();
 
     private File OutPath = new File("./");//输出目录
     private String Prefix = Configure.Prefix;//输出前缀
@@ -35,12 +38,12 @@ public class PreProcess extends AbstractProcess {
 //    private long[] LinkerCout;
     private LinkerSequence[] Linkers;
     private String[] Adapters;
-    private File LinkerFilterOutFile;
-    private FastqFile[] FastqR1File, FastqR2File;
+    //    private File LinkerFilterOutFile;
+//    private FastqFile[] FastqR1File, FastqR2File;
     private String[] MatchSeq = new String[2];//要匹配的酶切序列
     private String[] AppendSeq = new String[2];//要延长的序列
     private String[] AppendQuality = new String[2];//要延长的质量
-    private String LinkerFilterOutPrefix;//linker过滤输出前缀
+//    private String LinkerFilterOutPrefix;//linker过滤输出前缀
 
 
     public PreProcess(String[] args) throws IOException {
@@ -116,12 +119,12 @@ public class PreProcess extends AbstractProcess {
         }
         //=========================================
         FastqFile.ReadOpen();
-        BufferedWriter writer = new BufferedWriter(new FileWriter(LinkerFilterOutFile), 5242800);
+        BufferedWriter writer = new BufferedWriter(new FileWriter(PreM.LinkerFilterOutFile), 5242800);
         BufferedWriter[] writer1 = new BufferedWriter[Linkers.length];
         BufferedWriter[] writer2 = new BufferedWriter[Linkers.length];
         for (int i = 0; i < Linkers.length; i++) {
-            writer1[i] = FastqR1File[i].WriteOpen();
-            writer2[i] = FastqR2File[i].WriteOpen();
+            writer1[i] = PreM.FastqR1File[i].WriteOpen();
+            writer2[i] = PreM.FastqR2File[i].WriteOpen();
         }
         Thread[] t = new Thread[Threads];
         LocalAlignment[] local = new LocalAlignment[Threads];
@@ -166,8 +169,8 @@ public class PreProcess extends AbstractProcess {
                                 fastq_string = DivideLinker.Execute(filter_result, MatchSeq, AppendSeq, AppendQuality, MaxReadsLen, DivideLinker.Format.All, j);
                                 if (fastq_string[0] != null && fastq_string[1] != null) {
                                     synchronized (Opts.LFStat.linkers[j].lock[5]) {
-                                        FastqR1File[j].ItemNum++;
-                                        FastqR2File[j].ItemNum++;
+                                        PreM.FastqR1File[j].ItemNum++;
+                                        PreM.FastqR2File[j].ItemNum++;
                                         try {
                                             writer1[j].write(fastq_string[0].toString() + "\n");
                                             writer2[j].write(fastq_string[1].toString() + "\n");
@@ -197,7 +200,7 @@ public class PreProcess extends AbstractProcess {
         }
         Tools.ThreadsWait(t);
         for (int j = 0; j < Linkers.length; j++) {
-            Opts.LFStat.linkers[j].ValidPairNum = FastqR1File[j].ItemNum;
+            Opts.LFStat.linkers[j].ValidPairNum = PreM.FastqR1File[j].ItemNum;
         }
         writer.close();
         for (int i = 0; i < Linkers.length; i++) {
@@ -230,17 +233,9 @@ public class PreProcess extends AbstractProcess {
         if (Linkers == null) {
             Linkers = LinkerFiltering.ReadLinkers(LinkerFile);
         }
-        FastqR1File = new FastqFile[Linkers.length];
-        FastqR2File = new FastqFile[Linkers.length];
-//        LinkerCout = new long[Linkers.length];
-        for (int i = 0; i < Linkers.length; i++) {
-            FastqR1File[i] = new FastqFile(OutPath + "/" + Prefix + "." + Linkers[i].getType() + ".R1.fastq");
-            FastqR2File[i] = new FastqFile(OutPath + "/" + Prefix + "." + Linkers[i].getType() + ".R2.fastq");
-        }
-        LinkerFilterOutPrefix = OutPath + "/" + Prefix + ".linkerfilter";
-        LinkerFilterOutFile = getPastFile();
-        Opts.LFStat.InputFile = new CommonFile(LinkerFilterOutFile);
-        DivideLinker div = new DivideLinker(LinkerFilterOutFile, Prefix, Linkers, Restriction, DivideLinker.Format.All, MaxReadsLen, 30, new FastqFile(FastqFile).FastqPhred());
+        PreM.Generate(OutPath, Prefix, Linkers, LinkerFile);
+        Opts.LFStat.InputFile = new CommonFile(PreM.LinkerFilterOutFile);
+        DivideLinker div = new DivideLinker(PreM.LinkerFilterOutFile, Prefix, Linkers, Restriction, DivideLinker.Format.All, MaxReadsLen, 30, new FastqFile(FastqFile).FastqPhred());
         this.MatchSeq = div.getMatchSeq();
         this.AppendSeq = div.getAppendSeq();
         this.AppendQuality = div.getAppendQuality();
@@ -264,12 +259,8 @@ public class PreProcess extends AbstractProcess {
         Argument.addOption(Option.builder("t").hasArg().argName("int").desc("ThreadNum (default " + Threads + ")").build());
     }
 
-    private File getPastFile() throws IOException {
-        return new LinkerFiltering(FastqFile, LinkerFile, LinkerFilterOutPrefix, 1).getOutFile();
-    }
-
     public File getLinkerFilterOutFile() {
-        return LinkerFilterOutFile;
+        return PreM.LinkerFilterOutFile;
     }
 
     public void setMinLinkerMappingScore(int minLinkerMappingScore) {
@@ -285,14 +276,11 @@ public class PreProcess extends AbstractProcess {
     }
 
     public FastqFile[] getFastqR1File() {
-        return FastqR1File;
+        return PreM.FastqR1File;
     }
 
     public FastqFile[] getFastqR2File() {
-        return FastqR2File;
+        return PreM.FastqR2File;
     }
 
-//    public long[] getLinkerCout() {
-//        return LinkerCout;
-//    }
 }

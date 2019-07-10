@@ -1,4 +1,3 @@
-import java.awt.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -9,14 +8,12 @@ import Component.File.BedFile.BedFile;
 import Component.File.BedPeFile.BedpeFile;
 import Component.File.FastQFile.FastqFile;
 import Component.File.FastaFile.FastaFile;
-import Component.File.MatrixFile.MatrixFile;
 import Component.File.SamFile.SamFile;
 import Component.FragmentDigested.FragmentDigested;
 import Component.FragmentDigested.RestrictionEnzyme;
 import Component.Process.BedpeProcess;
 import Component.Process.PreProcess;
 import Component.Process.SeProcess;
-import Component.Software.Bwa;
 import Component.SystemDhat.CommandLineDhat;
 import Component.SystemDhat.Qsub;
 import Component.tool.*;
@@ -37,11 +34,11 @@ public class Main {
     private String Restriction;
     private String Prefix;
     private FastqFile InputFile;
-    private File GenomeFile;
+    //    private File GenomeFile;
     private File LinkerFile;
     private File AdapterFile;
     private String[] AdapterSeq;
-    private File IndexPrefix;
+    //    private File IndexPrefix;
     private int MatchScore, MisMatchScore, InDelScore;
     private Opts.FileFormat ReadsType;
     private int AlignMisMatch;
@@ -285,8 +282,8 @@ public class Main {
         BedFile[] R2SortBedFile = new BedFile[ValidLinkerSeq.length];
         BedpeFile[] SeBedpeFile = new BedpeFile[ValidLinkerSeq.length];
         for (int i = 0; i < ValidLinkerSeq.length; i++) {
-            R1SortBedFile[i] = new SeProcess(UseLinkerFasqFileR1[i], IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR1[i].getName().replace(".fastq", ""), ReadsType).getSortBedFile();
-            R2SortBedFile[i] = new SeProcess(UseLinkerFasqFileR2[i], IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR2[i].getName().replace(".fastq", ""), ReadsType).getSortBedFile();
+            R1SortBedFile[i] = new SeProcess(UseLinkerFasqFileR1[i], Configure.Bwa, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR1[i].getName().replace(".fastq", ""), ReadsType).getSortBedFile();
+            R2SortBedFile[i] = new SeProcess(UseLinkerFasqFileR2[i], Configure.Bwa, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR2[i].getName().replace(".fastq", ""), ReadsType).getSortBedFile();
             SeBedpeFile[i] = new BedpeFile(SeProcessDir + "/" + Prefix + "." + ValidLinkerSeq[i].getType() + ".bedpe");
             Opts.NRStat.linkers[i].InputFile = SeBedpeFile[i];
         }
@@ -294,13 +291,14 @@ public class Main {
             if (Opts.Step.FindEnzymeFragment.Execute) {
                 findenzy.start();
             }
+            if (Configure.Bwa.IndexPrefix == null || Configure.Bwa.IndexCheck == Opts.FileFormat.ErrorFormat) {
+                CreateIndex(Configure.Bwa.GenomeFile);
+                Configure.Bwa.IndexCheck = Opts.FileFormat.Valid;
+            }
             for (int i = 0; i < ValidLinkerSeq.length; i++) {
                 System.out.println(new Date() + "\tStart Alignment");
                 //==========================================Create Index========================================================
-                if (IndexPrefix == null || !Bwa.IndexCheck(IndexPrefix)) {
-                    CreateIndex(GenomeFile);
-                }
-                Opts.ALStat.GenomeIndex = IndexPrefix;
+                Opts.ALStat.GenomeIndex = Configure.Bwa.IndexPrefix;
                 SamFile[] r1 = SeProcess(UseLinkerFasqFileR1[i], UseLinkerFasqFileR1[i].getName().replace(".fastq", ""));
                 SamFile[] r2 = SeProcess(UseLinkerFasqFileR2[i], UseLinkerFasqFileR2[i].getName().replace(".fastq", ""));
                 Opts.ALStat.linkers[i].InputNum = UseLinkerFasqFileR1[i].getItemNum();
@@ -323,11 +321,11 @@ public class Main {
             System.out.println(new Date() + " [statistic]:\tStart alignment statistic");
             for (int i = 0; i < Opts.ALStat.Linkers.length; i++) {
                 Opts.ALStat.linkers[i].InputFile = new FastqFile(UseLinkerFasqFileR1[i]);
-                SeProcess se = new SeProcess(UseLinkerFasqFileR1[i], IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR1[i].getName().replace(".fastq", ""), ReadsType);
+                SeProcess se = new SeProcess(UseLinkerFasqFileR1[i], Configure.Bwa, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR1[i].getName().replace(".fastq", ""), ReadsType);
                 Opts.ALStat.linkers[i].UniqueSamFile1 = se.getUniqSamFile();
                 Opts.ALStat.linkers[i].MultiSamFile1 = se.getMultiSamFile();
                 Opts.ALStat.linkers[i].UnmappedSamFile1 = se.getUnMapSamFile();
-                se = new SeProcess(UseLinkerFasqFileR2[i], IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR2[i].getName().replace(".fastq", ""), ReadsType);
+                se = new SeProcess(UseLinkerFasqFileR2[i], Configure.Bwa, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR2[i].getName().replace(".fastq", ""), ReadsType);
                 Opts.ALStat.linkers[i].UniqueSamFile2 = se.getUniqSamFile();
                 Opts.ALStat.linkers[i].MultiSamFile2 = se.getMultiSamFile();
                 Opts.ALStat.linkers[i].UnmappedSamFile2 = se.getUnMapSamFile();
@@ -578,14 +576,13 @@ public class Main {
      *
      * @param genomefile genome file
      */
-    private void CreateIndex(File genomefile) {
-        File IndexDir = new File(genomefile.getParent() + "/" + Opts.OutDir.IndexDir);
+    private synchronized void CreateIndex(File genomefile) {
+        File IndexDir = new File(OutPath + "/" + Opts.OutDir.IndexDir);
         if (!IndexDir.isDirectory() && !IndexDir.mkdir()) {
             System.out.println("Create " + IndexDir + " false");
             System.exit(1);
         }
-        IndexPrefix = new File(IndexDir + "/" + genomefile.getName());
-        SeProcess.CreateIndex(genomefile, IndexPrefix, Threads);
+        Configure.Bwa.CreateIndex(genomefile, new File(IndexDir + "/" + genomefile.getName()), Threads);
     }
 
     /**
@@ -598,7 +595,7 @@ public class Main {
             try {
                 FragmentDigested FDM = Opts.fragmentDigestedModule;
                 FDM.Threads = Threads;
-                FDM.run(new FastaFile(GenomeFile.getPath()));
+                FDM.run(new FastaFile(Configure.Bwa.GenomeFile.getPath()));
                 Chromosomes = FDM.getChromosomes();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -616,7 +613,7 @@ public class Main {
         long splitnum = (long) Math.ceil((double) fastqFile.ItemNum / Threads * 4);
         splitnum = splitnum + (4 - splitnum % 4) % 4;
         ArrayList<CommonFile> SplitFastqFile = fastqFile.SplitFile(SeProcessDir + "/" + fastqFile.getName(), splitnum);//1亿行作为一个单位拆分
-        SeProcess se = new SeProcess(fastqFile, IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, Prefix, ReadsType);
+        SeProcess se = new SeProcess(fastqFile, Configure.Bwa, AlignMisMatch, MinUniqueScore, SeProcessDir, Prefix, ReadsType);
         SamFile SamFile = se.getSamFile();
         SamFile UniqSamFile = se.getUniqSamFile();
         SamFile MultiSamFile = se.getMultiSamFile();
@@ -644,7 +641,7 @@ public class Main {
                         }
                     }
                     try {
-                        SeProcess ssp = new SeProcess(InFile, IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, Prefix + ".split" + finalI, ReadsType);//单端处理类
+                        SeProcess ssp = new SeProcess(InFile, Configure.Bwa, AlignMisMatch, MinUniqueScore, SeProcessDir, Prefix + ".split" + finalI, ReadsType);//单端处理类
                         ssp.setIteration(Iteration);
                         ssp.Run();
                         SplitSamFile[finalI] = ssp.getSamFile();
@@ -728,7 +725,7 @@ public class Main {
         //----------------------------------------必要参数赋值-----------------------------------------------------------
         String[] tempstrs;
         InputFile = Opts.OVStat.InputFile = Configure.InputFile;
-        GenomeFile = Opts.ALStat.GenomeFile = Configure.GenomeFile;
+        Configure.Bwa.GenomeFile = Opts.ALStat.GenomeFile = Configure.GenomeFile;
         Restriction = Opts.LFStat.EnzymeCuttingSite = Configure.Restriction.toString();
         if (Configure.Restriction.getSequence().length() <= 4) {
             Opts.OVStat.RangeThreshold = 5000;
@@ -758,15 +755,14 @@ public class Main {
         if (Configure.AdapterSeq != null && Configure.AdapterSeq.length > 0) {
             AdapterSeq = Configure.AdapterSeq;
         }
-        if (Configure.Index != null && Bwa.IndexCheck(Configure.Index)) {
-            IndexPrefix = Configure.Index;
-            Opts.Step.CreateIndex.Execute = false;
-        }
+        Configure.Bwa.IndexPrefix = Configure.Index;
+        Configure.Bwa.IndexCheck();
+        Opts.Step.CreateIndex.Execute = Configure.Bwa.IndexCheck != Opts.FileFormat.Valid;
         if (Configure.Chromosome != null && Configure.Chromosome.length > 0) {
             Chromosomes = Configure.Chromosome;
         } else {
             System.out.println(new Date() + "\tCalculate chromosome ......");
-            Chromosomes = Tools.CheckChromosome(Chromosomes, GenomeFile);
+            Chromosomes = Tools.CheckChromosome(Chromosomes, Configure.Bwa.GenomeFile);
             Configure.Chromosome = Chromosomes;
         }
         Resolution = Opts.CMStat.Resolutions = Configure.Resolution;
@@ -802,8 +798,8 @@ public class Main {
             System.err.println("Error, " + OutPath + " is not a directory");
             System.exit(1);
         }
-        if (!GenomeFile.isFile()) {
-            System.err.println("Error, " + GenomeFile + " is not a file");
+        if (!Configure.Bwa.GenomeFile.isFile()) {
+            System.err.println("Error, " + Configure.Bwa.GenomeFile + " is not a file");
             System.exit(1);
         }
         if (!InputFile.isFile()) {

@@ -22,7 +22,7 @@ public class Opts {
      * 文件类型枚举类
      */
     public enum FileFormat {
-        ErrorFormat, EmptyFile, BedpePointFormat, BedpeRegionFormat, Phred33, Phred64, ShortReads, LongReads, Undefine
+        ErrorFormat, EmptyFile, BedpePointFormat, BedpeRegionFormat, Phred33, Phred64, ShortReads, LongReads, Undefine, Valid
     }
 
     /**

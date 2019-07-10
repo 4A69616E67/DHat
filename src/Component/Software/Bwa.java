@@ -4,17 +4,23 @@ package Component.Software;
 import Component.File.CommonFile;
 import Component.SystemDhat.CommandLineDhat;
 import Component.unit.Configure;
+import Component.unit.Opts;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by snowf on 2019/3/10.
  */
 
 public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
+    public File IndexPrefix;
+    public File GenomeFile;
+    public Opts.FileFormat IndexCheck = Opts.FileFormat.Undefine;
+
     public Bwa(String exe) {
         super(exe);
     }
@@ -63,8 +69,8 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
      *
      * @return command string
      */
-    public String index(File fastaFile, File prefix) {
-        return Execution + " index -p " + prefix + " " + fastaFile;
+    public String index(File genomeFile, File prefix) {
+        return Execution + " index -p " + prefix + " " + genomeFile;
     }
 
     /**
@@ -73,8 +79,8 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
      *
      * @return command string
      */
-    public String mem(File index, File fastqFile, int thread) {
-        return Execution + " mem -t" + thread + " " + index + " " + fastqFile;
+    public String mem(File fastqFile, int thread) {
+        return Execution + " mem -t" + thread + " " + IndexPrefix + " " + fastqFile;
     }
 
     /**
@@ -85,8 +91,8 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
      *
      * @return command string
      */
-    public String aln(File index, File fastqFile, File saiFile, int maxDiff, int thread) {
-        return Execution + " aln -t " + thread + " -n " + maxDiff + " -f " + saiFile + " " + index + " " + fastqFile;
+    public String aln(File fastqFile, File saiFile, int maxDiff, int thread) {
+        return Execution + " aln -t " + thread + " -n " + maxDiff + " -f " + saiFile + " " + IndexPrefix + " " + fastqFile;
     }
 
     /**
@@ -103,25 +109,53 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
         return Execution + " samse -f " + samFile + " " + index + " " + saiFile + " " + fastqFile;
     }
 
-    public static boolean IndexCheck(File prefix) {
+    public boolean IndexCheck() {
         File amb, ann, bwt, pac, sa;
-        amb = new File(prefix + ".amb");
-        ann = new File(prefix + ".ann");
-        bwt = new File(prefix + ".bwt");
-        pac = new File(prefix + ".pac");
-        sa = new File(prefix + ".sa");
+        amb = new File(IndexPrefix + ".amb");
+        ann = new File(IndexPrefix + ".ann");
+        bwt = new File(IndexPrefix + ".bwt");
+        pac = new File(IndexPrefix + ".pac");
+        sa = new File(IndexPrefix + ".sa");
         File[] list = new File[]{amb, ann, bwt, pac, sa};
         System.out.println("[Check index]\tCheck index file ......");
         for (File l : list) {
             System.out.println("[Check index]\tCheck " + l);
             if (!l.isFile()) {
                 System.err.println("[Check index]\tWarning! Can't find " + l);
+                IndexCheck = Opts.FileFormat.ErrorFormat;
                 return false;
             }
         }
         System.out.println("[Check index]\tComplete index file");
+        IndexCheck = Opts.FileFormat.Valid;
         return true;
     }
+
+    public synchronized void CreateIndex(File genomeFile, File prefix, int threads) {
+        System.out.println("Create index ......");
+        String s = "";
+        if (Configure.Bwa != null && Configure.Bwa.isValid()) {
+            s = Configure.Bwa.index(genomeFile, prefix);
+        } else if (Configure.Bowtie != null && !Configure.Bowtie.equals("")) {
+            s = Configure.Bowtie + "-build --threads " + threads + " " + genomeFile + " " + prefix;
+        } else {
+            System.err.println(new Date() + ":[Create Index]\tError! no alignment tools");
+            System.exit(1);
+        }
+        try {
+            if (Configure.DeBugLevel < 1) {
+                CommandLineDhat.run(s, null, null);
+            } else {
+                CommandLineDhat.run(s, null, new PrintWriter(System.err));
+            }
+            GenomeFile = genomeFile;
+            IndexPrefix = prefix;
+            IndexCheck = Opts.FileFormat.Valid;
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     @Override
     public int compareTo(Bwa o) {

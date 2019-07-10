@@ -11,9 +11,6 @@ import java.util.ArrayList;
 
 public class RestrictionEnzyme {
 
-    //    public static final RestrictionEnzyme HindIII = new RestrictionEnzyme("HindIII", "A^AGCTT");
-//    public static final RestrictionEnzyme MseI = new RestrictionEnzyme("MseI", "T^TAA");
-//    public static final RestrictionEnzyme ClaI = new RestrictionEnzyme("ClaI", "AT^CGAT");
     public static final RestrictionEnzyme[] list = load("/Resource/EnzymeSite.txt");
     private static final String Delimiter = "^";
 
