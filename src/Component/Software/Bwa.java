@@ -24,8 +24,10 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
         if (Execution.trim().equals("")) {
             System.err.println("[bwa]\tNo execute file");
         } else {
+            if (Path.getName().equals("")) {
+                getPath();
+            }
             getVersion();
-            getPath();
         }
     }
 

@@ -22,6 +22,9 @@ public abstract class AbstractSoftware {
 
     AbstractSoftware(String exe) {
         Execution = exe;
+        if (new File(exe).isFile()) {
+            Path = new File(new File(exe).getParent());
+        }
         Init();
     }
 
@@ -46,6 +49,7 @@ public abstract class AbstractSoftware {
             CommandLineDhat.run(ComLine, new PrintWriter(temporaryFile), null);
             ArrayList<char[]> tempLines = temporaryFile.Read();
             Path = new File(String.valueOf(tempLines.get(0))).getParentFile();
+            Execution = Path + "/" + Execution;
             Valid = true;
             temporaryFile.delete();
         } catch (IOException | InterruptedException e) {

@@ -14,6 +14,10 @@ public class Region implements Comparable<Region> {
         Length = end - start;
     }
 
+    public int Center() {
+        return (End + Start) / 2;
+    }
+
     public boolean IsOverlap(Region b) {
         return this.Start <= b.End && this.End >= b.Start;
     }

@@ -66,4 +66,12 @@ public class BedpeItem implements Comparable<BedpeItem> {
     public InterAction getLocation() {
         return Location;
     }
+
+    public String getSeqTitle() {
+        return SeqTitle;
+    }
+
+    public int getScore() {
+        return Score;
+    }
 }

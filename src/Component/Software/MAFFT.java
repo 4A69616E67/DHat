@@ -22,7 +22,9 @@ public class MAFFT extends AbstractSoftware {
         if (Execution.trim().equals("")) {
             System.err.println("[mafft]\tNo execute file");
         } else {
-            getPath();
+            if (Path.getName().equals("")) {
+                getPath();
+            }
             getVersion();
         }
     }
