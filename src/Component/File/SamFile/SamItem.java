@@ -29,7 +29,7 @@ public class SamItem implements Comparable<SamItem> {
         for (int i = 11; i < s.length; i++) {
             String[] ss = s[i].split(":");
             try {
-                ExtendCol.put(ss[0], ss[1]);
+                ExtendCol.put(ss[0] + ":" + ss[1], ss[2]);
             } catch (IndexOutOfBoundsException ignored) {
             }
         }

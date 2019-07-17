@@ -8,6 +8,7 @@ import Component.File.*;
 import Component.File.BedFile.BedFile;
 import Component.File.FastQFile.FastqFile;
 import Component.File.SamFile.SamFile;
+import Component.File.SamFile.SamItem;
 import Component.Software.Bwa;
 import Component.SystemDhat.CommandLineDhat;
 import Component.tool.Tools;
@@ -104,23 +105,27 @@ public class SeProcess {
         if (bwa.IndexPrefix == null || Configure.Bwa.IndexCheck == Opts.FileFormat.ErrorFormat) {
             Configure.Bwa.CreateIndex(bwa.GenomeFile, new File(Configure.OutPath + "/" + Opts.OutDir.IndexDir.toString() + "/" + bwa.GenomeFile.getName()), Threads);
         }
-        //比对
-        Align(FastqFile, SamFile, ReadsType);
-        //Sam文件过滤
-        SamFilter.Execute(SamFile, UniqSamFile, UnMapSamFile, MultiSamFile, MinQuality, Threads);
         if (Iteration) {
-            BufferedReader sam_read = new BufferedReader(new FileReader(UnMapSamFile));
-            String Line;
-            String[] Str;
-            Hashtable<String, char[]> ReadsList = new Hashtable<>();
-            while ((Line = sam_read.readLine()) != null) {
-                Str = Line.split("\\s+");
-                ReadsList.put(Str[0], Str[9].toCharArray());
-            }
-            sam_read.close();
-            SamFile[] TempFile = IterationAlignment(ReadsList, Prefix, 1);
-            UniqSamFile.Append(TempFile[0]);
-            MultiSamFile.Append(TempFile[1]);
+//            BufferedReader sam_read = new BufferedReader(new FileReader(UnMapSamFile));
+//            String Line;
+//            String[] Str;
+//            Hashtable<String, char[]> ReadsList = new Hashtable<>();
+//            while ((Line = sam_read.readLine()) != null) {
+//                Str = Line.split("\\s+");
+//                ReadsList.put(Str[0], Str[9].toCharArray());
+//            }
+//            sam_read.close();
+//            SamFile[] TempFile = IterationAlignment(ReadsList, Prefix, 1);
+//            UniqSamFile.Append(TempFile[0]);
+//            MultiSamFile.Append(TempFile[1]);
+            IterationAlignment_new(FastqFile, UniqSamFile, MultiSamFile, 0);
+            SamFile.Merge(new SamFile[]{UniqSamFile, MultiSamFile});
+            FileUtils.touch(UnMapSamFile);
+        } else {
+            //比对
+            Align(FastqFile, SamFile, ReadsType);
+            //Sam文件过滤
+            SamFilter.Execute(SamFile, UniqSamFile, UnMapSamFile, MultiSamFile, MinQuality, Threads);
         }
         //Sam文件转bed
         UniqSamFile.ToBedFile(BedFile);
@@ -326,6 +331,60 @@ public class SeProcess {
             TempFile[1].delete();
         }
         return new SamFile[]{UniqSamFile, MultiSamFile};
+    }
+
+
+    private void IterationAlignment_new(FastqFile inFile, SamFile uniqSamFile, SamFile multiSamFile, int Num) throws IOException, InterruptedException {
+        System.out.println(new Date() + "\tIteration align start " + Num);
+        Opts.ALStat.AlignmentSoftware = Configure.Bwa;
+        File SaiFile = new File(inFile + ".sai" + "." + Num);
+        SamFile samFile = new SamFile(inFile + ".sam" + "." + Num);
+        String CommandStr = Configure.Bwa.aln(inFile, SaiFile, Num, Threads);
+        Opts.CommandOutFile.Append(CommandStr + "\n");
+        if (Configure.DeBugLevel < 1) {
+            CommandLineDhat.run(CommandStr);//执行命令行
+        } else {
+            CommandLineDhat.run(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
+        }
+        System.out.println(new Date() + "\tsai to sam\t" + inFile.getName());
+        CommandStr = Configure.Bwa.samse(samFile, bwa.IndexPrefix, SaiFile, inFile);
+        Opts.CommandOutFile.Append(CommandStr + "\n");
+        if (Configure.DeBugLevel < 1) {
+            CommandLineDhat.run(CommandStr, null, null);//执行命令行
+        } else {
+            CommandLineDhat.run(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
+        }
+        if (Configure.DeBugLevel < 1) {
+            System.out.println(new Date() + "\tDelete " + SaiFile.getName());
+            SaiFile.delete();//删除sai文件
+        }
+        SamFile unMapSamFile = new SamFile(inFile + ".un.sam" + "." + Num);
+        SamFilter.Execute(samFile, uniqSamFile, unMapSamFile, multiSamFile, MinQuality, Threads);
+        samFile.delete();
+        unMapSamFile.ReadOpen();
+        Component.File.FastQFile.FastqFile tempInfile = new FastqFile(inFile + "." + Num);
+        tempInfile.WriteOpen();
+        SamItem item;
+        while ((item = unMapSamFile.ReadItem()) != null) {
+            tempInfile.getWriter().write("@" + item.Title + "\n" + item.Sequence + "\n+\n" + item.Quality + "\n");
+            tempInfile.ItemNum++;
+        }
+        unMapSamFile.ReadClose();
+        unMapSamFile.delete();
+        tempInfile.WriteClose();
+        if (tempInfile.ItemNum <= 0) {
+            tempInfile.delete();
+            return;
+        }
+        Num++;
+        SamFile uniqueSamFileTemp = new SamFile(inFile + ".uniq.sam" + "." + Num);
+        SamFile multiSamFileTemp = new SamFile(inFile + ".multi.sam" + "." + Num);
+        IterationAlignment_new(tempInfile, uniqueSamFileTemp, multiSamFileTemp, Num);
+        uniqSamFile.Append(uniqueSamFileTemp);
+        multiSamFile.Append(multiSamFileTemp);
+        uniqueSamFileTemp.delete();
+        multiSamFileTemp.delete();
+        tempInfile.delete();
     }
 
     public File getBedFile() {

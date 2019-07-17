@@ -125,7 +125,6 @@ public class BedpeProcess {
                     //===========================================染色体间的交互处理======================================
                     if (finalI < 0) {
                         BedpeFile SortDiffFile = new BedpeFile(FragmentDiffFile + ".sort");
-//                        AllEnzyFile.Merge(EnzyFile);
                         FragmentLocation(DiffFile, new BedFile(AllEnzyFile.getPath()), FragmentDiffFile);
                         FragmentDiffFile.SplitSortFile(SortDiffFile);
                         DiffOriPosStat[0] = RemoveRepeat(SortDiffFile, DiffNoDumpFile, DiffRepeatFile);//去duplication

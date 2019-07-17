@@ -94,7 +94,7 @@ public class MatrixFile extends AbstractFile<MatrixItem> {
     }
 
     public int PlotHeatMap(File binSizeFile, int resolution, File outFile) throws IOException, InterruptedException {
-        String ComLine = "python " + Opts.PlotHeatMapScriptFile + " -m A -i " + getPath() + " -o " + outFile + " -r " + resolution + " -c " + binSizeFile + " -q 98";
+        String ComLine = Configure.Python.Exe() + " " + Opts.PlotHeatMapScriptFile + " -m A -i " + getPath() + " -o " + outFile + " -r " + resolution + " -c " + binSizeFile + " -q 98";
         Opts.CommandOutFile.Append(ComLine + "\n");
         if (Configure.DeBugLevel < 1) {
             return CommandLineDhat.run(ComLine);
@@ -104,7 +104,7 @@ public class MatrixFile extends AbstractFile<MatrixItem> {
     }
 
     public int PlotHeatMap(String[] Region, int resolution, File outFile) throws IOException, InterruptedException {
-        String ComLine = "python " + Opts.PlotHeatMapScriptFile + " -t localGenome -m A -i " + getPath() + " -o " + outFile + " -r " + resolution + " -p " + String.join(":", Region) + " -q 95";
+        String ComLine = Configure.Python.Exe() + " " + Opts.PlotHeatMapScriptFile + " -t localGenome -m A -i " + getPath() + " -o " + outFile + " -r " + resolution + " -p " + String.join(":", Region) + " -q 95";
         Opts.CommandOutFile.Append(ComLine + "\n");
         if (Configure.DeBugLevel < 1) {
             return CommandLineDhat.run(ComLine);

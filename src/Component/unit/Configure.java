@@ -269,6 +269,7 @@ public class Configure {
         Bowtie = Advance.Bowtie.Value.toString();
         Python = new Python(Advance.Python.Value.toString());
         Mafft = new MAFFT(Advance.MAFFT.Value.toString());
+        Iteration = Boolean.valueOf(Advance.Iteration.Value.toString());
         DeBugLevel = Integer.parseInt(Advance.DeBugLevel.Value.toString());
     }
 
