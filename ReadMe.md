@@ -7,7 +7,11 @@
 **[install](#Install)**   
 **[usage](#Usage)**
 ## Install
+**Dependence**  
+Third software: bwa, mafft, python  
+Python module: matplotlib, scipy, argparse, numpy <= 1.14.2
 
+**Install**  
 Before you use **DHat** you would better install some dependent tools.
 Please ensure your server can connect to network.  
 Install **[Anaconda (Python 2.7 version)](https://www.anaconda.com/distribution/)**
@@ -20,10 +24,13 @@ Install **[mafft](https://mafft.cbrc.jp/alignment/software/)** and **[bwa](http:
 $ conda install -c bioconda mafft
 $ conda install -c bioconda bwa
 ```
-Install Python moudle
+Install Python module  
+*Note:* the version of **numpy** should be less than 1.14.2
 ```
 $ pip install matplotlib
 $ pip install scipy
+$ pip install argparse
+$ pip install numpy
 ```
 Download and install **[JRE](https://www.oracle.com/technetwork/java/javase/downloads/server-jre8-downloads-2133154.html)** (necessary)  
 **I am not sure the `wget` command can work well, you would better download JRE from webpage and then upload to server**
