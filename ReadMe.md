@@ -90,7 +90,8 @@ $ java -jar DHat.jar -conf <configure file>
 
 ---
 
-\#-------------------------ConfigFile: Such as follow----------------------------  
+#### Configure file  
+Configure file must keep to the follow format, and the line start with `#` will been ignored.
 ```
 #------------------------------required parameters----------------------------  
 InputFile = DLO-test.fastq  
@@ -161,7 +162,7 @@ DeBugLevel          Int         0 means remain base output, 1 means more output,
 *Note*: If we only want to run from "Alignment" to end, we can set "Alignment -"  
 *Note*: If we want to run all, we can set "-"
 
-##Other Script
+## Other Script
 ```
 java -cp DHat.jar Utils.BedToBedpe
 java -cp DHat.jar Utils.CalculateLineNumber
@@ -175,7 +176,7 @@ java -cp DHat.jar Component.tool.LinkerDetection
 java -cp DHat.jar Bin.Guide    (need visual interface)
 ```
 
-##Linker detection
+## Linker detection
 If you don't know the value of parameter **Restriction** or **HalfLinker**, you can try to use the follow methods.  
 1. use `java -cp DHat.jar Component.tool.LinkerDetection`  
     **argument**  

@@ -34,7 +34,7 @@
               <li><a href="#RI_ConfigureInformation">Configure information</a></li>
             </ul>
           </li>
-          <li><a href="#Running_statistics" class="active">Linker Filter</a>
+          <li><a href="#Linker_filter" class="active">Linker Filtering</a>
             <ul>
               <li><a href="#LF_Basic_statistics">Basic statistics</a></li>
               <li><a href="#LF_Base_distribution_in_adapter_detection">Base distribution in adapter detection</a></li>
@@ -47,7 +47,7 @@
               <li><a href="#AL_Basic_statistics">Basic statistics</a></li>
             </ul>
           </li>
-          <li><a href="#Noise_reduce">Noise reduce</a>
+          <li><a href="#Noise_reduce">Noise reducing</a>
             <ul>
               <li><a href="#NR_Basic_statistics">Basic statistics</a></li>
               <li><a href="#NR_OriPosStat">Orientation-Position statistics</a></li>
@@ -197,7 +197,7 @@
       </h2>
 
       <div class="line"></div>
-      <h2 id="LF_Tag_Length_dis">Tag length distribution</h2>
+      <h2 id="LF_Tag_length_dis">Tag length distribution</h2>
       <h2 align="center" th:each="ReadsLenDis : ${LinkerFilterStat.linkers}">
         <img src="./images/Test.AA.reads_length_distribution.png"
              th:src="'data:image/png;base64,'+${Report.GetBase64(ReadsLenDis.ReadLengthDisPng)}" alt=""/>
@@ -512,10 +512,10 @@
              th:src="'data:image/png;base64,'+${Report.GetBase64(NoiseReduceStat._2M_InteractionRangeDistributionPng)}"
              alt=""/>
       </h2>
-      <h1 class="title" id="Matrix report">Matrix report</h1>
+      <h1 class="title" id="Matrix_report">Matrix report</h1>
       <div class="line"></div>
 
-      <h3 id="Rplot2">Basic statistics</h3>
+      <h3 id="MR_Basic">Basic statistics</h3>
       <!-- <h3><img src="images/Rplot2.png" alt=""/></h3> -->
       <h2>
         <!--        <iframe width=8 00 height=3 50 src="images/Rplot2.html"></iframe>-->
@@ -571,7 +571,7 @@
       <div id="footer">
         <p>1. Please use Chrome, Firefox or Safari for better browsing experience.</p>
         <p>2. Detailed explanation can be found at
-          <a href="https://github.com/GuoliangLi-HZAU/ChIA-PET_Tool" target="_blank">https://github.com/GuoliangLi-HZAU/ChIA-PET_Tool</a>.
+          <a href="https://github.com/GuoliangLi-HZAU/DHat" target="_blank">https://github.com/GuoliangLi-HZAU/DHat</a>.
         </p>
       </div>
 
