@@ -1,6 +1,6 @@
 package Bin;
 
-import Component.tool.Tools;
+import Component.SystemDhat.CommandLineDhat;
 import Component.unit.Configure;
 import Component.unit.Opts;
 
@@ -10,6 +10,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.*;
 
+/**
+ * Created by snowf on 2019/2/17.
+ */
 public class Guide {
     private JButton Button_Configure;
     private JPanel Panel1;
@@ -33,8 +36,8 @@ public class Guide {
     }
 
     public Guide() {
-//        System.setOut(new PrintStream(new GuideOutStream(TextArea_Out)));
-//        System.setErr(new PrintStream(new GuideOutStream(TextArea_Err)));
+//        SystemDhat.setOut(new PrintStream(new GuideOutStream(TextArea_Out)));
+//        SystemDhat.setErr(new PrintStream(new GuideOutStream(TextArea_Err)));
         Button_Configure.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -62,7 +65,7 @@ public class Guide {
                             PrintWriter err = new PrintWriter(new PrintStream(new GuideOutStream(TextArea_Err)));
                             File configfile = new File(Opts.JarFile.getParent() + "/" + Configure.Prefix + ".conf");
                             Configure.SaveParameter(configfile);
-                            Tools.ExecuteCommandStr("java -jar " + Opts.JarFile + " -conf " + configfile, out, err);
+                            CommandLineDhat.run("java -jar " + Opts.JarFile + " -conf " + configfile, out, err);
 
                         } catch (InterruptedException | IOException exp) {
                             exp.printStackTrace();
@@ -116,12 +119,12 @@ class GuideOutStream extends OutputStream {
     }
 
     @Override
-    public void write( byte[] b) throws IOException {
+    public void write(byte[] b) throws IOException {
         J.append(new String(b));
     }
 
     @Override
-    public void write( byte[] b, int off, int len) throws IOException {
+    public void write(byte[] b, int off, int len) throws IOException {
         J.append(new String(b, off, len));
         J.setCaretPosition(J.getText().length());
     }

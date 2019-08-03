@@ -20,6 +20,7 @@ package Component.tool;
  */
 
 import Component.File.FileTool;
+import Component.unit.Configure;
 import Component.unit.LinkerSequence;
 import Component.unit.LocalAlignment;
 import Component.unit.Opts;
@@ -30,9 +31,6 @@ import java.util.ArrayList;
 import java.util.Date;
 
 
-/**
- * @author snowf
- */
 public class LinkerFiltering {
 
     private File FastqFile;
@@ -124,34 +122,31 @@ public class LinkerFiltering {
         Thread[] Process = new Thread[Threads];
         for (int i = 0; i < Threads; i++) {
             int finalI = i;
-            Process[i] = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    String[] Lines;
-                    local[finalI] = new LocalAlignment(MatchScore, MisMatchScore, InDelScore);
+            Process[i] = new Thread(() -> {
+                String[] Lines;
+                local[finalI] = new LocalAlignment(MatchScore, MisMatchScore, InDelScore);
+                synchronized (Process) {
+                    Lines = FileTool.Read4Line(infile);
+                }
+                while (Lines[3] != null) {
+                    String[] Str = Execute(Lines[1], local[finalI], linkers, AdapterAlignment, CutOff, MinAdapterPercent);
+                    Str[7] = Lines[0];
+                    Str[9] = Lines[2];
+                    Str[10] = Lines[3];
+                    //=====================================================输出结果==========================================
                     synchronized (Process) {
-                        Lines = FileTool.Read4Line(infile);
-                    }
-                    while (Lines[3] != null) {
-                        String[] Str = Execute(Lines[1], local[finalI], linkers, AdapterAlignment, CutOff, MinAdapterPercent);
-                        Str[7] = Lines[0];
-                        Str[9] = Lines[2];
-                        Str[10] = Lines[3];
-                        //=====================================================输出结果==========================================
-                        synchronized (Process) {
-                            try {
-                                outfile.write(String.join("\t", Str) + "\n");
-                                Count[0]++;
-                                if (Count[0] % 1000000 == 0) {
-                                    System.out.println(new Date() + "\t" + (Count[0] / 1000000) + " Million reads processed");
-                                }
-                                Lines = FileTool.Read4Line(infile);
-                            } catch (IOException e) {
-                                e.printStackTrace();
+                        try {
+                            outfile.write(String.join("\t", Str) + "\n");
+                            Count[0]++;
+                            if (Count[0] % 1000000 == 0) {
+                                System.out.println(new Date() + "\t" + (Count[0] / 1000000) + " Million reads processed");
                             }
+                            Lines = FileTool.Read4Line(infile);
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
-                        //=============================================================================================
                     }
+                    //=============================================================================================
                 }
             });
             Process[i].start();
@@ -174,8 +169,8 @@ public class LinkerFiltering {
         if (adapters != null) {
             for (String adapter : adapters) {
                 local.CreateMatrix(line, adapter);
-                local.FindMaxIndex();
-                float score = (float) local.getMaxScore() / adapter.length();
+//                local.FindMaxIndex();
+                float score = (float) local.getMaxScore() / (adapter.length() * Configure.MatchScore);
                 if (score > MaxScore) {
                     local.FindMinIndex();
                     MaxScore = score;
@@ -191,7 +186,7 @@ public class LinkerFiltering {
         }
         for (LinkerSequence linker : linkers) {
             local.CreateMatrix(line, linker.getSeq());
-            local.FindMaxIndex();
+//            local.FindMaxIndex();
             int score = local.getMaxScore();
             if (score > MaxScore) {
                 local.FindMinIndex();

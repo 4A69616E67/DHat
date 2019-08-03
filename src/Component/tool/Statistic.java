@@ -6,10 +6,13 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 
-import Component.File.BedpeFile;
+import Component.File.BedPeFile.BedpeFile;
 import Component.unit.LinkerSequence;
 import org.apache.commons.math3.distribution.*;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class Statistic {
 
     public static double[] ReadsLengthDis(File FastqFile, File OutFile) throws IOException {
@@ -48,31 +51,28 @@ public class Statistic {
         BufferedReader reader = new BufferedReader(new FileReader(InFile));
         Thread[] t = new Thread[Threads];
         for (int i = 0; i < t.length; i++) {
-            t[i] = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        String Line;
-                        String[] Str;
-                        while ((Line = reader.readLine()) != null) {
-                            Str = Line.split("\\t+");
-                            if (Integer.parseInt(Str[6]) >= MinScore) {
-                                for (int j = 0; j < LinkerList.length; j++) {
-                                    if (Str[5].equals(LinkerList[j].getType())) {
-                                        synchronized (LinkerList[j]) {
-                                            Count[j]++;
-                                        }
-                                        break;
+            t[i] = new Thread(() -> {
+                try {
+                    String Line;
+                    String[] Str;
+                    while ((Line = reader.readLine()) != null) {
+                        Str = Line.split("\\t+");
+                        if (Integer.parseInt(Str[6]) >= MinScore) {
+                            for (int j = 0; j < LinkerList.length; j++) {
+                                if (Str[5].equals(LinkerList[j].getType())) {
+                                    synchronized (LinkerList[j]) {
+                                        Count[j]++;
                                     }
+                                    break;
                                 }
                             }
                         }
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
 
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
+
             });
             t[i].start();
         }
@@ -80,53 +80,6 @@ public class Statistic {
             aT.join();
         }
         return Count;
-    }
-
-    public static long RangeCount(BedpeFile BedpeFile, double Min, double Max, int Threads) throws IOException, InterruptedException {
-        if (!BedpeFile.isFile()) {
-            return 0;
-        }
-        BufferedReader bedpe = new BufferedReader(new FileReader(BedpeFile));
-        final long[] Count = {0};
-        int[] Index = new int[4];
-        switch (BedpeFile.BedpeDetect()) {
-            case BedpePointFormat:
-                Index = new int[]{3, 3, 1, 1};
-                break;
-            case BedpeRegionFormat:
-                Index = new int[]{5, 4, 2, 1};
-                break;
-        }
-        Thread[] Process = new Thread[Threads];
-        for (int i = 0; i < Threads; i++) {
-            int[] finalIndex = Index;
-            Process[i] = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    String line;
-                    String[] str;
-                    try {
-                        while ((line = bedpe.readLine()) != null) {
-                            str = line.split("\\s+");
-                            int dis = Math.abs(Integer.parseInt(str[finalIndex[0]]) + Integer.parseInt(str[finalIndex[1]]) - Integer.parseInt(str[finalIndex[2]]) - Integer.parseInt(str[finalIndex[3]])) / 2;
-                            if (dis <= Max && dis >= Min) {
-                                synchronized (Thread.class) {
-                                    Count[0]++;
-                                }
-                            }
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-            Process[i].start();
-        }
-        for (int i = 0; i < Threads; i++) {
-            Process[i].join();
-        }
-        bedpe.close();
-        return Count[0];
     }
 
     public static int[] CalculatorBinSize(int[] ChrSize, int Resolution) {
@@ -243,7 +196,7 @@ public class Statistic {
         String line;
         String[] str;
         int distant;
-        byte[] index = null;
+        byte[] index;
         switch (BedpeFile.BedpeDetect()) {
             case BedpePointFormat:
                 index = new byte[]{1, 1, 3, 3};
@@ -279,26 +232,20 @@ public class Statistic {
         if (OutFile != null) {
             BufferedWriter writer = new BufferedWriter(new FileWriter(OutFile));
             writer.write("Distant/(M)\tCount/(log10)\n");
-            for (int i = 0; i < List.size(); i++) {
-                writer.write((double) List.get(i)[1] / 1000000 + "\t" + Math.log10((double) List.get(i)[2]) + "\n");
+            for (long[] aList : List) {
+                writer.write((double) aList[1] / 1000000 + "\t" + Math.log10((double) aList[2]) + "\n");
             }
             writer.close();
         }
         return List;
     }
 
-    /**
-     * 阶乘
-     *
-     * @param k
-     * @return
-     */
     public static long Factorial(int k) {
         return k == 0 ? 1 : k * Factorial(k - 1);
     }
 
     public static void main(String[] args) {
-        double s = 0;
+        double s;
         int num = 7;
         PoissonDistribution p = new PoissonDistribution(4.56);
         s = p.cumulativeProbability(num);

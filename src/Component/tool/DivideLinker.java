@@ -1,6 +1,7 @@
 package Component.tool;
 
 import Component.unit.Default;
+import Component.File.FastQFile.FastqItem;
 import Component.unit.LinkerSequence;
 import Component.unit.Opts;
 import org.apache.commons.cli.*;
@@ -8,6 +9,9 @@ import org.apache.commons.cli.*;
 import java.io.*;
 import java.util.Date;
 
+/**
+ * Created by snowf on 2019/2/17.
+ */
 public class DivideLinker {
     public enum Format {
         First, Second, All
@@ -46,7 +50,7 @@ public class DivideLinker {
         Init();
     }
 
-    public static void main(String[] args) throws ParseException, InterruptedException, IOException {
+    public static void main(String[] args) throws ParseException, IOException {
         Options Argument = new Options();
         Argument.addOption(Option.builder("i").hasArg().argName("file").desc("input file").required().build());
         Argument.addOption(Option.builder("p").hasArg().argName("string").desc("prefix").build());
@@ -82,11 +86,9 @@ public class DivideLinker {
             R1FastqFile[i] = new File(Prefix + "." + LinkerList[i].getType() + ".R1.fastq");
             R2FastqFile[i] = new File(Prefix + "." + LinkerList[i].getType() + ".R2.fastq");
         }
-        int[] length = new int[]{Restriction.indexOf("^"), Restriction.replace("^", "").length() - Restriction.indexOf("^")};
-        MatchSeq[0] = Restriction.replace("^", "").substring(0, Math.max(length[0], length[1]));
-        MatchSeq[1] = Restriction.replace("^", "").substring(Math.min(length[0], length[1]));
-        AppendSeq[0] = Restriction.replace("^", "").substring(Math.max(length[0], length[1]));
-        AppendSeq[1] = Restriction.replace("^", "").substring(0, Math.min(length[0], length[1]));
+        String[] result = RestrictionParse(Restriction);
+        MatchSeq = new String[]{result[0], result[2]};
+        AppendSeq = new String[]{result[1], result[3]};
         switch (Phred) {
             case Phred33:
                 AppendQuality[0] = AppendSeq[0].replaceAll(".", "I");
@@ -100,6 +102,15 @@ public class DivideLinker {
                 System.err.println("Error Phred:\t" + Phred);
                 System.exit(1);
         }
+    }
+
+    public static String[] RestrictionParse(String restriction) {
+        int[] length = new int[]{restriction.indexOf("^"), restriction.replace("^", "").length() - restriction.indexOf("^")};
+        String MatchSeq1 = restriction.replace("^", "").substring(0, Math.max(length[0], length[1]));
+        String MatchSeq2 = restriction.replace("^", "").substring(Math.min(length[0], length[1]));
+        String AppendSeq1 = restriction.replace("^", "").substring(Math.max(length[0], length[1]));
+        String AppendSeq2 = restriction.replace("^", "").substring(0, Math.min(length[0], length[1]));
+        return new String[]{MatchSeq1, AppendSeq1, MatchSeq2, AppendSeq2};
     }
 
     public void Run() throws IOException {
@@ -141,41 +152,41 @@ public class DivideLinker {
         System.out.println();
         Thread[] Process = new Thread[Threads];//multi-ThreadNum
         for (int i = 0; i < Process.length; i++) {
-            Process[i] = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    String Line;
-                    String[] Str, OutString;
-                    try {
-                        while ((Line = reader.readLine()) != null) {
-                            Str = Line.split("\\t");
+            Process[i] = new Thread(() -> {
+                String Line;
+                String[] Str;
+                FastqItem[] OutString;
+                try {
+                    while ((Line = reader.readLine()) != null) {
+                        Str = Line.split("\\t");
+                        if (Integer.parseInt(Str[6]) >= MinLinkerMappingScore) {
                             for (int j = 0; j < LinkerList.length; j++) {
                                 //find out which kind of linker belong to
-                                if (Str[5].equals(LinkerList[j].getType()) && Integer.parseInt(Str[6]) >= MinLinkerMappingScore) {
+                                if (Str[5].equals(LinkerList[j].getType())) {
                                     synchronized (LinkerList[j]) {
                                         LinkerCount[j]++;
                                     }
-                                    OutString = Parse(Str, MatchSeq, AppendSeq, AppendQuality, MaxReadsLength, Type);
+                                    OutString = Execute(Str, MatchSeq, AppendSeq, AppendQuality, MaxReadsLength, Type, j);
                                     switch (Type) {
                                         case First:
                                             if (OutString[0] != null) {
                                                 synchronized (LinkerList[j]) {
-                                                    r1_writer[j].write(OutString[0]);
+                                                    r1_writer[j].write(OutString[0].toString() + "\n");
                                                 }
                                             }
                                             break;
                                         case Second:
                                             if (OutString[1] != null) {
                                                 synchronized (LinkerList[j]) {
-                                                    r2_writer[j].write(OutString[1]);
+                                                    r2_writer[j].write(OutString[1].toString() + "\n");
                                                 }
                                             }
                                             break;
                                         case All:
                                             if (OutString[0] != null && OutString[1] != null) {
                                                 synchronized (LinkerList[j]) {
-                                                    r1_writer[j].write(OutString[0]);
-                                                    r2_writer[j].write(OutString[1]);
+                                                    r1_writer[j].write(OutString[0].toString() + "\n");
+                                                    r2_writer[j].write(OutString[1].toString() + "\n");
                                                 }
                                             }
                                             break;
@@ -184,10 +195,9 @@ public class DivideLinker {
                                 }
                             }
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
-
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             });
             Process[i].start();
@@ -216,83 +226,84 @@ public class DivideLinker {
         System.out.println(new Date() + "\tDivide " + PastFile + " end");
     }
 
-    public static String[] Parse(String[] items, String[] matchSeq, String[] appendSeq, String[] appendQuality, int maxReadsLength, Format format) {
-        String OutString1 = null, OutString2 = null;
+    public static FastqItem[] Execute(String[] items, String[] matchSeq, String[] appendSeq, String[] appendQuality, int maxReadsLength, Format format, int index) {
+        FastqItem OutString1 = null, OutString2 = null;
         switch (format) {
             case All:
-                if (!items[0].equals("*") && !items[3].equals("*")) {
-                    OutString1 = ParseFirst(items, matchSeq[0], appendSeq[0], appendQuality[0], maxReadsLength);
-                    OutString2 = ParseSecond(items, matchSeq[1], appendSeq[1], appendQuality[1], maxReadsLength);
-                }
+                OutString1 = ParseFirst(items, matchSeq[0], appendSeq[0], appendQuality[0], maxReadsLength, index);
+                OutString2 = ParseSecond(items, matchSeq[1], appendSeq[1], appendQuality[1], maxReadsLength, index);
                 break;
             case First:
-                OutString1 = ParseFirst(items, matchSeq[0], appendSeq[0], appendQuality[0], maxReadsLength);
+                OutString1 = ParseFirst(items, matchSeq[0], appendSeq[0], appendQuality[0], maxReadsLength, index);
                 break;
             case Second:
-                OutString2 = ParseSecond(items, matchSeq[1], appendSeq[1], appendQuality[1], maxReadsLength);
+                OutString2 = ParseSecond(items, matchSeq[1], appendSeq[1], appendQuality[1], maxReadsLength, index);
                 break;
         }
-        return new String[]{OutString1, OutString2};
+        return new FastqItem[]{OutString1, OutString2};
     }
 
-    private static String ParseFirst(String[] S, String MatchSeq, String AppendSeq, String AppendQuality, int MaxReadsLength) throws NumberFormatException, IndexOutOfBoundsException {
+    private static FastqItem ParseFirst(String[] S, String MatchSeq, String AppendSeq, String AppendQuality, int MaxReadsLength, int index) throws NumberFormatException, IndexOutOfBoundsException {
         if (S[0].equals("*")) {
             return null;
         }
-        StringBuilder FastqString = new StringBuilder();
         int EndSite = Integer.parseInt(S[1]) - 1;
         String ReadsTitle = S[7];
         String ReadsSeq = S[8].substring(0, EndSite).replace("N", "");
         String Orientation = S[9];
         String Quality = S[10].substring(EndSite - ReadsSeq.length(), EndSite);
         //---------------------------------------------------
-        if (!MatchSeq.equals("") && AppendBase(ReadsSeq, MatchSeq, Format.First)) {
-            if (ReadsSeq.length() <= MaxReadsLength + 10) {
-                ReadsSeq += AppendSeq;
-                Quality += AppendQuality;
-            } else {
-                ReadsSeq = ReadsSeq.substring(ReadsSeq.length() - MaxReadsLength) + AppendSeq;
-                Quality = Quality.substring(Quality.length() - MaxReadsLength) + AppendQuality;
-            }
-        } else {
-            if (ReadsSeq.length() > MaxReadsLength + 10) {
-                ReadsSeq = ReadsSeq.substring(ReadsSeq.length() - MaxReadsLength);
-                Quality = Quality.substring(Quality.length() - MaxReadsLength);
-            }
+        if (ReadsSeq.length() > MaxReadsLength + 2) {
+            ReadsSeq = ReadsSeq.substring(ReadsSeq.length() - MaxReadsLength);
+            Quality = Quality.substring(Quality.length() - MaxReadsLength);
         }
-        //reads title
-        FastqString.append(ReadsTitle).append("\n").append(ReadsSeq).append("\n").append(Orientation).append("\n").append(Quality).append("\n");
-        return FastqString.toString();
+        if (!MatchSeq.equals("") && AppendBase(ReadsSeq, MatchSeq, Format.First)) {
+            synchronized (Opts.LFStat.linkers[index].lock[0]) {
+                Opts.LFStat.linkers[index].AddBaseToLeftPair++;
+            }
+            ReadsSeq += AppendSeq;
+            Quality += AppendQuality;
+        }
+        synchronized (Opts.LFStat.linkers[index].lock[1]) {
+            Opts.LFStat.linkers[index].LeftValidPairNum++;
+            if (!Opts.LFStat.linkers[index].ReadsLengthDistributionR1.containsKey(ReadsSeq.length())) {
+                Opts.LFStat.linkers[index].ReadsLengthDistributionR1.put(ReadsSeq.length(), new int[]{0});
+            }
+            Opts.LFStat.linkers[index].ReadsLengthDistributionR1.get(ReadsSeq.length())[0]++;
+        }
+        return new FastqItem(new String[]{ReadsTitle, ReadsSeq, Orientation, Quality});
     }
 
-    private static String ParseSecond(String[] S, String MatchSeq, String AppendSeq, String AppendQuality, int MaxReadsLength) throws NumberFormatException, IndexOutOfBoundsException {
+    private static FastqItem ParseSecond(String[] S, String MatchSeq, String AppendSeq, String AppendQuality, int MaxReadsLength, int index) throws NumberFormatException, IndexOutOfBoundsException {
         if (S[3].equals("*")) {
             return null;
         }
-        StringBuilder FastqString = new StringBuilder();
-        int StartSite = Integer.parseInt(S[2]) + 1;
+        int StartSite = Integer.parseInt(S[2]);
         int EndSite = S[4].equals("*") ? S[8].length() : Integer.parseInt(S[4]) - 1;
         String ReadsTitle = S[7];
-        String ReadsSeq = S[8].substring(StartSite - 1, EndSite).replace("N", "");
+        String ReadsSeq = S[8].substring(StartSite, EndSite).replace("N", "");
         String Orientation = S[9];
-        String Quality = S[10].substring(StartSite - 1, StartSite - 1 + ReadsSeq.length());
+        String Quality = S[10].substring(StartSite, StartSite + ReadsSeq.length());
         //------------------------------------------------------
-        if (!MatchSeq.equals("") && AppendBase(ReadsSeq, MatchSeq, Format.Second)) {
-            if (ReadsSeq.length() <= MaxReadsLength + 10) {
-                ReadsSeq = AppendSeq + ReadsSeq;
-                Quality = AppendQuality + Quality;
-            } else {
-                ReadsSeq = AppendSeq + ReadsSeq.substring(0, MaxReadsLength);
-                Quality = AppendQuality + Quality.substring(0, MaxReadsLength);
-            }
-        } else {
-            if (ReadsSeq.length() > MaxReadsLength + 10) {
-                ReadsSeq = ReadsSeq.substring(0, MaxReadsLength);
-                Quality = Quality.substring(0, MaxReadsLength);
-            }
+        if (ReadsSeq.length() > MaxReadsLength + 2) {
+            ReadsSeq = ReadsSeq.substring(0, MaxReadsLength);
+            Quality = Quality.substring(0, MaxReadsLength);
         }
-        FastqString.append(ReadsTitle).append("\n").append(ReadsSeq).append("\n").append(Orientation).append("\n").append(Quality).append("\n");
-        return FastqString.toString();
+        if (!MatchSeq.equals("") && AppendBase(ReadsSeq, MatchSeq, Format.Second)) {
+            synchronized (Opts.LFStat.linkers[index].lock[2]) {
+                Opts.LFStat.linkers[index].AddBaseToRightPair++;
+            }
+            ReadsSeq = AppendSeq + ReadsSeq;
+            Quality = AppendQuality + Quality;
+        }
+        synchronized (Opts.LFStat.linkers[index].lock[3]) {
+            Opts.LFStat.linkers[index].RightValidPairNum++;
+            if (!Opts.LFStat.linkers[index].ReadsLengthDistributionR2.containsKey(ReadsSeq.length())) {
+                Opts.LFStat.linkers[index].ReadsLengthDistributionR2.put(ReadsSeq.length(), new int[]{0});
+            }
+            Opts.LFStat.linkers[index].ReadsLengthDistributionR2.get(ReadsSeq.length())[0]++;
+        }
+        return new FastqItem(new String[]{ReadsTitle, ReadsSeq, Orientation, Quality});
     }
 
     public void setThreads(int threads) {

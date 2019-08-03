@@ -1,67 +1,68 @@
 import java.io.*;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryUsage;
 import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
 import java.util.*;
 
 import Bin.*;
 import Component.File.*;
-import Component.Image.PlotMatrix;
+import Component.File.BedFile.BedFile;
+import Component.File.BedPeFile.BedpeFile;
+import Component.File.FastQFile.FastqFile;
+import Component.File.FastaFile.FastaFile;
+import Component.File.SamFile.SamFile;
+import Component.FragmentDigested.FragmentDigested;
+import Component.FragmentDigested.RestrictionEnzyme;
 import Component.Process.BedpeProcess;
 import Component.Process.PreProcess;
 import Component.Process.SeProcess;
+import Component.SystemDhat.CommandLineDhat;
+import Component.SystemDhat.Qsub;
 import Component.tool.*;
-import Component.tool.FindRestrictionSite;
 import Component.unit.*;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
+
+/**
+ * Created by snowf on 2019/2/17.
+ */
 
 public class Main {
 
     //===================================================================
     private Chromosome[] Chromosomes;
-    private String[] HalfLinker;
     private LinkerSequence[] LinkerSeq, ValidLinkerSeq;
     private String LinkerA, LinkerB;
     private String Restriction;
     private String Prefix;
     private FastqFile InputFile;
-    private File GenomeFile;
+    //    private File GenomeFile;
     private File LinkerFile;
     private File AdapterFile;
     private String[] AdapterSeq;
-    private File IndexPrefix;
-    private File ChrSizeFile;
+    //    private File IndexPrefix;
     private int MatchScore, MisMatchScore, InDelScore;
     private Opts.FileFormat ReadsType;
     private int AlignMisMatch;
     private int MinUniqueScore;
     private int MaxReadsLength;
     private int[] Resolution, DrawResolution;
-    private int LinkerLength, MinLinkerLength;
-    private boolean Iteration = true;
+    private int LinkerLength;
+    private boolean Iteration = false;
     private int Threads;
-    private Date PreTime, SeTime, BedpeTime, MatrixTime, TransTime, EndTime;
-    private ArrayList<String> Step = new ArrayList<>();
     private ArrayList<Thread> SThread = new ArrayList<>();//统计线程队列
     //===================================================================
     private int MinLinkerFilterQuality;
     private File EnzyPath;//酶切位点文件目录
     private String EnzyFilePrefix;//酶切位点文件前缀
-    private CommonFile[] ChrEnzyFile;//每条染色体的酶切位点位置文件
+    private BedFile[] ChrEnzyFile;//每条染色体的酶切位点位置文件
     private File PreProcessDir;//预处理输出目录
     private File SeProcessDir;//单端处理输出目录
     private File BedpeProcessDir;//bedpe处理输出目录
     private File MakeMatrixDir;//建立矩阵输出目录
-    private File TransLocationDir;//染色体易位输出目录
     private File ReportDir;//生成报告目录
     private Report Stat;
     private File OutPath;
-    private int DetectResolution;
     private int DeBugLevel;
-    private String Bwa = Configure.Bwa;
-    private String Python = Configure.Python;
+
 
     private Main(String[] args) throws IOException {
         Options Argument = new Options();
@@ -70,11 +71,12 @@ public class Main {
         Argument.addOption(Option.builder("p").hasArg().argName("string").desc("Prefix").build());//输出前缀(不需要包括路径)
         Argument.addOption(Option.builder("adv").hasArg().argName("file").desc("Advanced configure file").build());//高级配置文件(一般不用修改)
         Argument.addOption(Option.builder("o").longOpt("out").hasArg().argName("dir").desc("Out put directory").build());//输出路径
+        Argument.addOption(Option.builder("efp").hasArg().argName("path").desc("Enzyme fragment path, created by this tool").build());//酶切片段目录
         Argument.addOption(Option.builder("r").longOpt("res").hasArgs().argName("ints").desc("resolution").build());//分辨率
         Argument.addOption(Option.builder("s").longOpt("step").hasArgs().argName("string").desc("same as \"Step\" in configure file").build());//运行步骤
         Argument.addOption(Option.builder("t").longOpt("thread").hasArg().argName("int").desc("number of threads").build());//线程数
         Argument.addOption(Option.builder("D").longOpt("Debug").hasArg().argName("int").desc("Debug Level (default " + DeBugLevel + ")").build());
-        Argument.addOption(Option.builder("pbs").hasArg(false).desc("running bug pbs").build());
+        Argument.addOption(Option.builder("pbs").hasArg(false).desc("running by pbs").build());
         final String helpHeader = "Version: " + Opts.Version + "\nAuthor: " + Opts.Author + "\nContact: " + Opts.Email;
         final String helpFooter = "Note: use \"java -jar " + Opts.JarFile.getName() + " install\" when you first use!\n      JVM can get " + String.format("%.2f", Opts.MaxMemory / Math.pow(10, 9)) + "G memory";
         if (args.length == 0) {
@@ -97,31 +99,42 @@ public class Main {
         Configure.GetOption(ConfigureFile, AdvConfigFile);//读取配置信息
         //获取命令行参数信息
         if (ComLine.hasOption("i"))
-            Configure.InputFile = new FastqFile(ComLine.getOptionValue("i"));
+            Configure.Require.InputFile.Value = ComLine.getOptionValue("i");
         if (ComLine.hasOption("p"))
-            Configure.Prefix = ComLine.getOptionValue("p");
+            Configure.Optional.Prefix.Value = ComLine.getOptionValue("p");
         if (ComLine.hasOption("o"))
-            Configure.OutPath = new File(ComLine.getOptionValue("o"));
-        if (ComLine.hasOption("s"))
-            Configure.Step = String.join(" ", ComLine.getOptionValues("s"));
+            Configure.Optional.OutPath.Value = ComLine.getOptionValue("o");
+        if (ComLine.hasOption("efp"))
+            Configure.Optional.EnzymeFragmentPath.Value = ComLine.getOptionValue("efp");
+        if (ComLine.hasOption("s")) {
+            Configure.Optional.Step.Value = String.join(" ", ComLine.getOptionValues("s"));
+        }
         if (ComLine.hasOption("t"))
-            Configure.Thread = Integer.parseInt(ComLine.getOptionValue("t"));
+            Configure.Optional.Thread.Value = ComLine.getOptionValue("t");
         if (ComLine.hasOption("r"))
-            Configure.Resolution = StringArrays.toInteger(ComLine.getOptionValues("r"));
+            Configure.Optional.Resolutions.Value = String.join(" ", ComLine.getOptionValues("r"));
         if (ComLine.hasOption("D"))
-            Configure.DeBugLevel = Integer.parseInt(ComLine.getOptionValue("D"));
+            Configure.Advance.DeBugLevel.Value = ComLine.getOptionValue("D");
         if (ComLine.hasOption("pbs")) {
             try {
-                String comline = "java -jar " + Opts.JarFile + " " + String.join(" ", args).replace("-pbs", "");
+                String comline = "java -Xmx" + (int) Math.ceil(Opts.MaxMemory / Math.pow(10, 9)) + "G -jar " + Opts.JarFile + " " + String.join(" ", args).replace("-pbs", "");
                 CommonFile PbsFile = new CommonFile("SubmitScript.sh");
-                PbsFile.clean();
+                if (!PbsFile.clean()) {
+                    System.err.println("can't clean " + PbsFile.getName());
+                    System.exit(1);
+                }
                 PbsFile.Append(comline);
-                Tools.ExecuteCommandStr("qsub -d ./ -l nodes=1:ppn=" + Configure.Thread + " -N " + Configure.Prefix + " " + PbsFile, new PrintWriter(System.out), new PrintWriter(System.err));
+                String SubmitId = new Qsub(PbsFile, "1", Integer.parseInt(Configure.Optional.Thread.Value.toString()), Opts.MaxMemory, Configure.Optional.Prefix.Value.toString()).run();
+                System.out.println(SubmitId);
+//                comline = "qsub -d ./ -l nodes=1:ppn=" + Configure.Optional.Thread.Value.toString() + ",mem=" + (int) Math.ceil(Opts.MaxMemory / Math.pow(10, 9)) + "g -N " + Configure.Optional.Prefix.Value.toString() + " " + PbsFile;
+//                SystemDhat.out.println(comline);
+//                Component.SystemDhat.CommandLine.run(comline, new PrintWriter(SystemDhat.out), new PrintWriter(SystemDhat.err));
                 System.exit(0);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
+        Configure.Init();
         Init();//变量初始化
     }
 
@@ -131,33 +144,39 @@ public class Main {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         //==============================================测试区==========================================================
-        MemoryUsage memoryUsage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
-        long maxMemorySize = memoryUsage.getMax();
-        long usedMemorySize = memoryUsage.getUsed();
+//        MemoryUsage memoryUsage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
+//        long maxMemorySize = memoryUsage.getMax();
+//        long usedMemorySize = memoryUsage.getUsed();
+//        Opts.StepCheck("NoiseReduce - ");
 
         //================================================初始化========================================================
         if (args.length >= 1 && args[0].equals("install")) {
-            if (!Opts.ResourceDir.isDirectory() & !Opts.ResourceDir.mkdir())
-                System.err.println(new Date() + ":\tCan't Create " + Opts.ResourceDir.getName());
-            if (!Opts.ScriptDir.isDirectory() & !Opts.ScriptDir.mkdir())
-                System.err.println(new Date() + ":\tCan't Create " + Opts.ScriptDir.getName());
+            if (!Opts.OutResourceDir.isDirectory() & !Opts.OutResourceDir.mkdir())
+                System.err.println(new Date() + ":\tCan't Create " + Opts.OutResourceDir.getName());
+            if (!Opts.OutScriptDir.isDirectory() & !Opts.OutScriptDir.mkdir())
+                System.err.println(new Date() + ":\tCan't Create " + Opts.OutScriptDir.getName());
             for (String f : Opts.ScriptFile) {
-                System.out.println("Extract " + Opts.ScriptDir + "/" + f);
-                FileTool.ExtractFile("/Archive/" + f, new File(Opts.ScriptDir + "/" + f));
+                System.out.println("Extract " + Opts.OutScriptDir + "/" + f);
+                FileTool.ExtractFile("/" + Opts.InterArchiveDir + "/" + f, new File(Opts.OutScriptDir + "/" + f));
             }
             for (String f : Opts.ResourceFile) {
-                System.out.println("Extract " + Opts.ResourceDir + "/" + f);
-                FileTool.ExtractFile("/resource/" + f, new File(Opts.ResourceDir + "/" + f));
+                System.out.println("Extract " + Opts.OutResourceDir + "/" + f);
+                FileTool.ExtractFile("/" + Opts.InterResourceDir + "/" + f, new File(Opts.OutResourceDir + "/" + f));
             }
-            System.out.println("Extract " + Opts.JarFile.getParent() + "/ReadMe.txt");
-            FileTool.ExtractFile(Opts.ReadMeFile.getPath(), new File(Opts.JarFile.getParent() + "/ReadMe.txt"));
+            System.out.println("Extract " + Opts.JarFile.getParent() + "/" + Opts.ReadMeFile.getName());
+            FileTool.ExtractFile(Opts.ReadMeFile.getPath(), new File(Opts.JarFile.getParent() + "/" + Opts.ReadMeFile.getName()));
             System.out.println("Install finish!");
             System.exit(0);
         }
         //==============================================================================================================
         Main main = new Main(args);
         main.ShowParameter();//显示参数
-        main.Run();
+        try {
+            main.Run();
+        } catch (Exception e) {
+            Opts.RSStat.Finish();
+            throw e;
+        }
     }
 
     public void Run() throws IOException, InterruptedException {
@@ -167,198 +186,155 @@ public class Main {
         System.out.println("Author:\t" + Opts.Author);
         System.out.println("Max Memory:\t" + String.format("%.2f", Opts.MaxMemory / Math.pow(10, 9)) + "G");
         System.out.println("-------------------------------------------------------------------------------");
+        //==============================================================================================================
+        AbstractFile.delete(Opts.CommandOutFile);
+        AbstractFile.delete(Opts.StatisticFile);
+        AbstractFile.delete(Opts.ResourceStatFile);
+        Opts.RSStat.Init();
+        Opts.RSStat.Stat();
         //===========================================初始化输出文件======================================================
         FastqFile[] LinkerFastqFileR1, UseLinkerFasqFileR1 = new FastqFile[ValidLinkerSeq.length];
         FastqFile[] LinkerFastqFileR2, UseLinkerFasqFileR2 = new FastqFile[ValidLinkerSeq.length];
         //==============================================================================================================
-        Stat.RunTime.StartTime = DateFormat.getDateTimeInstance().format(new Date());
-        Stat.ComInfor.HalfLinkerA = LinkerA;
-        Stat.ComInfor.HalfLinkerB = LinkerB;
-        Stat.ComInfor.MatchScore = MatchScore;
-        Stat.ComInfor.MisMatchScore = MisMatchScore;
-        Stat.ComInfor.InDelScore = InDelScore;
-        Stat.ComInfor.Restriction = Restriction;
-        Stat.ComInfor.IndexPrefix = IndexPrefix;
-        Stat.MinUniqueScore = MinUniqueScore;
-        Stat.ComInfor.MaxReadsLen = MaxReadsLength;
-        Stat.ComInfor.Resolution = Resolution;
-        Stat.ComInfor.Thread = Threads;
-        Stat.LinkerInit(LinkerSeq.length);
-        Stat.LinkerClassInit(ValidLinkerSeq.length);
-        Stat.PreDir = PreProcessDir;
-        Stat.SeDir = SeProcessDir;
-        Stat.BedpeDir = BedpeProcessDir;
-        Stat.MatrixDir = MakeMatrixDir;
-        for (Component.unit.Chromosome Chromosome : Chromosomes) {
-            Stat.Chromosome.add(Chromosome.Name);
-        }
-        for (int i = 0; i < ValidLinkerSeq.length; i++) {
-            Stat.UseLinker[i].LinkerType = ValidLinkerSeq[i].getType();
-            Stat.UseLinker[i].SeProcessOutDir = SeProcessDir;
-        }
-        //==============================================================================================================
-        Opts.CommandOutFile.delete();
         Thread ST;//统计线程
         Thread[] STS;//统计线程
-        //==========================================Create Index========================================================
-        Thread createindex = new Thread();
-        if (IndexPrefix == null || IndexPrefix.getName().equals("")) {
-            createindex = CreateIndex(GenomeFile);
-            createindex.start();
-        }
+        Thread findenzy = FindRestrictionFragment();
         //=========================================linker filter==linker 过滤===========================================
-        PreTime = new Date();
-        //-----------------------------------Adapter序列处理------------------------------
-        AdapterFile.delete();//删除原来的Adapter文件
-        FileUtils.touch(AdapterFile);//创建新的Adapter文件
-        if (AdapterSeq != null) {
-            //若Adapter序列不为空
-            if (AdapterSeq[0].compareToIgnoreCase("auto") == 0) {
-                //标记为自动识别Adapter
-                AdapterSeq = new String[1];
-                AdapterSeq[0] = InputFile.AdapterDetect(new File(PreProcessDir + "/" + Prefix), LinkerLength + MaxReadsLength);
-                System.out.println(new Date() + "\tDetected adapter seq:\t" + AdapterSeq[0]);
-            }
-            //将Adapter序列输出到文件中
-            FileUtils.write(AdapterFile, String.join("\n", AdapterSeq), StandardCharsets.UTF_8);
-            Stat.AdapterSequence = String.join(" ", AdapterSeq);
-        }
+        Date preTime = new Date();
         //---------------------------------保存linker序列--------------------------------
-        LinkerFile.delete();
         FileUtils.touch(LinkerFile);
         for (LinkerSequence linkerSeq : LinkerSeq) {
             FileUtils.write(LinkerFile, linkerSeq.getSeq() + "\t" + linkerSeq.getType() + "\n", StandardCharsets.UTF_8, true);
         }
-        //-----------------------------------------------------------------------------
         PreProcess preprocess = new PreProcess(PreProcessDir, Prefix, InputFile, LinkerFile, AdapterFile, Restriction);
         preprocess.setMinLinkerMappingScore(MinLinkerFilterQuality);
-        if (StepCheck(Opts.Step.PreProcess.toString())) {
-            preprocess.run();
+        //-----------------------------------Adapter序列处理------------------------------
+        if (Opts.Step.PreProcess.Execute) {
+            if (AdapterSeq != null) {
+                //若Adapter序列不为空
+                if (AdapterSeq[0].compareToIgnoreCase("auto") == 0) {
+                    //标记为自动识别Adapter
+                    AdapterSeq = new String[1];
+//                    AdapterSeq[0] = InputFile.AdapterDetection(new File(PreProcessDir + "/" + Prefix), LinkerLength + MaxReadsLength);
+                    CommonFile StatFile = new CommonFile(PreProcessDir + "/" + Prefix + ".adapter_detection.base.freq");
+                    AdapterSeq[0] = FileTool.AdapterDetection(InputFile, new File(PreProcessDir + "/" + Prefix), LinkerLength + MaxReadsLength, StatFile);
+                    Opts.LFStat.AdapterBaseDisPng = new File(Stat.getImageDir() + "/" + StatFile.getName() + ".png");
+                    String ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t stackbar -y Percentage --title Base_Frequency" + " -i " + StatFile + " -o " + Opts.LFStat.AdapterBaseDisPng;
+                    Opts.CommandOutFile.Append(ComLine + "\n");
+                    CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+                    System.out.println(new Date() + "\tDetected adapter seq:\t" + AdapterSeq[0]);
+                }
+                //将Adapter序列输出到文件中
+                FileUtils.write(AdapterFile, String.join("\n", AdapterSeq), StandardCharsets.UTF_8);
+                Opts.LFStat.Adapters = AdapterSeq;
+            }
+            //-----------------------------------------------------------------------------
+            preprocess.run();//运行预处理部分
+            //----------------------------------------------------------------------
         }
         File PastFile = preprocess.getLinkerFilterOutFile();//获取past文件位置
         //=================================================统计信息=====================================================
-        ST = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Stat.RawDataReadsNum = InputFile.ItemNum > 0 ? InputFile.ItemNum : InputFile.CalculateItemNumber();
-                    System.err.println(InputFile + ":\t" + InputFile.ItemNum);
-                    //calculate linker count
-                    for (int i = 0; i < LinkerSeq.length; i++) {
-                        Stat.Linkers[i].Name = LinkerSeq[i].getType();
-                        Stat.Linkers[i].Num = preprocess.getFastqR1File()[i].ItemNum > 0 ? preprocess.getFastqR1File()[i].ItemNum : (double) preprocess.getFastqR1File()[i].CalculateItemNumber();
-                        System.err.println(Stat.Linkers[i].Name + ":\t" + Stat.Linkers[i].Num);
-                    }
-                    File LinkerDisFile = new File(Stat.getDataDir() + "/LinkerScoreDis.data");
-                    Statistic.CalculateLinkerScoreDistribution(PastFile, LinkerLength * MatchScore, LinkerDisFile);
-                    Configure.LinkerScoreDisPng = new File(Stat.getImageDir() + "/" + LinkerDisFile.getName().replace(".data", ".png"));
-                    String ComLine = Python + " " + Opts.StatisticPlotFile + " -i " + LinkerDisFile + " -t bar -o " + Configure.LinkerScoreDisPng;
-                    Opts.CommandOutFile.Append(ComLine + "\n");
-                    Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
-                } catch (IOException | InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        ST.start();
-        SThread.add(ST);
+        if (Opts.Step.Statistic.Execute) {
+            System.out.println(new Date() + " [statistic]:\tStart Linker filter statistic");
+            Opts.LFStat.InputFile = new CommonFile(PastFile);
+            Opts.LFStat.Stat(Configure.Thread);
+        }
+        Opts.StatisticFile.Append(Opts.LFStat.Show() + "\n");
+        //--------------------------------------------draw statistic figure---------------------------------------------
+        CommonFile LinkerDisFile = new CommonFile(Stat.getDataDir() + "/LinkerScoreDis.data");
+        Opts.LFStat.WriteLinkerScoreDis(LinkerDisFile);
+        Opts.LFStat.LinkerScoreDisPng = new File(Stat.getImageDir() + "/" + LinkerDisFile.getName().replace(".data", ".png"));
+        String ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -i " + LinkerDisFile + " -t bar -o " + Opts.LFStat.LinkerScoreDisPng;
+        Opts.CommandOutFile.Append(ComLine + "\n");
+        CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+        CommonFile[] ReadsLenDisFile = new CommonFile[LinkerSeq.length];
+        Stat.ReadsLengthDisBase64 = new String[LinkerSeq.length];
+        for (int i = 0; i < ReadsLenDisFile.length; i++) {
+            ReadsLenDisFile[i] = new CommonFile(Stat.getDataDir() + "/" + Prefix + "." + LinkerSeq[i].getType() + ".reads_length_distribution.data");
+        }
+        Opts.LFStat.WriteReadsLengthDis(ReadsLenDisFile);
+        for (int i = 0; i < ReadsLenDisFile.length; i++) {
+            Opts.LFStat.linkers[i].ReadLengthDisPng = new File(Stat.getImageDir() + "/" + ReadsLenDisFile[i].getName().replace(".data", ".png"));
+            ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t bar -y Count --title " + LinkerSeq[i].getType() + " -i " + ReadsLenDisFile[i] + " -o " + Opts.LFStat.linkers[i].ReadLengthDisPng;
+            Opts.CommandOutFile.Append(ComLine + "\n");
+            CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+        }
         //==============================================================================================================
         LinkerFastqFileR1 = preprocess.getFastqR1File();
         LinkerFastqFileR2 = preprocess.getFastqR2File();
-        Stat.ReadsLengthDisBase64 = new String[LinkerSeq.length];
-        //=========================================calculate reads length===============================================
-        ST = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    for (int i = 0; i < LinkerSeq.length; i++) {
-                        double[][] dis = new double[2][];
-                        dis[0] = Statistic.ReadsLengthDis(LinkerFastqFileR1[i], null);
-                        dis[1] = Statistic.ReadsLengthDis(LinkerFastqFileR2[i], null);
-                        File OutFile = new File(Stat.getDataDir() + "/" + Prefix + "." + LinkerSeq[i].getType() + ".reads_length_distribution.data");
-                        BufferedWriter writer = new BufferedWriter(new FileWriter(OutFile));
-                        writer.write("Length\tR1\tR2\n");
-                        for (int j = 0; j < Math.max(dis[0].length, dis[1].length); j++) {
-                            writer.write(j + "\t");
-                            if (j > dis[0].length - 1) {
-                                writer.write("0\t");
-                            } else {
-                                writer.write(dis[0][j] + "\t");
-                            }
-                            if (j > dis[1].length - 1) {
-                                writer.write("0\n");
-                            } else {
-                                writer.write(dis[1][j] + "\n");
-                            }
-                        }
-                        writer.close();
-                        File PngFile = new File(Stat.getImageDir() + "/" + OutFile.getName().replace(".data", ".png"));
-                        String ComLine = Python + " " + Opts.StatisticPlotFile + " -t bar -y Count --title " + LinkerSeq[i].getType() + " -i " + OutFile + " -o " + PngFile;
-                        Opts.CommandOutFile.Append(ComLine + "\n");
-                        Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
-                        Stat.ReadsLengthDisBase64[i] = Stat.GetBase64(PngFile);
-                    }
-                } catch (IOException | InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        ST.start();
-        SThread.add(ST);
+//        Stat.ReadsLengthDisBase64 = new String[LinkerSeq.length];
         //==============================================================================================================
         for (int i = 0; i < ValidLinkerSeq.length; i++) {
             for (int j = 0; j < LinkerSeq.length; j++) {
                 if (LinkerSeq[j].getType().equals(ValidLinkerSeq[i].getType())) {
                     UseLinkerFasqFileR1[i] = LinkerFastqFileR1[j];
                     UseLinkerFasqFileR2[i] = LinkerFastqFileR2[j];
-                    Stat.UseLinker[i].FastqFileR1 = UseLinkerFasqFileR1[i];
-                    Stat.UseLinker[i].FastqFileR2 = UseLinkerFasqFileR2[i];
+                    Opts.ALStat.linkers[i].InputFile = UseLinkerFasqFileR1[i];
                 }
             }
         }
-        createindex.join();
         //=======================================Se Process===单端处理==================================================
-        SeTime = new Date();
-        for (int i = 0; i < ValidLinkerSeq.length; i++) {
-            if (StepCheck(Opts.Step.SeProcess.toString())) {
-                System.out.println(new Date() + "\tStart SeProcess");
-                SeProcess(UseLinkerFasqFileR1[i], UseLinkerFasqFileR1[i].getName().replace(".fastq", ""));
-                SeProcess(UseLinkerFasqFileR2[i], UseLinkerFasqFileR2[i].getName().replace(".fastq", ""));
-            }
-        }
-        //=============================================获取排序好的bed文件===============================================
+        Date seTime = new Date();
+        System.err.println("Linker filter: " + preTime + " - " + seTime);
+        Opts.LFStat.Time = seTime.getTime() - preTime.getTime();
+        //--------------------------------------------------------------------------------------------------------------
         BedFile[] R1SortBedFile = new BedFile[ValidLinkerSeq.length];
         BedFile[] R2SortBedFile = new BedFile[ValidLinkerSeq.length];
         BedpeFile[] SeBedpeFile = new BedpeFile[ValidLinkerSeq.length];
         for (int i = 0; i < ValidLinkerSeq.length; i++) {
-            R1SortBedFile[i] = new SeProcess(UseLinkerFasqFileR1[i], IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR1[i].getName().replace(".fastq", ""), ReadsType).getSortBedFile();
-            R2SortBedFile[i] = new SeProcess(UseLinkerFasqFileR2[i], IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR2[i].getName().replace(".fastq", ""), ReadsType).getSortBedFile();
+            R1SortBedFile[i] = new SeProcess(UseLinkerFasqFileR1[i], Configure.Bwa, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR1[i].getName().replace(".fastq", ""), ReadsType).getSortBedFile();
+            R2SortBedFile[i] = new SeProcess(UseLinkerFasqFileR2[i], Configure.Bwa, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR2[i].getName().replace(".fastq", ""), ReadsType).getSortBedFile();
             SeBedpeFile[i] = new BedpeFile(SeProcessDir + "/" + Prefix + "." + ValidLinkerSeq[i].getType() + ".bedpe");
-            if (StepCheck(Opts.Step.Bed2BedPe.toString())) {
-                new BedToBedpe(R1SortBedFile[i], R2SortBedFile[i], SeBedpeFile[i], 4, "");//合并左右端bed文件，输出bedpe文件
-            }
-            //==========================================================================================================
-            Stat.UseLinker[i].UniqMapFileR1 = R1SortBedFile[i];
-            Stat.UseLinker[i].UniqMapFileR2 = R2SortBedFile[i];
-            Stat.UseLinker[i].RawBedpeFile = SeBedpeFile[i];
-            int finalI = i;
-            ST = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Stat.UseLinker[finalI].FastqNumR1 = (double) Stat.UseLinker[finalI].FastqFileR1.CalculateItemNumber();
-                        Stat.UseLinker[finalI].FastqNumR2 = (double) Stat.UseLinker[finalI].FastqFileR2.CalculateItemNumber();
-                        Stat.UseLinker[finalI].UniqMapNumR1 = Stat.UseLinker[finalI].UniqMapFileR1.CalculateItemNumber();
-                        Stat.UseLinker[finalI].UniqMapNumR2 = Stat.UseLinker[finalI].UniqMapFileR2.CalculateItemNumber();
-                        Stat.UseLinker[finalI].RawBedpeNum = Stat.UseLinker[finalI].RawBedpeFile.CalculateItemNumber();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-            ST.start();
-            SThread.add(ST);
+            Opts.NRStat.linkers[i].InputFile = SeBedpeFile[i];
         }
+        if (Opts.Step.SeProcess.Execute) {
+            if (Opts.Step.FindEnzymeFragment.Execute) {
+                findenzy.start();
+            }
+            if (Configure.Bwa.IndexPrefix == null || Configure.Bwa.IndexCheck == Opts.FileFormat.ErrorFormat) {
+                CreateIndex(Configure.Bwa.GenomeFile);
+                Configure.Bwa.IndexCheck = Opts.FileFormat.Valid;
+            }
+            for (int i = 0; i < ValidLinkerSeq.length; i++) {
+                System.out.println(new Date() + "\tStart Alignment");
+                //==========================================Create Index========================================================
+                Opts.ALStat.GenomeIndex = Configure.Bwa.IndexPrefix;
+                SamFile[] r1 = SeProcess(UseLinkerFasqFileR1[i], UseLinkerFasqFileR1[i].getName().replace(".fastq", ""));
+                SamFile[] r2 = SeProcess(UseLinkerFasqFileR2[i], UseLinkerFasqFileR2[i].getName().replace(".fastq", ""));
+                Opts.ALStat.linkers[i].InputNum = UseLinkerFasqFileR1[i].getItemNum();
+                Opts.ALStat.linkers[i].R1Mapped = r1[0].getItemNum();
+                Opts.ALStat.linkers[i].R1MultiMapped = r1[1].getItemNum();
+                Opts.ALStat.linkers[i].R1Unmapped = r1[2].getItemNum();
+                Opts.ALStat.linkers[i].R2Mapped = r2[0].getItemNum();
+                Opts.ALStat.linkers[i].R2MultiMapped = r2[1].getItemNum();
+                Opts.ALStat.linkers[i].R2Unmapped = r2[2].getItemNum();
+                System.out.println(new Date() + "\t" + R1SortBedFile[i].getName() + " " + R2SortBedFile[i].getName() + " to " + SeBedpeFile[i].getName());
+                SeBedpeFile[i].BedToBedpe(R1SortBedFile[i], R2SortBedFile[i]);//合并左右端bed文件，输出bedpe文件
+                Opts.ALStat.linkers[i].MergeNum = SeBedpeFile[i].getItemNum();
+            }
+            if (Opts.Step.FindEnzymeFragment.Execute) {
+                findenzy.join();
+                Opts.Step.FindEnzymeFragment.Execute = false;
+            }
+        }
+        if (Opts.Step.Statistic.Execute) {
+            System.out.println(new Date() + " [statistic]:\tStart alignment statistic");
+            for (int i = 0; i < Opts.ALStat.Linkers.length; i++) {
+                Opts.ALStat.linkers[i].InputFile = new FastqFile(UseLinkerFasqFileR1[i]);
+                SeProcess se = new SeProcess(UseLinkerFasqFileR1[i], Configure.Bwa, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR1[i].getName().replace(".fastq", ""), ReadsType);
+                Opts.ALStat.linkers[i].UniqueSamFile1 = se.getUniqSamFile();
+                Opts.ALStat.linkers[i].MultiSamFile1 = se.getMultiSamFile();
+                Opts.ALStat.linkers[i].UnmappedSamFile1 = se.getUnMapSamFile();
+                se = new SeProcess(UseLinkerFasqFileR2[i], Configure.Bwa, AlignMisMatch, MinUniqueScore, SeProcessDir, UseLinkerFasqFileR2[i].getName().replace(".fastq", ""), ReadsType);
+                Opts.ALStat.linkers[i].UniqueSamFile2 = se.getUniqSamFile();
+                Opts.ALStat.linkers[i].MultiSamFile2 = se.getMultiSamFile();
+                Opts.ALStat.linkers[i].UnmappedSamFile2 = se.getUnMapSamFile();
+                Opts.ALStat.linkers[i].BedPeFile = new BedpeFile(SeBedpeFile[i]);
+                Opts.NRStat.linkers[i].InputFile = Opts.ALStat.linkers[i].BedPeFile;
+            }
+            Opts.ALStat.Stat(Configure.Thread);
+        }
+        Opts.StatisticFile.Append(Opts.ALStat.Show() + "\n");
         //=======================================bedpe process init=====================================================
         BedpeFile FinalBedpeFile = new BedpeFile(BedpeProcessDir + "/" + Prefix + ".clean.bedpe");
         BedpeFile SameBedpeFile = new BedpeFile(BedpeProcessDir + "/" + Prefix + ".same.clean.bedpe");
@@ -372,72 +348,83 @@ public class Main {
             ChrBedpeFile[i] = new BedpeFile(BedpeProcessDir + "/" + Prefix + "." + Chromosomes[i].Name + ".same.clean.bedpe");
         }
         BedpeFile InterBedpeFile = new BedpeFile(BedpeProcessDir + "/" + Prefix + ".inter.clean.bedpe");
-        BedpeTime = new Date();
-        Thread findenzy = FindRestrictionFragment();
-        if (StepCheck(Opts.Step.BedPeProcess.toString())) {
-            //==========================================获取酶切片段和染色体大小=============================================
-            findenzy.start();
-            findenzy.join();
-            //==============================================BedpeFile Process====bedpe 处理=================================
-            Thread[] LinkerProcess = new Thread[ValidLinkerSeq.length];//不同linker类型并行
+        Date bedpeTime = new Date();
+        System.err.println("Alignment: " + seTime + " - " + bedpeTime);
+        Opts.ALStat.Time = bedpeTime.getTime() - seTime.getTime();
+        Thread[] LinkerProcess = new Thread[ValidLinkerSeq.length];//不同linker类型并行
+        BedpeProcess[] bedpe = new BedpeProcess[ValidLinkerSeq.length];//不同linker类型并行
+        for (int i = 0; i < LinkerProcess.length; i++) {
+            bedpe[i] = new BedpeProcess(new File(BedpeProcessDir + "/" + ValidLinkerSeq[i].getType()), Prefix + "." + ValidLinkerSeq[i].getType(), Chromosomes, SeBedpeFile[i]);//bedpe文件处理类
+            bedpe[i].Threads = Math.max(1, Threads / LinkerProcess.length);//设置线程数
+        }
+        if (Opts.Step.BedPeProcess.Execute) {
+            //==========================================获取酶切片段和染色体大小==========================================
+            if (Opts.Step.FindEnzymeFragment.Execute) {
+                findenzy.start();
+                findenzy.join();
+                Opts.Step.FindEnzymeFragment.Execute = false;
+            }
+            //==============================================Noise reduce====bedpe 处理===================================
             for (int i = 0; i < LinkerProcess.length; i++) {
-                LinkerProcess[i] = BedpeProcess(ValidLinkerSeq[i].getType(), SeBedpeFile[i]);
-                LinkerProcess[i].start();
-                BedpeProcess Temp = new BedpeProcess(new File(BedpeProcessDir + "/" + ValidLinkerSeq[i].getType()), Prefix + "." + ValidLinkerSeq[i].getType(), Chromosomes, ChrEnzyFile, SeBedpeFile[i]);
-                FinalLinkerBedpe[i] = Temp.getFinalFile();
-                LinkerFinalSameCleanBedpeFile[i] = Temp.getSameNoDumpFile();
-                LinkerFinalDiffCleanBedpeFile[i] = Temp.getDiffNoDumpFile();
-                LinkerChrSameCleanBedpeFile[i] = Temp.getChrSameNoDumpFile();
-            }
-            for (int i = 0; i < ValidLinkerSeq.length; i++) {
-                LinkerProcess[i].join();
-            }
-            Thread t1 = new Thread(new Runnable() {
-                @Override
-                public void run() {
+                int finalI = i;
+                LinkerProcess[i] = new Thread(() -> {
                     try {
-                        SameBedpeFile.Merge(LinkerFinalSameCleanBedpeFile);
+                        bedpe[finalI].Run();//运行
+                        Opts.NRStat.linkers[finalI].RawDataNum = SeBedpeFile[finalI].getItemNum();
+                        Opts.NRStat.linkers[finalI].SelfLigationNum = bedpe[finalI].getSelfLigationFile().getItemNum();
+                        Opts.NRStat.linkers[finalI].ReLigationNum = bedpe[finalI].getReLigationFile().getItemNum();
+                        Opts.NRStat.linkers[finalI].DuplicateNum = bedpe[finalI].getRepeatFile().getItemNum();
+                        Opts.NRStat.linkers[finalI].CleanNum = bedpe[finalI].getFinalFile().getItemNum();
+                        Opts.NRStat.linkers[finalI].SameCleanNum = bedpe[finalI].getSameNoDumpFile().getItemNum();
+                        Opts.NRStat.linkers[finalI].DiffCleanNum = bedpe[finalI].getDiffNoDumpFile().getItemNum();
+                        long[] range_result = Opts.NRStat.RangeCount(bedpe[finalI].getSameNoDumpFile());
+                        Opts.NRStat.linkers[finalI].ShortRangeNum = range_result[0];
+                        Opts.NRStat.linkers[finalI].LongRangeNum = range_result[1];
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                });
+                LinkerProcess[i].start();
+                FinalLinkerBedpe[i] = bedpe[i].getFinalFile();
+                LinkerFinalSameCleanBedpeFile[i] = bedpe[i].getSameNoDumpFile();
+                LinkerFinalDiffCleanBedpeFile[i] = bedpe[i].getDiffNoDumpFile();
+                LinkerChrSameCleanBedpeFile[i] = bedpe[i].getChrSameNoDumpFile();
+            }
+            Tools.ThreadsWait(LinkerProcess);
+            Thread t1 = new Thread(() -> {
+                try {
+                    SameBedpeFile.Merge(LinkerFinalSameCleanBedpeFile);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             });
             t1.start();
-            Thread t2 = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        DiffBedpeFile.Merge(LinkerFinalDiffCleanBedpeFile);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+            Thread t2 = new Thread(() -> {
+                try {
+                    DiffBedpeFile.Merge(LinkerFinalDiffCleanBedpeFile);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             });
             t2.start();
-            Thread t3 = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        FinalBedpeFile.Merge(FinalLinkerBedpe);//合并不同linker类型的bedpe文件
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+            Thread t3 = new Thread(() -> {
+                try {
+                    FinalBedpeFile.Merge(FinalLinkerBedpe);//合并不同linker类型的bedpe文件
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             });
             t3.start();
             //合并不同linker的染色体内的交互，作为构建矩阵的输入文件
-            Thread t4 = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        for (int i = 0; i < Chromosomes.length; i++) {
-                            for (int j = 0; j < ValidLinkerSeq.length; j++) {
-                                ChrBedpeFile[i].Append(LinkerChrSameCleanBedpeFile[j][i]);
-                            }
+            Thread t4 = new Thread(() -> {
+                try {
+                    for (int i = 0; i < Chromosomes.length; i++) {
+                        for (int j = 0; j < ValidLinkerSeq.length; j++) {
+                            ChrBedpeFile[i].Append(LinkerChrSameCleanBedpeFile[j][i]);
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             });
             t4.start();
@@ -447,77 +434,60 @@ public class Main {
             t4.join();
             //==============================================================================================================
         }
-        STS = new Thread[ValidLinkerSeq.length];
-        for (int i = 0; i < ValidLinkerSeq.length; i++) {
-            int finalI = i;
-            STS[i] = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        BedpeProcess Temp = new BedpeProcess(new File(BedpeProcessDir + "/" + ValidLinkerSeq[finalI].getType()), Prefix + "." + ValidLinkerSeq[finalI].getType(), Chromosomes, ChrEnzyFile, SeBedpeFile[finalI]);
-                        Stat.UseLinker[finalI].BedpeProcessOutDir = new File(BedpeProcessDir + "/" + ValidLinkerSeq[finalI].getType());
-                        Stat.UseLinker[finalI].SelfLigationFile = Temp.getSelfLigationFile();
-                        Stat.UseLinker[finalI].RelLigationFile = Temp.getReLigationFile();
-                        Stat.UseLinker[finalI].SameValidFile = Temp.getValidFile();
-                        Stat.UseLinker[finalI].RawSameBedpeFile = Temp.getSameFile();
-                        Stat.UseLinker[finalI].RawDiffBedpeFile = Temp.getDiffFile();
-                        Stat.UseLinker[finalI].SameCleanFile = Temp.getSameNoDumpFile();
-                        Stat.UseLinker[finalI].DiffCleanFile = Temp.getDiffNoDumpFile();
-                        Stat.UseLinker[finalI].MergeCleanFile = Temp.getFinalFile();
-                        Stat.UseLinker[finalI].SelfLigationNum = Temp.getSelfLigationFile().CalculateItemNumber();
-                        Stat.UseLinker[finalI].RelLigationNum = Temp.getReLigationFile().CalculateItemNumber();
-                        Stat.UseLinker[finalI].SameValidNum = Temp.getValidFile().CalculateItemNumber();
-                        Stat.UseLinker[finalI].RawSameBedpeNum = Stat.UseLinker[finalI].SelfLigationNum + Stat.UseLinker[finalI].RelLigationNum + Stat.UseLinker[finalI].SameValidNum;
-                        Stat.UseLinker[finalI].RawDiffBedpeNum = Temp.getDiffFile().CalculateItemNumber();
-                        Stat.UseLinker[finalI].SameCleanNum = Temp.getSameNoDumpFile().CalculateItemNumber();
-                        Stat.UseLinker[finalI].DiffCleanNum = Temp.getDiffNoDumpFile().CalculateItemNumber();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-            STS[i].start();
-            SThread.add(STS[i]);
+        if (Opts.Step.Statistic.Execute) {
+            for (int i = 0; i < ValidLinkerSeq.length; i++) {
+                Opts.NRStat.linkers[i].SelfLigationFile = bedpe[i].getSelfLigationFile();
+                Opts.NRStat.linkers[i].ReLigationFile = bedpe[i].getReLigationFile();
+                Opts.NRStat.linkers[i].DuplicateFile = bedpe[i].getRepeatFile();
+                Opts.NRStat.linkers[i].SameCleanFile = bedpe[i].getSameNoDumpFile();
+                Opts.NRStat.linkers[i].DiffCleanFile = bedpe[i].getDiffNoDumpFile();
+                Opts.NRStat.linkers[i].CleanFile = bedpe[i].getFinalFile();
+            }
+            Opts.NRStat.Stat(Configure.Thread);
         }
+        Opts.StatisticFile.Append(Opts.NRStat.Show() + "\n");
         //=================================================BedpeFile To Inter===========================================
 
         //--------------------------------------------------------------------------------------------------------------
-        if (StepCheck(Opts.Step.BedPe2Inter.toString())) {
+        if (Opts.Step.BedPe2Inter.Execute) {
             new BedpeToInter(FinalBedpeFile.getPath(), InterBedpeFile.getPath());//将交互区间转换成交互点
         }
         //==============================================================================================================
-        ST = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Stat.InterAction.FinalBedpeFile = new BedpeFile(FinalBedpeFile);
-                    Stat.InterAction.FinalBedpeNum = Stat.InterAction.FinalBedpeFile.CalculateItemNumber();
-                    Stat.InterAction.IntraActionNum = new BedpeFile(SameBedpeFile).CalculateItemNumber();
-                    Stat.InterAction.InterActionNum = Stat.InterAction.FinalBedpeNum - Stat.InterAction.IntraActionNum;
-                    if (Stat.ComInfor.Restriction.replace("^", "").length() <= 4) {
-                        Stat.InterAction.ShortRegionNum = Statistic.RangeCount(SameBedpeFile, 0, 5000, 4);
-                    } else {
-                        Stat.InterAction.ShortRegionNum += Statistic.RangeCount(SameBedpeFile, 0, 20000, 4);
-                    }
-                    Stat.InterAction.LongRegionNum = Stat.InterAction.IntraActionNum - Stat.InterAction.ShortRegionNum;
-                    File InterActionLengthDisData = new File(Stat.getDataDir() + "/InterActionLengthDistribution.data");
-                    Statistic.PowerLaw(SameBedpeFile, 1000000, InterActionLengthDisData);
-                    File InterActionLengthDisPng = new File(Stat.getImageDir() + "/" + InterActionLengthDisData.getName().replace(".data", ".png"));
-                    String ComLine = Python + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterActionLengthDisData + " -o " + InterActionLengthDisPng;
-                    Opts.CommandOutFile.Append(ComLine + "\n");
-                    Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
-                    Configure.InterActionDistanceDisPng = InterActionLengthDisPng;
-                } catch (IOException | InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        ST.start();
-        SThread.add(ST);
-        //=================================================Make Matrix==================================================
-        MatrixTime = new Date();
+        CommonFile InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".all.interaction_distance_distribution.data");
+        Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, Integer.MAX_VALUE), "1M", 2, 10);
+        Opts.NRStat.InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
+        ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat.InteractionRangeDistributionPng;
+        Opts.CommandOutFile.Append(ComLine + "\n");
+        CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+        //----------------------------------
+        InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".50M.interaction_distance_distribution.data");
+        Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, 50000000), "1M", 2, 10);
+        Opts.NRStat._50M_InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
+        ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._50M_InteractionRangeDistributionPng;
+        Opts.CommandOutFile.Append(ComLine + "\n");
+        CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+        //------------------------------------
+        InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".10M.interaction_distance_distribution.data");
+        Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, 10000000), "100k", 2, 10);
+        Opts.NRStat._10M_InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
+        ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._10M_InteractionRangeDistributionPng;
+        Opts.CommandOutFile.Append(ComLine + "\n");
+        CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+        //---------------------------------------
+        InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".2M.interaction_distance_distribution.data");
+        Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, 2000000), "10k", 2, 10);
+        Opts.NRStat._2M_InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
+        ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._2M_InteractionRangeDistributionPng;
+        Opts.CommandOutFile.Append(ComLine + "\n");
+        CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
 
-        if (StepCheck(Opts.Step.MakeMatrix.toString())) {
+        //---------------------------------------
+
+        //=================================================Make Matrix==================================================
+        Date matrixTime = new Date();
+        System.err.println("Noise reducing: " + bedpeTime + " - " + matrixTime);
+        Opts.NRStat.Time = matrixTime.getTime() - bedpeTime.getTime();
+        if (Opts.Step.MakeMatrix.Execute) {
             for (Chromosome s : Chromosomes) {
                 if (s.Size == 0) {
                     findenzy.start();
@@ -527,15 +497,12 @@ public class Main {
             Thread[] mmt = new Thread[Resolution.length];
             for (int i = 0; i < Resolution.length; i++) {
                 int finalI = i;
-                mmt[i] = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            MakeMatrix matrix = new MakeMatrix(new File(MakeMatrixDir + "/" + Resolution[finalI]), Prefix, new BedpeFile(FinalBedpeFile), BedpeFile.Copy(ChrBedpeFile), Chromosomes, Resolution[finalI], Threads);//生成交互矩阵类
-                            matrix.Run();//运行
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                mmt[i] = new Thread(() -> {
+                    try {
+                        MakeMatrix matrix = new MakeMatrix(new File(MakeMatrixDir + "/" + Resolution[finalI]), Prefix, new BedpeFile(FinalBedpeFile), BedpeFile.Copy(ChrBedpeFile), Chromosomes, Resolution[finalI], Threads);//生成交互矩阵类
+                        matrix.Run();//运行
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 });
                 mmt[i].start();
@@ -545,95 +512,77 @@ public class Main {
             }
             //------------------------------------------------------画热图-----------------------------------------
             for (int i = 0; i < DrawResolution.length; i++) {
-                File OutDir = new File(MakeMatrixDir + "/img_" + Tools.UnitTrans(DrawResolution[i], "B", "M") + "M");
+                int aDrawResolution = DrawResolution[i];
+                File OutDir = new File(MakeMatrixDir + "/img_" + Tools.UnitTrans(aDrawResolution, "B", "M") + "M");
                 if (!OutDir.isDirectory() && !OutDir.mkdir()) {
                     System.err.println(new Date() + "\tWarning! Can't Create " + OutDir);
                 }
-                MakeMatrix matrix = new MakeMatrix(new File(MakeMatrixDir + "/" + DrawResolution[i]), Prefix, InterBedpeFile, ChrBedpeFile, Chromosomes, DrawResolution[i], Threads);//生成交互矩阵类
-                if (!new File(MakeMatrixDir + "/" + DrawResolution[i]).isDirectory()) {
+                MakeMatrix matrix = new MakeMatrix(new File(MakeMatrixDir + "/" + aDrawResolution), Prefix, InterBedpeFile, ChrBedpeFile, Chromosomes, aDrawResolution, Threads);//生成交互矩阵类
+                if (!new File(MakeMatrixDir + "/" + aDrawResolution).isDirectory()) {
                     matrix.Run();
                 }
-                new PlotMatrix(matrix.getTwoDMatrixFile(), new File(OutDir + "/" + Prefix + ".interaction." + Tools.UnitTrans(DrawResolution[i], "B", "M") + "M.png"), DrawResolution[i]).Run(matrix.getBinSizeFile());
-                File[] TwoDMatrixFile = matrix.getChrTwoDMatrixFile();
+                Opts.CMStat.draw_resolutions[i].GenomeWildMatrixFile = matrix.getDenseMatrixFile();
+                Opts.CMStat.draw_resolutions[i].GenomeWildHeatMapPng = new File(OutDir + "/" + Prefix + ".interaction_" + Tools.UnitTrans(aDrawResolution, "B", "M") + "M.png");
+                if (Opts.CMStat.draw_resolutions[i].GenomeWildMatrixFile.PlotHeatMap(matrix.getBinSizeFile(), aDrawResolution, Opts.CMStat.draw_resolutions[i].GenomeWildHeatMapPng) != 0) {
+                    System.err.println("There are some worried in plot heatmap : " + matrix.getDenseMatrixFile());
+                }
+                Opts.CMStat.draw_resolutions[i].ChromMatrixFile = matrix.getChrDenseMatrixFile();
                 for (int j = 0; j < Chromosomes.length; j++) {
-                    new PlotMatrix(TwoDMatrixFile[j], new File(OutDir + "/" + Prefix + "." + Chromosomes[j].Name + "." + Tools.UnitTrans(DrawResolution[i], "B", "M") + "M.png"), DrawResolution[i] / 10).Run(new String[]{Chromosomes[j].Name + ":0", Chromosomes[j].Name + ":0"});
+                    Opts.CMStat.draw_resolutions[i].ChromHeatMapPng[j] = new File(OutDir + "/" + Prefix + "." + Chromosomes[j].Name + "." + Tools.UnitTrans(aDrawResolution, "B", "M") + "M.png");
+                    if (Opts.CMStat.draw_resolutions[i].ChromMatrixFile[j].PlotHeatMap(new String[]{Chromosomes[j].Name + ":0", Chromosomes[j].Name + ":0"}, aDrawResolution, Opts.CMStat.draw_resolutions[i].ChromHeatMapPng[j]) != 0) {
+                        System.err.println("There are some worried in plot heatmap : " + Opts.CMStat.draw_resolutions[i].ChromMatrixFile[j]);
+                    }
                 }
             }
         }
+        Opts.StatisticFile.Append(Opts.CMStat.Show() + "\n");
         //==============================================================================================================
-        ST = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Stat.HeatMapInit(DrawResolution.length);
-                    for (int i = 0; i < DrawResolution.length; i++) {
-                        Stat.DrawHeatMap[i].Resolution = DrawResolution[i];
-                        Stat.DrawHeatMap[i].Figure = Stat.GetBase64(new File(MakeMatrixDir + "/img_" + Tools.UnitTrans(DrawResolution[i], "B", "M") + "M/" + Prefix + ".interaction." + Tools.UnitTrans(DrawResolution[i], "B", "M") + "M.png"));
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-            }
+        ST = new Thread(() -> {
+//            Stat.HeatMapInit(DrawResolution.length);
+//            for (int i = 0; i < DrawResolution.length; i++) {
+//                Stat.DrawHeatMap[i].Resolution = DrawResolution[i];
+//                try {
+//                    Stat.DrawHeatMap[i].Figure = Stat.GetBase64(new File(MakeMatrixDir + "/img_" + Tools.UnitTrans(DrawResolution[i], "B", "M") + "M/" + Prefix + ".interaction." + Tools.UnitTrans(DrawResolution[i], "B", "M") + "M.png"));
+//                } catch (IOException e) {
+//                    Stat.DrawHeatMap[i].Figure = "";
+//                }
+//            }
         });
         ST.start();
         SThread.add(ST);
         //==============================================================================================================
-        EndTime = new Date();
-        Stat.RunTime.LinkerFilter = Tools.DateFormat((SeTime.getTime() - PreTime.getTime()) / 1000);
-        Stat.RunTime.Mapping = Tools.DateFormat((BedpeTime.getTime() - SeTime.getTime()) / 1000);
-        Stat.RunTime.LigationFilter = Tools.DateFormat((MatrixTime.getTime() - BedpeTime.getTime()) / 1000);
-        Stat.RunTime.MakeMatrix = Tools.DateFormat((TransTime.getTime() - MatrixTime.getTime()) / 1000);
-//        Stat.RunTime.TransLocation = Tools.DateFormat((EndTime.getTime() - TransTime.getTime()) / 1000);
-        Stat.RunTime.Total = Tools.DateFormat((EndTime.getTime() - PreTime.getTime()) / 1000);
+        Date endTime = new Date();
+        System.err.println("Create matrix: " + matrixTime + " - " + endTime);
+        Opts.CMStat.Time = endTime.getTime() - matrixTime.getTime();
         System.out.println("\n-------------------------------Time----------------------------------------");
-        System.out.println("PreProcess:\t" + Stat.RunTime.LinkerFilter);
-        System.out.println("SeProcess:\t" + Stat.RunTime.Mapping);
-        System.out.println("BedpeProcess:\t" + Stat.RunTime.LigationFilter);
-        System.out.println("MakeMatrix:\t" + Stat.RunTime.MakeMatrix);
-        System.out.println("Translocation:\t" + Stat.RunTime.TransLocation);
-        System.out.println("Total:\t" + Stat.RunTime.Total);
+        System.out.println("PreProcess:\t" + Tools.DateFormat((seTime.getTime() - preTime.getTime()) / 1000));
+        System.out.println("SeProcess:\t" + Tools.DateFormat((bedpeTime.getTime() - seTime.getTime()) / 1000));
+        System.out.println("BedpeProcess:\t" + Tools.DateFormat((matrixTime.getTime() - bedpeTime.getTime()) / 1000));
+        System.out.println("MakeMatrix:\t" + Tools.DateFormat((endTime.getTime() - matrixTime.getTime()) / 1000));
+        System.out.println("Total:\t" + Tools.DateFormat((endTime.getTime() - preTime.getTime()) / 1000));
         //===================================Report=====================================================================
-
         for (Thread t : SThread) {
             t.join();
         }
-        Stat.Show();
-        ReportDir.mkdir();
+        Opts.StatisticFile.Append(Opts.OVStat.Show() + "\n");
+//        Stat.Show();
         Stat.ReportHtml(new File(ReportDir + "/Test.index.html"));
+        Tools.RemoveEmptyFile(OutPath);
+        Opts.RSStat.Finish();
     }
 
     /**
      * Create reference genome index
      *
      * @param genomefile genome file
-     * @return process thread
      */
-    private Thread CreateIndex(File genomefile) {
+    private synchronized void CreateIndex(File genomefile) {
         File IndexDir = new File(OutPath + "/" + Opts.OutDir.IndexDir);
         if (!IndexDir.isDirectory() && !IndexDir.mkdir()) {
             System.out.println("Create " + IndexDir + " false");
             System.exit(1);
         }
-        IndexPrefix = new File(IndexDir + "/" + genomefile.getName());
-        Stat.ComInfor.IndexPrefix = IndexPrefix;
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    String ComLine = Bwa + " index -p " + IndexPrefix + " " + genomefile;
-                    Opts.CommandOutFile.Append(ComLine + "\n");
-                    if (DeBugLevel < 1) {
-                        Tools.ExecuteCommandStr(ComLine, null, null);
-                    } else {
-                        Tools.ExecuteCommandStr(ComLine, null, new PrintWriter(System.err));
-                    }
-                } catch (IOException | InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        return t;
+        Configure.Bwa.CreateIndex(genomefile, new File(IndexDir + "/" + genomefile.getName()), Threads);
     }
 
     /**
@@ -642,92 +591,66 @@ public class Main {
      * @return 线程句柄
      */
     private Thread FindRestrictionFragment() {
-        return new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    System.out.println(new Date() + "\tStart to find restriction fragment");
-                    ArrayList<String> list = new ArrayList<>();
-                    if (!EnzyPath.isDirectory() && !EnzyPath.mkdir()) {
-                        System.err.println(new Date() + "\tCreate " + EnzyPath + " false !");
-                    }
-                    FindRestrictionSite fr = new FindRestrictionSite(GenomeFile, EnzyPath, Restriction, EnzyFilePrefix);
-                    ArrayList<Chromosome> TempChrs = fr.Run();//取出基因组文件中所有染色体的大小信息
-                    File[] TempChrEnzyFile = fr.getChrFragmentFile();
-                    ChrSizeFile = fr.getChrSizeFile();
-                    //
-                    for (int i = 0; i < Chromosomes.length; i++) {
-                        boolean flag = false;
-                        for (int j = 0; j < TempChrs.size(); j++) {
-                            if (TempChrs.get(j).Name.equals(Chromosomes[i].Name)) {
-                                Chromosomes[i] = TempChrs.get(j);
-                                ChrEnzyFile[i] = new CommonFile(TempChrEnzyFile[j]);
-                                flag = true;
-                                break;
-                            }
-                        }
-                        if (!flag) {
-                            System.err.println(new Date() + "\tWarning! No " + Chromosomes[i].Name + " in genomic file");
-                        }
-                    }
-                    System.out.println(new Date() + "\tEnd find restriction fragment");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+        return new Thread(() -> {
+            try {
+                FragmentDigested FDM = Opts.fragmentDigestedModule;
+                FDM.Threads = Threads;
+                FDM.run(new FastaFile(Configure.Bwa.GenomeFile.getPath()));
+                Chromosomes = FDM.getChromosomes();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         });
     }
 
     /**
-     * Single end process
-     *
-     * @param fastqFile
-     * @param Prefix
-     * @return
+     * @return unique, multi, unmapped
      */
-    private void SeProcess(FastqFile fastqFile, String Prefix) throws IOException, InterruptedException {
+    private SamFile[] SeProcess(FastqFile fastqFile, String Prefix) throws IOException, InterruptedException {
         if (fastqFile.ItemNum <= 0) {
-            fastqFile.ItemNum = fastqFile.CalculateItemNumber();
+            fastqFile.ItemNum = fastqFile.getItemNum();
         }
         long splitnum = (long) Math.ceil((double) fastqFile.ItemNum / Threads * 4);
         splitnum = splitnum + (4 - splitnum % 4) % 4;
         ArrayList<CommonFile> SplitFastqFile = fastqFile.SplitFile(SeProcessDir + "/" + fastqFile.getName(), splitnum);//1亿行作为一个单位拆分
-        SeProcess se = new SeProcess(fastqFile, IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, Prefix, ReadsType);
+        SeProcess se = new SeProcess(fastqFile, Configure.Bwa, AlignMisMatch, MinUniqueScore, SeProcessDir, Prefix, ReadsType);
         SamFile SamFile = se.getSamFile();
         SamFile UniqSamFile = se.getUniqSamFile();
+        SamFile MultiSamFile = se.getMultiSamFile();
+        SamFile UnSamFile = se.getUnMapSamFile();
         BedFile SortBedFile = se.getSortBedFile();
         SamFile[] SplitSamFile = new SamFile[SplitFastqFile.size()];
         SamFile[] SplitFilterSamFile = new SamFile[SplitFastqFile.size()];
+        SamFile[] SplitMultiSamFile = new SamFile[SplitFastqFile.size()];
+        SamFile[] SplitUnSamFile = new SamFile[SplitFastqFile.size()];
         BedFile[] SplitSortBedFile = new BedFile[SplitFastqFile.size()];
         Thread[] t2 = new Thread[Threads];
         int[] Index = new int[]{0};
         for (int i = 0; i < t2.length; i++) {
-            t2[i] = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    int finalI;
-                    FastqFile InFile;
-                    while (Index[0] < SplitFastqFile.size()) {
-                        synchronized (t2) {
-                            try {
-                                finalI = Index[0];
-                                InFile = new FastqFile(SplitFastqFile.get(finalI));
-                                Index[0]++;
-                            } catch (IndexOutOfBoundsException e) {
-                                break;
-                            }
-                        }
+            t2[i] = new Thread(() -> {
+                int finalI;
+                FastqFile InFile;
+                while (Index[0] < SplitFastqFile.size()) {
+                    synchronized (t2) {
                         try {
-                            SeProcess ssp = new SeProcess(InFile, IndexPrefix, AlignMisMatch, MinUniqueScore, SeProcessDir, Prefix + ".split" + finalI, ReadsType);//单端处理类
-//                            ssp.Threads = 1;//设置线程数
-                            ssp.setIteration(Iteration);
-                            ssp.Run();
-                            SplitSamFile[finalI] = ssp.getSamFile();
-                            SplitFilterSamFile[finalI] = ssp.getUniqSamFile();
-                            SplitSortBedFile[finalI] = ssp.getSortBedFile();
-                        } catch (IOException | InterruptedException e) {
-                            e.printStackTrace();
+                            finalI = Index[0];
+                            InFile = new FastqFile(SplitFastqFile.get(finalI));
+                            Index[0]++;
+                        } catch (IndexOutOfBoundsException e) {
+                            break;
                         }
+                    }
+                    try {
+                        SeProcess ssp = new SeProcess(InFile, Configure.Bwa, AlignMisMatch, MinUniqueScore, SeProcessDir, Prefix + ".split" + finalI, ReadsType);//单端处理类
+                        ssp.setIteration(Iteration);
+                        ssp.Run();
+                        SplitSamFile[finalI] = ssp.getSamFile();
+                        SplitFilterSamFile[finalI] = ssp.getUniqSamFile();
+                        SplitMultiSamFile[finalI] = ssp.getMultiSamFile();
+                        SplitUnSamFile[finalI] = ssp.getUnMapSamFile();
+                        SplitSortBedFile[finalI] = ssp.getSortBedFile();
+                    } catch (IOException | InterruptedException e) {
+                        e.printStackTrace();
                     }
                 }
             });
@@ -736,57 +659,56 @@ public class Main {
         Tools.ThreadsWait(t2);
         for (File s : SplitFastqFile) {
             if (DeBugLevel < 1) {
-                s.delete();
+                AbstractFile.delete(s);
             }
         }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    FileTool.MergeSamFile(SplitSamFile, SamFile);
-                    FileTool.MergeSamFile(SplitFilterSamFile, UniqSamFile);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                if (DeBugLevel < 1) {
-                    for (int i = 0; i < SplitFastqFile.size(); i++) {
-                        SplitFastqFile.get(i).delete();
-                        SplitSamFile[i].delete();
-                        SplitFilterSamFile[i].delete();
-                    }
+        Thread t4 = new Thread(() -> {
+            try {
+                FileTool.MergeSamFile(SplitSamFile, SamFile);
+                FileTool.MergeSamFile(SplitFilterSamFile, UniqSamFile);
+                FileTool.MergeSamFile(SplitMultiSamFile, MultiSamFile);
+                FileTool.MergeSamFile(SplitUnSamFile, UnSamFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (DeBugLevel < 1) {
+                for (int i = 0; i < SplitFastqFile.size(); i++) {
+                    AbstractFile.delete(SplitFastqFile.get(i));
+                    AbstractFile.delete(SplitSamFile[i]);
+                    AbstractFile.delete(SplitFilterSamFile[i]);
+                    AbstractFile.delete(SplitMultiSamFile[i]);
+                    AbstractFile.delete(SplitUnSamFile[i]);
                 }
             }
-        }).start();
-        Thread t3 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    SortBedFile.MergeSortFile(SplitSortBedFile);
-                    for (File s : SplitSortBedFile) {
-                        if (DeBugLevel < 1) {
-                            s.delete();
-                        }
+        });
+        t4.start();
+        Thread t3 = new Thread(() -> {
+            try {
+                SortBedFile.MergeSortFile(SplitSortBedFile);
+                for (File s : SplitSortBedFile) {
+                    if (DeBugLevel < 1) {
+                        AbstractFile.delete(s);
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         });
         t3.start();
         t3.join();
+        t4.join();
+        return new SamFile[]{UniqSamFile, MultiSamFile, UnSamFile};
     }
 
-    private Thread BedpeProcess(String UseLinker, BedpeFile SeBedpeFile) {
-        return new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    BedpeProcess bedpe = new BedpeProcess(new File(BedpeProcessDir + "/" + UseLinker), Prefix + "." + UseLinker, Chromosomes, ChrEnzyFile, SeBedpeFile);//bedpe文件处理类
-                    bedpe.Threads = Threads;//设置线程数
-                    bedpe.Run();//运行
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+    private Thread BedpeProcess(String UseLinker, BedpeFile SeBedpeFile, int threads) {
+        return new Thread(() -> {
+            try {
+                BedpeProcess bedpe = new BedpeProcess(new File(BedpeProcessDir + "/" + UseLinker), Prefix + "." + UseLinker, Chromosomes, SeBedpeFile);//bedpe文件处理类
+                bedpe.Threads = threads;//设置线程数
+                bedpe.Run();//运行
+
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         });
     }
@@ -802,53 +724,61 @@ public class Main {
         }
         //----------------------------------------必要参数赋值-----------------------------------------------------------
         String[] tempstrs;
-        InputFile = Configure.InputFile;
-        GenomeFile = Configure.GenomeFile;
-        Restriction = Configure.Restriction;
-        HalfLinker = Configure.HalfLinker;
-        LinkerA = HalfLinker[0];
+        InputFile = Opts.OVStat.InputFile = Configure.InputFile;
+        Configure.Bwa.GenomeFile = Opts.ALStat.GenomeFile = Configure.GenomeFile;
+        Restriction = Opts.LFStat.EnzymeCuttingSite = Configure.Restriction.toString();
+        if (Configure.Restriction.getSequence().length() <= 4) {
+            Opts.OVStat.RangeThreshold = 5000;
+        } else {
+            Opts.OVStat.RangeThreshold = 20000;
+        }
+        Opts.NRStat.ShortRegion = new Region(0, Opts.OVStat.RangeThreshold);
+        Opts.NRStat.LongRegion = new Region(Opts.OVStat.RangeThreshold, Integer.MAX_VALUE);
+
+        String[] halfLinker = Opts.LFStat.HalfLinkers = Configure.HalfLinker;
+        LinkerA = halfLinker[0];
         LinkerLength = LinkerA.length();
-        if (HalfLinker.length > 1) {
-            LinkerB = HalfLinker[1];
+        if (halfLinker.length > 1) {
+            LinkerB = halfLinker[1];
             LinkerLength += LinkerB.length();
         } else {
             LinkerLength += LinkerA.length();
         }
         //-----------------------------------------可选参数赋值----------------------------------------------------------
-        OutPath = Configure.OutPath;
-        Prefix = Configure.Prefix;
-        Resolution = Configure.Resolution;
-        DetectResolution = Configure.DetectResolution;
+        OutPath = Opts.OVStat.OutDir = Configure.OutPath;
+        Opts.CommandOutFile = new CommonFile(Configure.OutPath + "/" + Opts.CommandOutFile.getName());
+        Opts.StatisticFile = new CommonFile(Configure.OutPath + "/" + Opts.StatisticFile.getName());
+        Opts.ResourceStatFile = new CommonFile(Configure.OutPath + "/" + Opts.ResourceStatFile.getName());
+        Prefix = Opts.OVStat.Prefix = Configure.Prefix;
         Threads = Configure.Thread;
-        DrawResolution = Configure.DrawResolution;
-        Step.addAll(Arrays.asList(Configure.Step.trim().split("\\s+")));
+//        Step.addAll(Arrays.asList(Configure.Step.trim().split("\\s+")));
         if (Configure.AdapterSeq != null && Configure.AdapterSeq.length > 0) {
             AdapterSeq = Configure.AdapterSeq;
         }
-        if (Configure.Index != null && !Configure.Index.toString().trim().equals("")) {
-            IndexPrefix = Configure.Index;
-        }
+        Configure.Bwa.IndexPrefix = Configure.Index;
+        Configure.Bwa.IndexCheck();
+        Opts.Step.CreateIndex.Execute = Configure.Bwa.IndexCheck != Opts.FileFormat.Valid;
         if (Configure.Chromosome != null && Configure.Chromosome.length > 0) {
             Chromosomes = Configure.Chromosome;
         } else {
             System.out.println(new Date() + "\tCalculate chromosome ......");
-            Chromosomes = Tools.CheckChromosome(Chromosomes, GenomeFile);
+            Chromosomes = Tools.CheckChromosome(Chromosomes, Configure.Bwa.GenomeFile);
             Configure.Chromosome = Chromosomes;
         }
-        ChrEnzyFile = new CommonFile[Chromosomes.length];
+        Resolution = Opts.CMStat.Resolutions = Configure.Resolution;
+        DrawResolution = Opts.CMStat.DrawResolutions = Configure.DrawResolution;
+        Opts.CMStat.Init();
+        ChrEnzyFile = new BedFile[Chromosomes.length];
 
         //-------------------------------------------高级参数赋值--------------------------------------------------------
-        Bwa = Configure.Bwa;
-        Python = Configure.Python;
+//        Python = Configure.Python;
         MatchScore = Configure.MatchScore;
         MisMatchScore = Configure.MisMatchScore;
         InDelScore = Configure.InDelScore;
-//        MinReadsLength = Configure.MinReadsLen;
-        MaxReadsLength = Configure.MaxReadsLen;
-//        AlignThread = Configure.AlignThread;
+        MaxReadsLength = Opts.LFStat.MaxReadsLen = Configure.MaxReadsLen;
         AlignMisMatch = Configure.AlignMisMatch;
         Iteration = Configure.Iteration;
-        ReadsType = Configure.AlignType.equals("Short") ? Opts.FileFormat.ShortReads : Configure.AlignType.equals("Long") ? Opts.FileFormat.LongReads : Opts.FileFormat.ErrorFormat;
+        ReadsType = Configure.AlignType.compareToIgnoreCase("Short") == 0 ? Opts.FileFormat.ShortReads : Configure.AlignType.compareToIgnoreCase("Long") == 0 ? Opts.FileFormat.LongReads : Opts.FileFormat.ErrorFormat;
         DeBugLevel = Configure.DeBugLevel;
         //设置唯一比对分数
         if (ReadsType == Opts.FileFormat.ShortReads) {
@@ -858,18 +788,18 @@ public class Main {
         } else {
             System.err.println("Error reads type " + Configure.AlignType);
         }
-        Configure.MinUniqueScore = MinUniqueScore;
+        Configure.MinUniqueScore = Opts.ALStat.Threshold = MinUniqueScore;
         if (Configure.MinLinkerLen == 0) {
             Configure.MinLinkerLen = (int) (LinkerLength * 0.9);
         }
-        MinLinkerLength = Configure.MinLinkerLen;
+        int minLinkerLength = Configure.MinLinkerLen;
         //================================================
         if (!OutPath.isDirectory()) {
             System.err.println("Error, " + OutPath + " is not a directory");
             System.exit(1);
         }
-        if (!GenomeFile.isFile()) {
-            System.err.println("Error, " + GenomeFile + " is not a file");
+        if (!Configure.Bwa.GenomeFile.isFile()) {
+            System.err.println("Error, " + Configure.Bwa.GenomeFile + " is not a file");
             System.exit(1);
         }
         if (!InputFile.isFile()) {
@@ -877,63 +807,69 @@ public class Main {
             System.exit(1);
         }
         //=======================================================================;
-        PreProcessDir = new File(OutPath + "/" + Opts.OutDir.PreDir);
-        SeProcessDir = new File(OutPath + "/" + Opts.OutDir.SeDir);
-        BedpeProcessDir = new File(OutPath + "/" + Opts.OutDir.BedpeDir);
-        MakeMatrixDir = new File(OutPath + "/" + Opts.OutDir.MatrixDir);
-        TransLocationDir = new File(OutPath + "/" + Opts.OutDir.TransDir);
+        PreProcessDir = Opts.LFStat.OutDir = new File(OutPath + "/" + Opts.OutDir.PreDir);
+        SeProcessDir = Opts.ALStat.OutDir = new File(OutPath + "/" + Opts.OutDir.SeDir);
+        BedpeProcessDir = Opts.NRStat.OutDir = new File(OutPath + "/" + Opts.OutDir.BedpeDir);
+        MakeMatrixDir = Opts.CMStat.OutDir = new File(OutPath + "/" + Opts.OutDir.MatrixDir);
         ReportDir = new File(OutPath + "/" + Opts.OutDir.ReportDir);
         EnzyPath = new File(OutPath + "/" + Opts.OutDir.EnzyFragDir);
-        File[] CheckDir = new File[]{PreProcessDir, SeProcessDir, BedpeProcessDir, MakeMatrixDir, TransLocationDir, EnzyPath};
+        File[] CheckDir = new File[]{PreProcessDir, SeProcessDir, BedpeProcessDir, MakeMatrixDir, EnzyPath, ReportDir};
         for (File s : CheckDir) {
             if (!s.isDirectory() && !s.mkdir()) {
                 System.err.println("Can't create " + s);
                 System.exit(1);
             }
         }
+        Opts.fragmentDigestedModule = new FragmentDigested(EnzyPath, Chromosomes, new RestrictionEnzyme(Restriction), Prefix);
         tempstrs = new String[]{"A", "B", "C", "D", "E", "F", "G"};
         //构建Linker序列
-        if (HalfLinker.length > tempstrs.length) {
-            System.err.println("Error! too many half-linker:\t" + HalfLinker.length);
+        if (halfLinker.length > tempstrs.length) {
+            System.err.println("Error! too many half-linker:\t" + halfLinker.length);
             System.exit(1);
         }
-        LinkerSeq = new LinkerSequence[HalfLinker.length * HalfLinker.length];
-        ValidLinkerSeq = new LinkerSequence[HalfLinker.length];
-        for (int i = 0; i < HalfLinker.length; i++) {
-            for (int j = 0; j < HalfLinker.length; j++) {
+        LinkerSeq = new LinkerSequence[halfLinker.length * halfLinker.length];
+        ValidLinkerSeq = new LinkerSequence[halfLinker.length];
+        for (int i = 0; i < halfLinker.length; i++) {
+            for (int j = 0; j < halfLinker.length; j++) {
                 if (i == j) {
-                    LinkerSeq[i * HalfLinker.length + j] = new LinkerSequence(HalfLinker[i] + Tools.ReverseComple(HalfLinker[j]), tempstrs[i] + tempstrs[j], true);
-                    ValidLinkerSeq[i] = new LinkerSequence(HalfLinker[i] + Tools.ReverseComple(HalfLinker[j]), tempstrs[i] + tempstrs[j], true);
+                    LinkerSeq[i * halfLinker.length + j] = new LinkerSequence(halfLinker[i] + Tools.ReverseComple(halfLinker[j]), tempstrs[i] + tempstrs[j], true);
+                    ValidLinkerSeq[i] = new LinkerSequence(halfLinker[i] + Tools.ReverseComple(halfLinker[j]), tempstrs[i] + tempstrs[j], true);
                 } else {
-                    LinkerSeq[i * HalfLinker.length + j] = new LinkerSequence(HalfLinker[i] + Tools.ReverseComple(HalfLinker[j]), tempstrs[i] + tempstrs[j]);
+                    LinkerSeq[i * halfLinker.length + j] = new LinkerSequence(halfLinker[i] + Tools.ReverseComple(halfLinker[j]), tempstrs[i] + tempstrs[j]);
                 }
             }
         }
-        MinLinkerFilterQuality = MinLinkerLength * MatchScore + (LinkerLength - MinLinkerLength) * MisMatchScore;//设置linkerfilter最小分数
+        Opts.LFStat.Linkers = LinkerSeq;
+        Opts.LFStat.Init();
+        Opts.NRStat.Linkers = Opts.ALStat.Linkers = ValidLinkerSeq;
+        Opts.ALStat.Init();
+        Opts.NRStat.Init();
+        MinLinkerFilterQuality = minLinkerLength * MatchScore + (LinkerLength - minLinkerLength) * MisMatchScore;//设置linkerfilter最小分数
+        Opts.LFStat.Threshold = MinLinkerFilterQuality;
         EnzyFilePrefix = Prefix + "." + Restriction.replace("^", "");
         LinkerFile = new File(PreProcessDir + "/" + Prefix + ".linker");
         AdapterFile = new File(PreProcessDir + "/" + Prefix + ".adapter");
-        Stat = new Report(ReportDir);
-    }
-
-    private boolean StepCheck(String step) {
-        if (Step.size() > 0) {
-            if (Step.get(0).equals(step)) {
-                Step.remove(0);
-                return true;
-            } else if (Step.get(0).equals("-") && Step.size() > 1) {
-                if (Step.get(1).equals(step)) {
-                    Step.remove(0);
-                    Step.remove(0);
-                }
-                return true;
-            } else return Step.get(0).equals("-") && Step.size() == 1;
+        //清空原来的Adapter文件
+        File[] CleanFile = new File[]{LinkerFile, AdapterFile};
+        for (File f : CleanFile) {
+            if (!AbstractFile.clean(f)) {
+                System.err.println("Error! can't clean " + f.getName());
+                System.exit(1);
+            }
         }
-        return false;
+        Stat = new Report(ReportDir);
     }
 
     private void ShowParameter() {
         System.out.println(Configure.ShowParameter());
+    }
+
+
+    private String[] LinkerDetection(FastqFile fastqFile) throws IOException {
+        int LineNum = 100;
+        String[] HalfLinkers = null;
+        fastqFile.ReadOpen();
+        return HalfLinkers;
     }
 
 

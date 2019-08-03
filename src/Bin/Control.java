@@ -3,7 +3,10 @@ package Bin;
 import Component.unit.Chromosome;
 
 import java.io.File;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class Control {
     private enum OutDir {
         Pre("PreProcess"), Se("SeProcess"), Bedpe("BedpeProcess"), CM("CreateMatrix"), Trans("TransLocation");

@@ -1,7 +1,6 @@
 package Component.Image;
 
 import Component.File.FileTool;
-import Component.unit.Chromosome;
 import org.apache.commons.cli.*;
 
 import javax.imageio.ImageIO;
@@ -9,17 +8,16 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class HeatMap {
-    private Chromosome Chr1;
-    private Chromosome Chr2;
     private double[][] Matrix;
     private int Width;
     private int Height;
     private int Count;
     private int ColorType = 1;
-    private double[] RowCount;
-    private double[] ColCount;
     private double MaxValue = 0;
     private BufferedImage HeatMapImage;
 
@@ -41,17 +39,17 @@ public class HeatMap {
     private void Init() {
         Height = Matrix.length;
         Width = Matrix[0].length;
-        RowCount = new double[Height];
-        ColCount = new double[Width];
+        double[] rowCount = new double[Height];
+        double[] colCount = new double[Width];
         for (int i = 0; i < Height; i++) {
             for (int j = 0; j < Width; j++) {
-                RowCount[i] += Matrix[i][j];
-                ColCount[j] += Matrix[i][j];
+                rowCount[i] += Matrix[i][j];
+                colCount[j] += Matrix[i][j];
                 if (Matrix[i][j] > MaxValue) {
                     MaxValue = Matrix[i][j];
                 }
             }
-            Count += RowCount[i];
+            Count += rowCount[i];
         }
     }
 
@@ -70,10 +68,6 @@ public class HeatMap {
         return this;
     }
 
-    public void Test() throws IOException {
-
-    }
-
     public static void main(String[] args) throws IOException, ParseException {
         Options Argument = new Options();
         Argument.addOption("f", true, "Matrix file");
@@ -86,8 +80,6 @@ public class HeatMap {
         File MatrixFile = new File(ComLine.getOptionValue("f"));
         String OutFile = ComLine.getOptionValue("o");
         HeatMap map = new HeatMap(MatrixFile);
-//        map.Draw();
-//        map.Test();
         BufferedImage im = map.Draw().getImage();
         ImageIO.write(im, "png", new File(OutFile));
     }
@@ -102,15 +94,6 @@ public class HeatMap {
                 HeatMapImage.setRGB(j, i, c.getRGB());
             }
         }
-    }
-
-
-    public void setChr1(Chromosome chr1) {
-        Chr1 = chr1;
-    }
-
-    public void setChr2(Chromosome chr2) {
-        Chr2 = chr2;
     }
 
     public void setMatrix(double[][] matrix) {

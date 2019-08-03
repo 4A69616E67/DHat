@@ -1,10 +1,10 @@
 <component name="libraryTable">
   <library name="Thymeleaf">
     <CLASSES>
-      <root url="file://$PROJECT_DIR$/src/Libraries/Thymeleaf" />
+      <root url="file://$PROJECT_DIR$/Libraries/Thymeleaf" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
-    <jarDirectory url="file://$PROJECT_DIR$/src/Libraries/Thymeleaf" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/Libraries/Thymeleaf" recursive="false" />
   </library>
 </component>

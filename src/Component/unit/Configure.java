@@ -1,35 +1,49 @@
 package Component.unit;
 
-import Component.File.FastqFile;
+
+import Component.File.FastQFile.FastqFile;
+import Component.FragmentDigested.FragmentDigested;
+import Component.FragmentDigested.RestrictionEnzyme;
+import Component.Sequence.DNASequence;
+import Component.Software.Bwa;
+import Component.Software.MAFFT;
+import Component.Software.Python;
+import Component.tool.LinkerDetection;
 import Component.tool.Tools;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Properties;
 
+/**
+ * Created by snowf on 2019/2/17.
+ */
 public class Configure {
 
     public static File InterActionDistanceDisPng;
     public static File LinkerScoreDisPng;
     //-----------------------------------------------------------
     public static FastqFile InputFile;
-    public static String Restriction;
+    public static RestrictionEnzyme Restriction;
     public static String[] HalfLinker;
     public static File GenomeFile;
     //-----------------------------------------------------------
     public static File OutPath = new File("./");
     public static String Prefix = "out";
     public static File Index;
+    public static File EnzymeFragmentPath = new File(OutPath + "/" + Opts.OutDir.EnzyFragDir);
     public static Chromosome[] Chromosome;
     public static String[] AdapterSeq;
     public static int[] Resolution = new int[]{1000000};
     public static int[] DrawResolution = new int[]{1000000};
-    public static int DetectResolution = 100000;
+    //    public static int DetectResolution = 100000;
     public static int Thread = 8;
     public static String Step = "-";
     //-----------------------------------------------------------------
-    public static String Python = "python";
-    public static String Bwa = "bwa";
+    public static Component.Software.Python Python;
+    public static Component.Software.Bwa Bwa;//
+    public static MAFFT Mafft;
+    public static String Bowtie = "";//bowtie
     public static int MatchScore = 1;
     public static int MisMatchScore = -1;
     public static int InDelScore = -1;
@@ -44,50 +58,62 @@ public class Configure {
     public static int DeBugLevel = 0;
 
     public enum Require {
-        InputFile("InputFile", Configure.InputFile), Restriction("Restriction", Configure.Restriction), HalfLinker("HalfLinker", Tools.ArraysToString(Configure.HalfLinker)), GenomeFile("GenomeFile", Configure.GenomeFile);
-        private String Str;
+        InputFile("InputFile", Configure.InputFile), Restriction("Restriction", Configure.Restriction), HalfLinker("HalfLinker", Configure.HalfLinker != null ? Tools.ArraysToString(Configure.HalfLinker) : null), GenomeFile("GenomeFile", Configure.GenomeFile);
+        private String Key;
         public Object Value;
 
         Require(String s, Object v) {
-            this.Str = s;
+            this.Key = s;
             this.Value = v;
+        }
+
+        public String getKey() {
+            return Key;
         }
 
         @Override
         public String toString() {
-            return Str;
+            return Key + " = " + (Value == null ? "" : Value.toString());
         }
     }
 
-    private enum Optional {
-        OutPath("OutPath", Configure.OutPath), Prefix("Prefix", Configure.Prefix), Index("Index", Configure.Index), Chromosomes("Chromosomes", Tools.ArraysToString(Configure.Chromosome)), AdapterSeq("AdapterSeq", Tools.ArraysToString(Configure.AdapterSeq)), Resolutions("Resolutions", Tools.ArraysToString(Configure.Resolution)), DrawResolution("DrawResolution", Tools.ArraysToString(Configure.DrawResolution)), DetectResolution("DetectRes", Configure.DetectResolution), Thread("Thread", Configure.Thread), Step("Step", Configure.Step);
-        private String Str;
+    public enum Optional {
+        OutPath("OutPath", Configure.OutPath), Prefix("Prefix", Configure.Prefix), Index("Index", Configure.Index), EnzymeFragmentPath("EnzymeFragmentPath", Configure.EnzymeFragmentPath), Chromosomes("Chromosomes", Tools.ArraysToString(Configure.Chromosome)), AdapterSeq("AdapterSeq", Tools.ArraysToString(Configure.AdapterSeq)), Resolutions("Resolutions", Tools.ArraysToString(Configure.Resolution)), DrawResolutions("DrawResolutions", Tools.ArraysToString(Configure.DrawResolution)), Thread("Thread", Configure.Thread), Step("Step", Configure.Step);
+        private String Key;
         public Object Value;
 
         Optional(String s, Object v) {
-            this.Str = s;
+            this.Key = s;
             this.Value = v;
+        }
+
+        public String getKey() {
+            return Key;
         }
 
         @Override
         public String toString() {
-            return Str;
+            return Key + " = " + (Value == null ? "" : Value.toString());
         }
     }
 
-    private enum Advance {
-        Python("Python", Configure.Python), BWA("Bwa", Configure.Bwa), MatchScore("MatchScore", Configure.MatchScore), MisMatchScore("MisMatchScore", Configure.MisMatchScore), InDelScore("InDelScore", Configure.InDelScore), MinLinkerLen("MinLinkerLen", Configure.MinLinkerLen), MinReadsLength("MinReadsLength", Configure.MinReadsLen), MaxReadsLength("MaxReadsLength", Configure.MaxReadsLen), AlignThread("AlignThread", Configure.AlignThread), AlignType("AlignType", Configure.AlignType), AlignMisMatch("AlignMisMatch", Configure.AlignMisMatch), MinUniqueScore("MinUniqueScore", Configure.MinUniqueScore), Iteration("Iteration", Configure.Iteration), DeBugLevel("DeBugLevel", Configure.DeBugLevel);
-        private String Str;
+    public enum Advance {
+        Python("Python", Configure.Python), BWA("Bwa", Configure.Bwa), MAFFT("Mafft", Configure.Mafft), Bowtie("Bowtie", Configure.Bowtie), MatchScore("MatchScore", Configure.MatchScore), MisMatchScore("MisMatchScore", Configure.MisMatchScore), InDelScore("InDelScore", Configure.InDelScore), MinLinkerLen("MinLinkerLen", Configure.MinLinkerLen), MinReadsLength("MinReadsLength", Configure.MinReadsLen), MaxReadsLength("MaxReadsLength", Configure.MaxReadsLen), AlignThread("AlignThread", Configure.AlignThread), AlignType("AlignType", Configure.AlignType), AlignMisMatch("AlignMisMatch", Configure.AlignMisMatch), MinUniqueScore("MinUniqueScore", Configure.MinUniqueScore), Iteration("Iteration", Configure.Iteration), DeBugLevel("DeBugLevel", Configure.DeBugLevel);
+        private String Key;
         public Object Value;
 
         Advance(String s, Object v) {
-            this.Str = s;
+            this.Key = s;
             this.Value = v;
+        }
+
+        public String getKey() {
+            return Key;
         }
 
         @Override
         public String toString() {
-            return Str;
+            return Key + " = " + (Value == null ? "" : Value.toString());
         }
     }
 
@@ -98,40 +124,44 @@ public class Configure {
         }
         Config.load(new FileReader(ConfFile));
         for (Require r : Require.values()) {
-            if (Config.getProperty(r.toString()) != null && !Config.getProperty(r.toString()).trim().equals(""))
-                r.Value = Config.getProperty(r.toString()).trim();
+            if (Config.getProperty(r.getKey()) != null && !Config.getProperty(r.getKey()).trim().equals(""))
+                r.Value = Config.getProperty(r.getKey()).trim();
         }
         for (Optional o : Optional.values()) {
-            if (Config.getProperty(o.toString()) != null && !Config.getProperty(o.toString()).trim().equals(""))
-                o.Value = Config.getProperty(o.toString()).trim();
+            if (Config.getProperty(o.getKey()) != null && !Config.getProperty(o.getKey()).trim().equals(""))
+                o.Value = Config.getProperty(o.getKey()).trim();
         }
         for (Advance a : Advance.values()) {
-            if (Config.getProperty(a.toString()) != null && !Config.getProperty(a.toString()).trim().equals(""))
-                a.Value = Config.getProperty(a.toString()).trim();
+            if (Config.getProperty(a.getKey()) != null && !Config.getProperty(a.getKey()).trim().equals(""))
+                a.Value = Config.getProperty(a.getKey()).trim();
         }
-        Init();
+//        Init();
+    }
+
+    public static boolean DependenceCheck() {
+        boolean Satisfied = true;
+        return Satisfied;
     }
 
     public static String ShowParameter() {
         Update();
         ArrayList<String> ParameterStr = new ArrayList<>();
         for (Require opt : Require.values()) {
-            String s = opt + ":\t" + (opt.Value == null ? "" : opt.Value);
-            ParameterStr.add(s);
-//            System.out.println(s);
+            ParameterStr.add(opt.toString());
         }
         ParameterStr.add("======================================================================================");
         for (Optional opt : Optional.values()) {
-            String s = opt + ":\t" + (opt.Value == null ? "" : opt.Value);
-            ParameterStr.add(s);
-//            System.out.println(opt + ":\t" + (opt.Value == null ? "" : opt.Value));
+            ParameterStr.add(opt.toString());
         }
         ParameterStr.add("======================================================================================");
         for (Advance opt : Advance.values()) {
-            String s = opt + ":\t" + (opt.Value == null ? "" : opt.Value);
-            ParameterStr.add(s);
-//            System.out.println(opt + ":\t" + (opt.Value == null ? "" : opt.Value));
+            ParameterStr.add(opt.toString());
         }
+        StringBuilder s = new StringBuilder("Execution:\t");
+        for (Opts.Step t : Opts.Step.values()) {
+            s.append(t.toString()).append(" ");
+        }
+        ParameterStr.add(s.toString());
         return String.join("\n", ParameterStr.toArray(new String[0]));
     }
 
@@ -139,15 +169,15 @@ public class Configure {
         Update();
         BufferedWriter writer = new BufferedWriter(new FileWriter(file));
         for (Require opt : Require.values()) {
-            writer.write(opt + " = " + (opt.Value == null ? "" : opt.Value) + "\n");
+            writer.write(opt + "\n");
         }
         writer.write("#======================================================================================\n");
         for (Optional opt : Optional.values()) {
-            writer.write(opt + " = " + (opt.Value == null ? "" : opt.Value) + "\n");
+            writer.write(opt + "\n");
         }
         writer.write("#======================================================================================\n");
         for (Advance opt : Advance.values()) {
-            writer.write(opt + " = " + (opt.Value == null ? "" : opt.Value) + "\n");
+            writer.write(opt + "\n");
         }
         writer.close();
     }
@@ -161,16 +191,18 @@ public class Configure {
         Optional.OutPath.Value = OutPath;
         Optional.Prefix.Value = Prefix;
         Optional.Index.Value = Index;
+        Optional.EnzymeFragmentPath.Value = EnzymeFragmentPath;
         Optional.Chromosomes.Value = Tools.ArraysToString(Chromosome);
         Optional.AdapterSeq.Value = Tools.ArraysToString(AdapterSeq);
         Optional.Resolutions.Value = Tools.ArraysToString(Resolution);
-        Optional.DrawResolution.Value = Tools.ArraysToString(DrawResolution);
-        Optional.DetectResolution.Value = DetectResolution;
+        Optional.DrawResolutions.Value = Tools.ArraysToString(DrawResolution);
+//        Optional.DetectResolution.Value = DetectResolution;
         Optional.Thread.Value = Thread;
         Optional.Step.Value = Step;
         //----------------------------------------------
         Advance.Python.Value = Python;
         Advance.BWA.Value = Bwa;
+        Advance.MAFFT.Value = Mafft;
         Advance.MatchScore.Value = MatchScore;
         Advance.MisMatchScore.Value = MisMatchScore;
         Advance.MinLinkerLen.Value = MinLinkerLen;
@@ -185,15 +217,28 @@ public class Configure {
         Advance.DeBugLevel.Value = DeBugLevel;
     }
 
-    private static void Init() {
+    public static void Init() throws IOException {
         InputFile = Require.InputFile.Value != null ? new FastqFile(Require.InputFile.Value.toString().trim()) : null;
-        Restriction = Require.Restriction.Value != null ? Require.Restriction.Value.toString().trim() : null;
+        Restriction = Require.Restriction.Value != null ? new RestrictionEnzyme(Require.Restriction.Value.toString().trim()) : null;
         HalfLinker = Require.HalfLinker.Value != null ? Require.HalfLinker.Value.toString().trim().split("\\s+") : null;
+        if (HalfLinker == null) {
+            ArrayList<DNASequence> linkers = LinkerDetection.run(InputFile, new File(""), 0, 70, 5000, Restriction, 10, 0.05f);
+            HalfLinker = new String[linkers.size()];
+            for (int i = 0; i < HalfLinker.length; i++) {
+                HalfLinker[i] = linkers.get(i).getSeq().substring(0, linkers.get(i).getSeq().length() / 2);
+            }
+            Require.HalfLinker.Value = String.join(" ", HalfLinker);
+        }
+        if (Restriction == null) {
+            Restriction = LinkerDetection.Enzyme;
+            Require.Restriction.Value = Restriction.toString();
+        }
         GenomeFile = Require.GenomeFile.Value != null ? new File(Require.GenomeFile.Value.toString()) : null;
         //----------------------------------------------------------------------------------------------------
         OutPath = Optional.OutPath.Value != null ? new File(Optional.OutPath.Value.toString().trim()) : OutPath;
         Prefix = Optional.Prefix.Value != null ? Optional.Prefix.Value.toString().trim() : Prefix;
         Index = Optional.Index.Value != null ? new File(Optional.Index.Value.toString().trim()) : Index;
+        EnzymeFragmentPath = Optional.EnzymeFragmentPath.Value != null ? new File(Optional.EnzymeFragmentPath.Value.toString().trim()) : EnzymeFragmentPath;
         if (Optional.Chromosomes.Value != null && !Optional.Chromosomes.Value.toString().trim().equals("")) {
             String[] str = Optional.Chromosomes.Value.toString().trim().split("\\s+");
             Chromosome = new Chromosome[str.length];
@@ -203,10 +248,12 @@ public class Configure {
         }
         AdapterSeq = Optional.AdapterSeq.Value != null ? Optional.AdapterSeq.Value.toString().trim().split("\\s+") : AdapterSeq;
         Resolution = GetIntArray(Optional.Resolutions.Value, Resolution);
-        DrawResolution = GetIntArray(Optional.DrawResolution.Value, DrawResolution);
-        DetectResolution = GetIntItem(Optional.DetectResolution.Value, DetectResolution);
+        DrawResolution = GetIntArray(Optional.DrawResolutions.Value, DrawResolution);
+//        DetectResolution = GetIntItem(Optional.DetectResolution.Value, DetectResolution);
         Thread = GetIntItem(Optional.Thread.Value, Thread);
         Step = Optional.Step.Value != null ? Optional.Step.Value.toString() : Step;
+        Opts.StepCheck(Step);
+        Opts.Step.FindEnzymeFragment.Execute = (EnzymeFragmentPath == null || !EnzymeFragmentPath.isDirectory());
         //----------------------------------------------------------------------------------------------------
         MatchScore = GetIntItem(Advance.MatchScore.Value, MatchScore);
         MisMatchScore = GetIntItem(Advance.MisMatchScore.Value, MisMatchScore);
@@ -218,8 +265,11 @@ public class Configure {
         AlignType = Advance.AlignType.Value != null ? Advance.AlignType.Value.toString().trim() : AlignType;
         AlignMisMatch = GetIntItem(Advance.AlignMisMatch.Value, AlignMisMatch);
         MinUniqueScore = GetIntItem(Advance.MinUniqueScore.Value, MinUniqueScore);
-        Bwa = Advance.BWA.Value.toString();
-        Python = Advance.Python.Value.toString();
+        Bwa = new Bwa(Advance.BWA.Value.toString());
+        Bowtie = Advance.Bowtie.Value.toString();
+        Python = new Python(Advance.Python.Value.toString());
+        Mafft = new MAFFT(Advance.MAFFT.Value.toString());
+        Iteration = Boolean.valueOf(Advance.Iteration.Value.toString());
         DeBugLevel = Integer.parseInt(Advance.DeBugLevel.Value.toString());
     }
 
@@ -255,3 +305,4 @@ public class Configure {
         return d;
     }
 }
+

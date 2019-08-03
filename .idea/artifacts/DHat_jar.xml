@@ -3,21 +3,17 @@
     <output-path>$PROJECT_DIR$/out/artifacts/DHat_jar</output-path>
     <root id="archive" name="DHat.jar">
       <element id="module-output" name="DHat" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/src/Libraries/Apache Commons/commons-io-2.6.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/src/Libraries/Apache Commons/commons-cli-1.4.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/src/Libraries/Apache Commons/commons-math3-3.6.1.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/src/Libraries/Thymeleaf/ognl-3.1.12.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/src/Libraries/Thymeleaf/javassist-3.20.0-GA.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/src/Libraries/Thymeleaf/slf4j-log4j12-1.7.25.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/src/Libraries/Thymeleaf/thymeleaf-3.0.9.RELEASE.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/src/Libraries/Thymeleaf/unbescape-1.1.5.RELEASE.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/src/Libraries/Thymeleaf/attoparser-2.0.4.RELEASE.jar" path-in-jar="/" />
-      <element id="directory" name="resource">
-        <element id="dir-copy" path="$PROJECT_DIR$/resource" />
-        <element id="file-copy" path="$PROJECT_DIR$/ReadMe.txt" />
-      </element>
-      <element id="extracted-dir" path="$PROJECT_DIR$/src/Libraries/Thymeleaf/log4j-1.2.17.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/src/Libraries/Thymeleaf/slf4j-api-1.7.25.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/Libraries/Apache Commons/commons-io-2.6.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/Libraries/Apache Commons/commons-cli-1.4.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/Libraries/Apache Commons/commons-math3-3.6.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/Libraries/Thymeleaf/ognl-3.1.12.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/Libraries/Thymeleaf/log4j-1.2.17.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/Libraries/Thymeleaf/slf4j-api-1.7.25.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/Libraries/Thymeleaf/javassist-3.20.0-GA.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/Libraries/Thymeleaf/slf4j-log4j12-1.7.25.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/Libraries/Thymeleaf/thymeleaf-3.0.9.RELEASE.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/Libraries/Thymeleaf/unbescape-1.1.5.RELEASE.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/Libraries/Thymeleaf/attoparser-2.0.4.RELEASE.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

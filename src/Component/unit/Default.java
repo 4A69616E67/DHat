@@ -3,7 +3,10 @@ package Component.unit;
 
 import java.text.DateFormat;
 import java.util.Date;
-
+/**
+ * Created by snowf on 2019/2/17.
+ *
+ */
 public class Default {
     public static final String OutPath = "./";
     public static final String Prefix = "out." + DateFormat.getTimeInstance().format(new Date());

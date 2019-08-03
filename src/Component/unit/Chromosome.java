@@ -1,8 +1,7 @@
 package Component.unit;
 
 /**
- * @author snowf
- * @version 1.0
+ * Created by snowf on 2019/2/17.
  */
 
 public class Chromosome implements Comparable<Chromosome> {
@@ -10,7 +9,7 @@ public class Chromosome implements Comparable<Chromosome> {
     public int Size;
 
     public Chromosome(String s) {
-        this(s, 0);
+        this(s.split(":"));
     }
 
     public Chromosome(String[] s) {
@@ -35,15 +34,12 @@ public class Chromosome implements Comparable<Chromosome> {
         Size = size;
     }
 
-
     @Override
-    public int compareTo( Chromosome o) {
+    public int compareTo(Chromosome o) {
         return Name.compareTo(o.Name);
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        Chromosome b = (Chromosome) obj;
+    public boolean equals(Chromosome b) {
         return this.Name.equals(b.Name) && this.Size == b.Size;
     }
 

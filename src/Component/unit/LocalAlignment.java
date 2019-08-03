@@ -4,7 +4,6 @@ package Component.unit;
  * and open the template in the editor.
  */
 
-import java.io.*;
 import java.util.*;
 
 public class LocalAlignment {
@@ -44,27 +43,17 @@ public class LocalAlignment {
         ScoreMatrix = new int[MatrixSzie[0]][MatrixSzie[1]];
         MaxIndex = new int[]{Seq1.length, Seq2.length};
         MinIndex = MaxIndex.clone();
-        InitMatrix(0);
+        InitMatrix();
     }
 
     private void InitMatrix(int score) {
-        for (int i = 0; i < ScoreMatrix.length; i++) {
-            Arrays.fill(ScoreMatrix[i], score);
+        for (int[] aScoreMatrix : ScoreMatrix) {
+            Arrays.fill(aScoreMatrix, score);
         }
     }
 
-    public void FindMaxIndex() {
-        MaxScore = 0;
-        MaxIndex = new int[]{0, 0};
-        for (int i = 0; i < MatrixSzie[0]; i++) {
-            for (int j = 0; j < MatrixSzie[1]; j++) {
-                if (ScoreMatrix[i][j] > MaxScore) {
-                    MaxScore = ScoreMatrix[i][j];
-                    MaxIndex[0] = i;
-                    MaxIndex[1] = j;
-                }
-            }
-        }
+    private void InitMatrix() {
+        InitMatrix(0);
     }
 
     public void FindMinIndex() {
@@ -74,62 +63,57 @@ public class LocalAlignment {
             if (Seq1[MinI - 1] == Seq2[MinJ - 1] && ScoreMatrix[MinI][MinJ] == ScoreMatrix[MinI - 1][MinJ - 1] + MatchScore) {
                 MinI--;
                 MinJ--;
-                if (ScoreMatrix[MinI][MinJ] <= 0) {
-                    MinI++;
-                    MinJ++;
-                    break;
-                }
             } else if (ScoreMatrix[MinI][MinJ] == ScoreMatrix[MinI - 1][MinJ - 1] + MismatchScore) {
                 MinI--;
                 MinJ--;
-                if (ScoreMatrix[MinI][MinJ] <= 0) {
-                    MinI++;
-                    MinJ++;
-                    break;
-                }
             } else if (ScoreMatrix[MinI][MinJ] == ScoreMatrix[MinI - 1][MinJ] + IndelScore) {
                 MinI--;
-                if (ScoreMatrix[MinI][MinJ] <= 0) {
-                    MinI++;
-                    break;
-                }
-            } else {
+            } else if (ScoreMatrix[MinI][MinJ] == ScoreMatrix[MinI][MinJ - 1] + IndelScore) {
                 MinJ--;
-                if (ScoreMatrix[MinI][MinJ] <= 0) {
-                    MinJ++;
-                    break;
-                }
+            } else {
+                MinI--;
+                MinJ--;
             }
         }
+        MinI++;
+        MinJ++;
         MinIndex = new int[]{MinI, MinJ};
     }
 
     public void CreateMatrix(String seq1, String seq2) {
-        if (MatrixSzie[0] < seq1.length() + 1 || MatrixSzie[1] < seq2.length() + 1) {
-            ScoreMatrix = new int[seq1.length() + 1][seq2.length() + 1];
-//            InitMatrix(0);
+        if (ScoreMatrix.length < seq1.length() + 1 || ScoreMatrix[0].length < seq2.length() + 1) {
+            ScoreMatrix = new int[ScoreMatrix.length + seq1.length() + 1][ScoreMatrix[0].length + seq2.length() + 1];
         }
         MatrixSzie = new int[]{seq1.length() + 1, seq2.length() + 1};
+        MaxScore = 0;
+        MaxIndex = new int[]{0, 0};
         Seq1 = seq1.toCharArray();
         Seq2 = seq2.toCharArray();
         int Seq1Length = Seq1.length;
         int Seq2Length = Seq2.length;
         int Seq1Index, Seq2Index;
-        for (Seq1Index = 0; Seq1Index < Seq1Length; Seq1Index++) {
-            for (Seq2Index = 0; Seq2Index < Seq2Length; Seq2Index++) {
-                if (Seq1[Seq1Index] == Seq2[Seq2Index]) {
-                    ScoreMatrix[Seq1Index + 1][Seq2Index + 1] = ScoreMatrix[Seq1Index][Seq2Index] + MatchScore;
+        for (Seq1Index = 1; Seq1Index <= Seq1Length; Seq1Index++) {
+            for (Seq2Index = 1; Seq2Index <= Seq2Length; Seq2Index++) {
+                int insert_score = ScoreMatrix[Seq1Index][Seq2Index - 1] + IndelScore;
+                int delete_score = ScoreMatrix[Seq1Index - 1][Seq2Index] + IndelScore;
+                if (Seq1[Seq1Index - 1] == Seq2[Seq2Index - 1]) {
+                    ScoreMatrix[Seq1Index][Seq2Index] = ScoreMatrix[Seq1Index - 1][Seq2Index - 1] + MatchScore;
                 } else {
-                    ScoreMatrix[Seq1Index + 1][Seq2Index + 1] = ScoreMatrix[Seq1Index][Seq2Index] + MismatchScore;
+                    ScoreMatrix[Seq1Index][Seq2Index] = ScoreMatrix[Seq1Index - 1][Seq2Index - 1] + MismatchScore;
                 }
-                if (ScoreMatrix[Seq1Index + 1][Seq2Index + 1] < ScoreMatrix[Seq1Index + 1][Seq2Index] + IndelScore) {
-                    ScoreMatrix[Seq1Index + 1][Seq2Index + 1] = ScoreMatrix[Seq1Index + 1][Seq2Index] + IndelScore;
+                if (ScoreMatrix[Seq1Index][Seq2Index] < insert_score) {
+                    ScoreMatrix[Seq1Index][Seq2Index] = insert_score;
                 }
-                if (ScoreMatrix[Seq1Index + 1][Seq2Index + 1] < ScoreMatrix[Seq1Index][Seq2Index + 1] + IndelScore) {
-                    ScoreMatrix[Seq1Index + 1][Seq2Index + 1] = ScoreMatrix[Seq1Index][Seq2Index + 1] + IndelScore;
+                if (ScoreMatrix[Seq1Index][Seq2Index] < delete_score) {
+                    ScoreMatrix[Seq1Index][Seq2Index] = delete_score;
                 }
-                if (ScoreMatrix[Seq1Index + 1][Seq2Index + 1] < 0) {
-                    ScoreMatrix[Seq1Index + 1][Seq2Index + 1] = 0;
+                if (ScoreMatrix[Seq1Index][Seq2Index] < 0) {
+                    ScoreMatrix[Seq1Index][Seq2Index] = 0;
+                }
+                if (ScoreMatrix[Seq1Index][Seq2Index] > MaxScore) {
+                    MaxScore = ScoreMatrix[Seq1Index][Seq2Index];
+                    MaxIndex[0] = Seq1Index;
+                    MaxIndex[1] = Seq2Index;
                 }
             }
         }
@@ -191,7 +175,7 @@ public class LocalAlignment {
 //            }
 //        }
 //        if (debugLevel > 2) {
-//            System.out.println("SeqIndex = " + (SeqIndex + 1) + "; LinkerIndex = " + (LinkerIndex + 1));
+//            SystemDhat.out.println("SeqIndex = " + (SeqIndex + 1) + "; LinkerIndex = " + (LinkerIndex + 1));
 //        }
 //    }
 //        alignedStr1.reverse();
@@ -200,12 +184,12 @@ public class LocalAlignment {
 //        if(debugLevel >2)
 //
 //    {
-//        System.out.println("seq: " + seq);
-//        System.out.println("linker: " + linker);
-//        System.out.println("aligned Score: " + Score);
-//        System.out.println("aligned seq      : " + getAlignedStr1());
-//        System.out.println("aligned strStatus : " + getAlignedStatus());
-//        System.out.println("aligned linker      : " + getAlignedStr2());
+//        SystemDhat.out.println("seq: " + seq);
+//        SystemDhat.out.println("linker: " + linker);
+//        SystemDhat.out.println("aligned Score: " + Score);
+//        SystemDhat.out.println("aligned seq      : " + getAlignedStr1());
+//        SystemDhat.out.println("aligned strStatus : " + getAlignedStatus());
+//        SystemDhat.out.println("aligned linker      : " + getAlignedStr2());
 //    }
 
     public void PrintMatrix() {
@@ -233,15 +217,15 @@ public class LocalAlignment {
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         if (args.length < 2) {
-            System.out.println("Usage: java Component.unit.LocalAlignment <sequence 1> <sequence 2> [option]");
+            System.out.println("Usage: java -cp DHat.jar Component.unit.LocalAlignment <sequence 1> <sequence 2> [option]");
             System.exit(0);
         }
         if (args.length == 2) {
             LocalAlignment localAligner = new LocalAlignment();
             localAligner.CreateMatrix(args[0], args[1]);
-            localAligner.FindMaxIndex();
+//            localAligner.FindMaxIndex();
             localAligner.FindMinIndex();
             System.out.println(String.join("\n", localAligner.PrintAlignment()));
 //            localAligner.PrintMatrix();
@@ -249,7 +233,7 @@ public class LocalAlignment {
         } else {
             LocalAlignment localAligner = new LocalAlignment(Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4]));
             localAligner.CreateMatrix(args[0], args[1]);
-            localAligner.FindMaxIndex();
+//            localAligner.FindMaxIndex();
             localAligner.FindMinIndex();
             System.out.println(String.join("\n", localAligner.PrintAlignment()));
 //            localAligner.PrintMatrix();
@@ -273,16 +257,14 @@ public class LocalAlignment {
         int i = MaxIndex[0];
         int j = MaxIndex[1];
         while (ScoreMatrix[i][j] > 0) {
-            if (ScoreMatrix[i][j] == ScoreMatrix[i - 1][j - 1] + MatchScore && Seq1[i - 1] == Seq2[j - 1]) {
+            if (ScoreMatrix[i][j] == ScoreMatrix[i - 1][j - 1] + MatchScore) {
                 AlignStat[0] = Seq1[i - 1] + AlignStat[0];
-                AlignStat[1] = "|" + AlignStat[1];
                 AlignStat[2] = Seq2[j - 1] + AlignStat[2];
-                i--;
-                j--;
-            } else if (ScoreMatrix[i][j] == ScoreMatrix[i - 1][j - 1] + MismatchScore) {
-                AlignStat[0] = Seq1[i - 1] + AlignStat[0];
-                AlignStat[1] = "X" + AlignStat[1];
-                AlignStat[2] = Seq2[j - 1] + AlignStat[2];
+                if (Seq1[i - 1] == Seq2[j - 1]) {
+                    AlignStat[1] = "|" + AlignStat[1];
+                } else {
+                    AlignStat[1] = "X" + AlignStat[1];
+                }
                 i--;
                 j--;
             } else if (ScoreMatrix[i][j] == ScoreMatrix[i - 1][j] + IndelScore) {
@@ -298,5 +280,15 @@ public class LocalAlignment {
             }
         }
         return AlignStat;
+    }
+}
+
+class ScoreItem {
+    public int Score;
+    public byte left;
+    public byte up;
+
+    ScoreItem(int score) {
+        Score = score;
     }
 }
