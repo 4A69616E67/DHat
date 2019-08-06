@@ -186,6 +186,7 @@ java -cp DHat.jar Bin.Guide    (need visual interface)
 ## Linker detection
 If you don't know the value of parameter **Restriction** or **HalfLinker**, you can try to use the follow methods.  
 1. use `java -cp DHat.jar Component.tool.LinkerDetection`  
+    **usage**: `java -cp DHat.jar Component.tool.LinkerDetection -i <input file> [options]`  
     **argument**  
     ```
     -i      input file (fastq or fastq.gz format)
@@ -196,7 +197,7 @@ If you don't know the value of parameter **Restriction** or **HalfLinker**, you 
     -n      sequence number use to processing (default 5000)
     ```
     **result**  
-    The first line is restriction sequence, following is linker sequence
+    The first line is restriction sequence, following is linker sequence, orientation and minimum kmer overlap
     ```
     C^CGG
     CGTCGGATTAGGTGTATCTAGATACACCTAATCCGACG	+	760.0
