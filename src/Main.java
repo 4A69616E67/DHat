@@ -167,6 +167,13 @@ public class Main {
             FileTool.ExtractFile(Opts.ReadMeFile.getPath(), new File(Opts.JarFile.getParent() + "/" + Opts.ReadMeFile.getName()));
             System.out.println("Install finish!");
             System.exit(0);
+        } else if (args.length >= 1 && args[0].equals("clean")) {
+            for (Opts.OutDir d : Opts.OutDir.values()) {
+                System.out.println("Cleaning " + d.toString());
+                FileUtils.deleteDirectory(new File(d.toString()));
+            }
+            System.out.println("clean finish!");
+            System.exit(0);
         }
         //==============================================================================================================
         Main main = new Main(args);

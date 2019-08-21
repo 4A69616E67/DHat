@@ -74,6 +74,8 @@ public class Report {
         Context context = new Context();
         context.setVariable("Date", DateFormat.getDateTimeInstance().format(new Date()));
         Map<String, Object> map = new HashMap<>();
+        map.put("JqueryJsStr", GetBase64(new File(ReportOutPath + "/" + Opts.JqueryJs.getName())));
+        map.put("ScriptJsStr", GetBase64(new File(ReportOutPath + "/" + Opts.ScriptJs.getName())));
         map.put("Tool", new StatUtil());
         map.put("InputFile", Configure.InputFile.getPath());
         map.put("OutPath", Configure.OutPath.getPath());
