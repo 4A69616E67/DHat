@@ -2,7 +2,7 @@ package Utils;
 
 import Component.File.BedPeFile.BedpeFile;
 import Component.File.BedPeFile.BedpeItem;
-import Component.File.CommonFile;
+import Component.File.CommonFile.CommonFile;
 import Component.unit.ChrRegion;
 
 import java.io.IOException;
@@ -19,7 +19,7 @@ public class Conversion {
 
     public static void run(BedpeFile inFile, CommonFile outFile) throws IOException {
         if (!inFile.isSorted()) {
-            inFile.SplitSortFile(new BedpeFile(inFile + ".sort"));
+            inFile.SplitSortFile(new BedpeFile(inFile + ".sort"), new BedpeItem.LocationComparator());
             inFile = new BedpeFile(inFile + ".sort");
         }
         inFile.ReadOpen();
@@ -30,7 +30,7 @@ public class Conversion {
             inFile.ItemNum++;
             ChrRegion Left = item.getLocation().getLeft();
             ChrRegion Right = item.getLocation().getRight();
-            outFile.WriteItemln(item.getSeqTitle() + "\t" + (Left.Orientation == '+' ? 0 : 1) + "\t" + Left.Chr + "\t" + Left.region.Center() + "\t" + item.Extends[0].replaceAll("-.*", "") + "\t" + (Right.Orientation == '+' ? 0 : 1) + "\t" + Right.Chr + "\t" + Right.region.Center() + "\t" + item.Extends[2].replaceAll("-.*", "") + "\t" + item.getScore() + "\t" + item.getScore());
+            outFile.WriteItem(item.getSeqTitle() + "\t" + (Left.Orientation == '+' ? 0 : 1) + "\t" + Left.Chr + "\t" + Left.region.Center() + "\t" + item.Extends[0].replaceAll("-.*", "") + "\t" + (Right.Orientation == '+' ? 0 : 1) + "\t" + Right.Chr + "\t" + Right.region.Center() + "\t" + item.Extends[2].replaceAll("-.*", "") + "\t" + item.getScore() + "\t" + item.getScore() + "\n");
             if (inFile.ItemNum % 1000000 == 0) {
                 System.out.println(new Date() + "\t" + inFile.ItemNum / 1000000 + " Million has been process");
             }

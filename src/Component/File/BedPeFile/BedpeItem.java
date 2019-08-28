@@ -1,20 +1,23 @@
 package Component.File.BedPeFile;
 
 
+import Component.File.AbstractItem;
 import Component.File.BedFile.BedItem;
 import Component.unit.ChrRegion;
 import Component.unit.InterAction;
+
+import java.util.Comparator;
 
 /**
  * Created by snowf on 2019/2/24.
  */
 
-public class BedpeItem implements Comparable<BedpeItem> {
+public class BedpeItem extends AbstractItem {
     private String SeqTitle;
     private InterAction Location;
     private int Score;
     public String[] Extends = new String[0];
-    public BedItem.Sort SortBy = BedItem.Sort.Location;
+//    public BedItem.Sort SortBy = BedItem.Sort.Location;
 
     public BedpeItem(String seqTitle, InterAction location, int score, String[] anExtends) {
         SeqTitle = seqTitle;
@@ -41,15 +44,29 @@ public class BedpeItem implements Comparable<BedpeItem> {
         }
     }
 
+    public static class LocationComparator implements Comparator<BedpeItem> {
 
-    @Override
-    public int compareTo(BedpeItem o) {
-        if (SortBy == BedItem.Sort.SeqTitle) {
-            return SeqTitle.compareTo(o.SeqTitle);
-        } else {
-            return Location.compareTo(o.Location);
+        @Override
+        public int compare(BedpeItem o1, BedpeItem o2) {
+            return o1.Location.compareTo(o2.Location);
         }
     }
+
+    public static class TitleComparator implements Comparator<BedpeItem> {
+
+        @Override
+        public int compare(BedpeItem o1, BedpeItem o2) {
+            return o1.SeqTitle.compareTo(o2.SeqTitle);
+        }
+    }
+//    @Override
+//    public int compareTo(BedpeItem o) {
+//        if (SortBy == BedItem.Sort.SeqTitle) {
+//            return SeqTitle.compareTo(o.SeqTitle);
+//        } else {
+//            return Location.compareTo(o.Location);
+//        }
+//    }
 
     @Override
     public String toString() {

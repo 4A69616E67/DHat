@@ -1,6 +1,7 @@
 package Utils;
 
-import Component.File.CommonFile;
+import Component.File.CommonFile.CommonFile;
+import Component.File.CommonFile.CommonItem;
 
 import java.io.IOException;
 
@@ -11,6 +12,6 @@ import java.io.IOException;
 public class SortFile {
     public static void main(String[] args) throws IOException {
         CommonFile file = new CommonFile(args[0]);
-        file.SortFile(new CommonFile(file + ".sort"));
+        file.SortFile(new CommonFile(file + ".sort"), new CommonItem.CommonComparator());
     }
 }

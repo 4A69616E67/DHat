@@ -1,6 +1,6 @@
 package Component.unit;
 
-import Component.File.CommonFile;
+import Component.File.CommonFile.CommonFile;
 import Component.FragmentDigested.FragmentDigested;
 import Component.Statistic.*;
 import Component.Statistic.Alignment.AlignmentStat;

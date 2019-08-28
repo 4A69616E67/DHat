@@ -5,7 +5,9 @@ import java.util.*;
 import Bin.*;
 import Component.File.*;
 import Component.File.BedFile.BedFile;
+import Component.File.BedFile.BedItem;
 import Component.File.BedPeFile.BedpeFile;
+import Component.File.CommonFile.CommonFile;
 import Component.File.FastQFile.FastqFile;
 import Component.File.FastaFile.FastaFile;
 import Component.File.SamFile.SamFile;
@@ -691,7 +693,7 @@ public class Main {
         t4.start();
         Thread t3 = new Thread(() -> {
             try {
-                SortBedFile.MergeSortFile(SplitSortBedFile);
+                SortBedFile.MergeSortFile(SplitSortBedFile, new BedItem.TitleComparator());
                 for (File s : SplitSortBedFile) {
                     if (DeBugLevel < 1) {
                         AbstractFile.delete(s);

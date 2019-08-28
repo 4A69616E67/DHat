@@ -3,7 +3,6 @@ package Component.File.GffFile;
 import Component.File.AbstractFile;
 import Component.unit.ChrRegion;
 import Component.unit.Gene;
-import Component.unit.SortItem;
 import Component.unit.Transcript;
 
 import java.io.IOException;
@@ -65,10 +64,10 @@ public class GffFile extends AbstractFile<Gene> {
 
     }
 
-    @Override
-    protected SortItem<Gene> ExtractSortItem(String[] s) {
-        return null;
-    }
+//    @Override
+//    protected SortItem<Gene> ExtractSortItem(String[] s) {
+//        return null;
+//    }
 
     @Override
     public synchronized String[] ReadItemLine() throws IOException {

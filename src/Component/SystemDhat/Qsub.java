@@ -1,6 +1,6 @@
 package Component.SystemDhat;
 
-import Component.File.CommonFile;
+import Component.File.CommonFile.CommonFile;
 
 import java.io.BufferedWriter;
 import java.io.IOException;

@@ -30,7 +30,7 @@ public class MatrixFile extends AbstractFile<MatrixItem> {
             for (int i = 0; i < s.length; i++) {
                 String[] ss = s[i].split("\\s+|,+");
                 for (int j = 0; j < ss.length; j++) {
-                    Item.setEntry(i, j, Double.parseDouble(ss[j]));
+                    Item.item.setEntry(i, j, Double.parseDouble(ss[j]));
                 }
             }
         } else {
@@ -55,24 +55,24 @@ public class MatrixFile extends AbstractFile<MatrixItem> {
     }
 
     public void WriteItem(MatrixItem item, String separator) throws IOException {
-        for (int i = 0; i < item.getRowDimension(); i++) {
-            for (int j = 0; j < item.getColumnDimension(); j++) {
-                writer.write(String.valueOf(item.getEntry(i, j)) + separator);
+        for (int i = 0; i < item.item.getRowDimension(); i++) {
+            for (int j = 0; j < item.item.getColumnDimension(); j++) {
+                writer.write(String.valueOf(item.item.getEntry(i, j)) + separator);
             }
             writer.write("\n");
         }
     }
 
-    @Deprecated
-    @Override
-    public SortItem<MatrixItem> ReadSortItem() {
-        return null;
-    }
-
-    @Override
-    protected SortItem<MatrixItem> ExtractSortItem(String[] s) {
-        return null;
-    }
+//    @Deprecated
+//    @Override
+//    public SortItem<MatrixItem> ReadSortItem() {
+//        return null;
+//    }
+//
+//    @Override
+//    protected SortItem<MatrixItem> ExtractSortItem(String[] s) {
+//        return null;
+//    }
 
     public static Format FormatDetection(MatrixFile file) throws IOException {
         file.ReadOpen();

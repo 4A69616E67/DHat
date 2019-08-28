@@ -1,6 +1,6 @@
 package Component.Process;
 
-import Component.File.CommonFile;
+import Component.File.CommonFile.CommonFile;
 import Component.File.FastQFile.FastqFile;
 import Component.File.FastQFile.FastqItem;
 import Component.File.FileManager.PreManager;
