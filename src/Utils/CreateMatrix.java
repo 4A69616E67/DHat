@@ -25,6 +25,7 @@ public class CreateMatrix {
     private File RegionFile;
     private File BinSizeFile;
     private int Threads;
+    private boolean UseCount = false;
 
     public CreateMatrix(BedpeFile BedpeFile, Chromosome[] Chrs, int Resolution, String Prefix, int Threads) {
         this.BedpeFile = BedpeFile;
@@ -44,6 +45,7 @@ public class CreateMatrix {
         Argument.addOption(Option.builder("region").hasArgs().argName("strings").desc("(sample chr1:0:100 chr4:100:400) region you want to calculator, if not set, will calculator chromosome size").build());
         Argument.addOption(Option.builder("t").hasArg().argName("int").desc("Threads (default 1)").build());
         Argument.addOption(Option.builder("p").hasArg().argName("string").desc("out prefix (default bedpefile)").build());
+        Argument.addOption(Option.builder("count").hasArg(false).desc("use count value").build());
         final String helpHeader = "Author: " + Opts.Author;
         final String helpFooter = "Note:\n" +
                 "you can set -chr like \"Chr:ChrSize\" or use -s to define the \"ChrSize\"\n" +
@@ -77,6 +79,7 @@ public class CreateMatrix {
         Threads = ComLine.hasOption("t") ? Integer.parseInt(ComLine.getOptionValue("t")) : 1;
         Region1 = ComLine.hasOption("region") ? new ChrRegion(ComLine.getOptionValue("region").split(":")) : null;
         Region2 = ComLine.hasOption("region") && ComLine.getOptionValues("region").length > 1 ? new ChrRegion(ComLine.getOptionValues("region")[1].split(":")) : Region1;
+        UseCount = ComLine.hasOption("count");
         if (SizeFile != null) {
             List<String> ChrSizeList = FileUtils.readLines(new File(SizeFile), StandardCharsets.UTF_8);
             if (Chromosomes == null) {
@@ -160,9 +163,13 @@ public class CreateMatrix {
                             continue;
                         }
                         synchronized (Process) {
-                            intermatrix[row][col]++;
+                            if (UseCount) {
+                                intermatrix[row][col] += Integer.parseInt(str[DataIndex[5] + 2]);
+                            } else {
+                                intermatrix[row][col]++;
+                            }
                             if (row != col) {
-                                intermatrix[col][row]++;
+                                intermatrix[col][row] = intermatrix[row][col];
                             }
                         }
                     }
@@ -220,16 +227,16 @@ public class CreateMatrix {
                         str = line.split("\\s+");
                         ChrRegion left = new ChrRegion(new String[]{str[DataIndex[0]], str[DataIndex[1]], str[DataIndex[2]]});
                         ChrRegion right = new ChrRegion(new String[]{str[DataIndex[3]], str[DataIndex[4]], str[DataIndex[5]]});
-                        int[] index1 = Bedpe2Index(InterMatrix, reg1, reg2, left, right, Resolution);
+                        int[] index1 = Bedpe2Index(reg1, reg2, left, right, Resolution);
                         if (index1[0] >= 0) {
                             synchronized (InterMatrix) {
-                                InterMatrix.addToEntry(index1[0], index1[1], 1);
+                                InterMatrix.addToEntry(index1[0], index1[1], UseCount ? Integer.parseInt(str[DataIndex[5] + 2]) : 1);
                             }
                         }
-                        int[] index2 = Bedpe2Index(InterMatrix, reg1, reg2, right, left, Resolution);
+                        int[] index2 = Bedpe2Index(reg1, reg2, right, left, Resolution);
                         if (index2[0] >= 0 && index2[0] != index1[0]) {
                             synchronized (InterMatrix) {
-                                InterMatrix.addToEntry(index2[0], index2[1], 1);
+                                InterMatrix.addToEntry(index2[0], index2[1], UseCount ? Integer.parseInt(str[DataIndex[5] + 2]) : 1);
                             }
                         }
                     }
@@ -254,7 +261,7 @@ public class CreateMatrix {
         return InterMatrix;
     }
 
-    public static int[] Bedpe2Index(RealMatrix matrix, ChrRegion reg1, ChrRegion reg2, ChrRegion left, ChrRegion right, int resolution) {
+    public static int[] Bedpe2Index(ChrRegion reg1, ChrRegion reg2, ChrRegion left, ChrRegion right, int resolution) {
         int[] index = new int[]{-1, -1};
         if (left.IsBelong(reg1) && right.IsBelong(reg2)) {
             index[0] = (left.region.Start - reg1.region.Start) / resolution;
