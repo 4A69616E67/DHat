@@ -135,7 +135,11 @@ public class LinkerDetection {
         threshold = threshold == 0 ? 0.05f : threshold;
         ArrayList<FastqItem> list = input_file.Extraction(SeqNum);
         for (FastqItem item : list) {
-            item.Sequence = item.Sequence.substring(start, Math.min(end, item.Sequence.length()));
+            if (start > item.Sequence.length() - 1) {
+                item.Sequence = "";
+            } else {
+                item.Sequence = item.Sequence.substring(start, Math.min(end, item.Sequence.length()));
+            }
         }
         ArrayList<KmerStructure> ValidKmerList = GetValidKmer(list, k_merLen, threshold * SeqNum);
         ArrayList<KmerStructure> assembly_list = Assembly(ValidKmerList);

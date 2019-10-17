@@ -191,7 +191,7 @@ public class Tools {
     }
 
     public static String[] GetKmer(String str, int l) {
-        if (l > str.length()) {
+        if (l > str.length() || l <= 0) {
             return new String[0];
         }
         String[] Kmer = new String[str.length() - l + 1];
