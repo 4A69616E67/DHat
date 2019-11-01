@@ -15,7 +15,7 @@ import java.util.ArrayList;
  */
 public class MatrixFile extends AbstractFile<MatrixItem> {
     private enum Format {
-        DenseMatrix, SpareMatrix, EmptyFile, ErrorFormat
+        DenseMatrix, SparseMatrix, EmptyFile, ErrorFormat
     }
 
     public MatrixFile(String pathname) {
@@ -90,7 +90,7 @@ public class MatrixFile extends AbstractFile<MatrixItem> {
         if (Str.length > 3) {
             return Format.DenseMatrix;
         }
-        return Format.SpareMatrix;
+        return Format.SparseMatrix;
     }
 
     public int PlotHeatMap(File binSizeFile, int resolution, File outFile) throws IOException, InterruptedException {

@@ -137,26 +137,26 @@ public class Tools {
         outfile.close();
     }
 
-    public static void PrintMatrix(RealMatrix Matrix, File DenseFile, File SpareMatrix) throws IOException {
-        BufferedWriter twodfile = new BufferedWriter(new FileWriter(DenseFile));
-        BufferedWriter sparefile = new BufferedWriter(new FileWriter(SpareMatrix));
+    public static void PrintMatrix(RealMatrix Matrix, File DenseFile, File SparseMatrix) throws IOException {
+        BufferedWriter dense_file = new BufferedWriter(new FileWriter(DenseFile));
+        BufferedWriter sparse_file = new BufferedWriter(new FileWriter(SparseMatrix));
         //打印二维矩阵
         for (int i = 0; i < Matrix.getRowDimension(); i++) {
             for (double data : Matrix.getRow(i)) {
-                twodfile.write(data + "\t");
+                dense_file.write(data + "\t");
             }
-            twodfile.write("\n");
+            dense_file.write("\n");
         }
         //打印稀疏矩阵
         for (int i = 0; i < Matrix.getRowDimension(); i++) {
             for (int j = 0; j < Matrix.getColumnDimension(); j++) {
                 if (Matrix.getEntry(i, j) != 0) {
-                    sparefile.write((i + 1) + "\t" + (j + 1) + "\t" + Matrix.getEntry(i, j) + "\n");
+                    sparse_file.write((i + 1) + "\t" + (j + 1) + "\t" + Matrix.getEntry(i, j) + "\n");
                 }
             }
         }
-        sparefile.close();
-        twodfile.close();
+        sparse_file.close();
+        dense_file.close();
     }
 
     public static String DateFormat(long Date) {

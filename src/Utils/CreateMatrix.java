@@ -13,7 +13,6 @@ import java.util.*;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
 
 public class CreateMatrix {
     private BedpeFile BedpeFile;
@@ -21,7 +20,7 @@ public class CreateMatrix {
     private ChrRegion Region1, Region2;
     private int Resolution;
     private String Prefix;
-    private MatrixFile DenseMatrixFile, SpareMatrixFile;
+    private MatrixFile DenseMatrixFile, SparseMatrixFile;
     private File RegionFile;
     private File BinSizeFile;
     private int Threads;
@@ -103,7 +102,7 @@ public class CreateMatrix {
 
     private void Init() {
         DenseMatrixFile = new MatrixFile(Prefix + ".dense.matrix");
-        SpareMatrixFile = new MatrixFile(Prefix + ".spare.matrix");
+        SparseMatrixFile = new MatrixFile(Prefix + ".sparse.matrix");
         RegionFile = new File(Prefix + ".matrix.Region");
         BinSizeFile = new File(Prefix + ".matrix.BinSize");
     }
@@ -185,7 +184,7 @@ public class CreateMatrix {
         //--------------------------------------------------------
         //打印矩阵
         Array2DRowRealMatrix InterMatrix = new Array2DRowRealMatrix(intermatrix);
-        Tools.PrintMatrix(InterMatrix, DenseMatrixFile, SpareMatrixFile);
+        Tools.PrintMatrix(InterMatrix, DenseMatrixFile, SparseMatrixFile);
         System.out.println(new Date() + "\tEnd to create interaction matrix");
         //--------------------------------------------------------------------
         int temp = 0;
@@ -201,7 +200,7 @@ public class CreateMatrix {
     }//OK
 
     public Array2DRowRealMatrix Run(ChrRegion reg1, ChrRegion reg2) throws IOException {
-        System.out.println(new Date() + "\tBegin to creat interaction matrix " + reg1.toString().replace("\t", ":") + " " + reg2.toString().replace("\t", ":"));
+        System.out.println(new Date() + "\tBegin to create interaction matrix " + reg1.toString().replace("\t", ":") + " " + reg2.toString().replace("\t", ":"));
         int[] ChrBinSize;
         ChrBinSize = Statistic.CalculatorBinSize(new int[]{reg1.region.getLength(), reg2.region.getLength()}, Resolution);
         if (Math.max(ChrBinSize[0], ChrBinSize[1]) > Opts.MaxBinNum) {
@@ -251,7 +250,7 @@ public class CreateMatrix {
         infile.close();
         //--------------------------------------------------------
         //打印矩阵
-        Tools.PrintMatrix(InterMatrix, DenseMatrixFile, SpareMatrixFile);
+        Tools.PrintMatrix(InterMatrix, DenseMatrixFile, SparseMatrixFile);
         System.out.println(new Date() + "\tEnd to create interaction matrix");
         //--------------------------------------------------------------------
         BufferedWriter outfile = new BufferedWriter(new FileWriter(RegionFile));
@@ -370,8 +369,8 @@ public class CreateMatrix {
         return MatrixList;
     }
 
-    public MatrixFile getSpareMatrixFile() {
-        return SpareMatrixFile;
+    public MatrixFile getSparseMatrixFile() {
+        return SparseMatrixFile;
     }
 
     public MatrixFile getDenseMatrixFile() {
