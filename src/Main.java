@@ -158,7 +158,7 @@ public class Main {
         file.ReadOpen();
         MatrixItem item = file.ReadItem();
         file.ReadClose();
-        item.PlotHeatMap(new File("Chr4.dense.png"), 0.99f);
+        item.PlotHeatMap(new File("Chr4.dense.png"), "Chr4", 0, "Chr4", 0, 100000, 0.99f);
 //        int fringe=10;
 //        BufferedImage image = ImageIO.read(new File("test.jpg"));
 //        image.get

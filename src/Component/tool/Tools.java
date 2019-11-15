@@ -4,7 +4,10 @@ import Component.File.AbstractFile;
 import Component.unit.Chromosome;
 import Component.unit.Opts;
 import org.apache.commons.math3.linear.RealMatrix;
+import sun.font.FontDesignMetrics;
 
+import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.io.*;
 import java.util.*;
 
@@ -223,6 +226,16 @@ public class Tools {
             }
         }
         return new String(RevComStr);
+    }
+
+    public static void DrawStringCenter(Graphics2D g, String s, Font t, int x, int y, double rotate_theta) {
+        FontDesignMetrics metrics = FontDesignMetrics.getMetrics(t);
+        int StrHeight = metrics.getHeight();
+        int StrWidth = metrics.stringWidth(s);
+        AffineTransform affineTransform = new AffineTransform();
+        affineTransform.rotate(rotate_theta, (float) (StrWidth) / 2, (float) (StrHeight) / 2 - metrics.getAscent());//anchorx和anchory表示相对字符串原点坐标的值
+        g.setFont(t.deriveFont(affineTransform));
+        g.drawString(s, x - StrWidth / 2, y + metrics.getAscent() - StrHeight / 2);
     }
 
 }
