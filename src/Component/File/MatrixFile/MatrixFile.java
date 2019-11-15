@@ -26,7 +26,7 @@ public class MatrixFile extends AbstractFile<MatrixItem> {
     protected MatrixItem ExtractItem(String[] s) {
         MatrixItem Item;
         if (s != null && s.length > 0) {
-            Item = new MatrixItem(s.length, s.length);
+            Item = new MatrixItem(s.length, s[0].split("\\s+|,+").length);
             for (int i = 0; i < s.length; i++) {
                 String[] ss = s[i].split("\\s+|,+");
                 for (int j = 0; j < ss.length; j++) {

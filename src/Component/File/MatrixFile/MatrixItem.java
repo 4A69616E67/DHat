@@ -2,6 +2,7 @@ package Component.File.MatrixFile;
 
 import Component.File.AbstractItem;
 import Component.tool.Tools;
+import Component.unit.ChrRegion;
 import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -23,6 +24,8 @@ import java.util.Comparator;
 
 public class MatrixItem extends AbstractItem {
     public Array2DRowRealMatrix item;
+    public ChrRegion Chr1;
+    public ChrRegion Chr2;
 
     public MatrixItem(int rowDimension, int columnDimension) throws NotStrictlyPositiveException {
         item = new Array2DRowRealMatrix(rowDimension, columnDimension);
@@ -59,7 +62,8 @@ public class MatrixItem extends AbstractItem {
         Collections.sort(list);
         MinValue = MinValue == null ? list.get(0) : MinValue;
         MaxValue = MaxValue == null ? list.get(list.size() - 1) : MaxValue;
-        double ThresholdValue = list.get((int) (list.size() * threshold));
+        double ThresholdValue = list.get((int) ((list.size() - 1) * threshold));
+        //generate heatmap
         BufferedImage matrix_image = new BufferedImage(MatrixWidth, MatrixHeight, BufferedImage.TYPE_INT_ARGB);
         for (int i = 0; i < MatrixHeight; i++) {
             for (int j = 0; j < MatrixWidth; j++) {
@@ -71,13 +75,16 @@ public class MatrixItem extends AbstractItem {
                 } else {
                     c = new Color(255, 255, 255, 0);
                 }
-                matrix_image.setRGB(MatrixHeight - i - 1, j, c.getRGB());
+                matrix_image.setRGB(j, MatrixHeight - 1 - i, c.getRGB());
             }
         }
+        //zoom on if the original graphic size is too small
         Fold = StandardImageSize / MatrixHeight >= StandardImageSize / MatrixWidth ? StandardImageSize / MatrixHeight : StandardImageSize / MatrixWidth;
         Fold = Fold < 1 ? 1 : Fold;
+        //calculate new figure size
         MatrixHeight = MatrixHeight * Fold;
         MatrixWidth = MatrixWidth * Fold;
+        Resolution = Resolution / Fold;//correct resolution,
         BufferedImage image = new BufferedImage(MatrixWidth + Marginal * 2, MatrixHeight + Marginal * 2, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = image.createGraphics();
         //set transparent background
@@ -90,6 +97,10 @@ public class MatrixItem extends AbstractItem {
         graphics.drawLine(Marginal, Marginal + MatrixHeight, Marginal + MatrixWidth, Marginal + MatrixHeight);//draw x label line
         graphics.drawLine(Marginal, Marginal + MatrixHeight, Marginal, Marginal);//draw y label line
         t = new Font("Times New Roman", Font.PLAIN, 30);
+        //draw sub x interval
+        for (int i = 0; i <= MatrixWidth * 10 / interval; i++) {
+            graphics.drawLine(Marginal + i * interval / 10, Marginal + MatrixHeight, Marginal + i * interval / 10, Marginal + MatrixHeight + extend_len / 2);
+        }
         //draw x interval
         for (int i = 0; i <= MatrixWidth / interval; i++) {
             graphics.drawLine(Marginal + i * interval, Marginal + MatrixHeight, Marginal + i * interval, Marginal + MatrixHeight + extend_len);
@@ -102,6 +113,10 @@ public class MatrixItem extends AbstractItem {
             }
             int h = FontDesignMetrics.getMetrics(t).getHeight();
             Tools.DrawStringCenter(graphics, value_str, t, Marginal + i * interval, Marginal + MatrixHeight + extend_len + h / 2 + 2, 0);
+        }
+        //draw sub y interval
+        for (int i = 0; i <= MatrixHeight * 10 / interval; i++) {
+            graphics.drawLine(Marginal, Marginal + MatrixHeight - i * interval / 10, Marginal - extend_len / 2, Marginal + MatrixHeight - i * interval / 10);
         }
         //draw y interval
         for (int i = 0; i <= MatrixHeight / interval; i++) {

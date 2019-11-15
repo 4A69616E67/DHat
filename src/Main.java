@@ -154,12 +154,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         //==============================================测试区==========================================================
-        MatrixFile file = new MatrixFile("Chr4_151-157M.dense.matrix");
-        file.ReadOpen();
-        MatrixItem item = file.ReadItem();
-        file.ReadClose();
-        item.PlotHeatMap(new File("Chr4.dense.bmp"), "Chr4", 151000000, "Chr4", 151000000, 100000, 0.99f);
-//
+
 //        MemoryUsage memoryUsage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
 //        long maxMemorySize = memoryUsage.getMax();
 //        long usedMemorySize = memoryUsage.getUsed();
