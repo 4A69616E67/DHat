@@ -44,9 +44,11 @@ public class MatrixItem extends AbstractItem {
         int LegendWidth = 20;
         int interval = 200;
         int extend_len = 15;
+        Double MinValue = null, MaxValue = null;
         AffineTransform affineTransform = new AffineTransform();
         affineTransform.rotate(-Math.PI / 2, 0, 0);
         Font t;
+        int Fold;
         //=======================================================
         ArrayList<Double> list = new ArrayList<>();
         for (int i = 0; i < MatrixHeight; i++) {
@@ -55,33 +57,39 @@ public class MatrixItem extends AbstractItem {
             }
         }
         Collections.sort(list);
+        MinValue = MinValue == null ? list.get(0) : MinValue;
+        MaxValue = MaxValue == null ? list.get(list.size() - 1) : MaxValue;
         double ThresholdValue = list.get((int) (list.size() * threshold));
-        for (int i = 0; i < MatrixHeight; i++) {
-            for (int j = 0; j < MatrixWidth; j++) {
-                if (Matrix.getEntry(i, j) > ThresholdValue) {
-                    Matrix.setEntry(i, j, ThresholdValue);
-                }
-            }
-        }
-        BufferedImage matrix_image = new BufferedImage(MatrixWidth, MatrixHeight, BufferedImage.TYPE_INT_RGB);
+        BufferedImage matrix_image = new BufferedImage(MatrixWidth, MatrixHeight, BufferedImage.TYPE_INT_ARGB);
         for (int i = 0; i < MatrixHeight; i++) {
             for (int j = 0; j < MatrixWidth; j++) {
                 double value = Matrix.getEntry(i, j);
-                matrix_image.setRGB(MatrixHeight - i - 1, j, new Color(255, (int) (255 * (1 - value / ThresholdValue)), (int) (255 * (1 - value / ThresholdValue))).getRGB());
+                Color c;
+                if (value >= MinValue && value <= MaxValue) {
+                    value = value > ThresholdValue ? ThresholdValue : value;
+                    c = new Color(255, (int) (255 * (1 - value / ThresholdValue)), (int) (255 * (1 - value / ThresholdValue)));
+                } else {
+                    c = new Color(255, 255, 255, 0);
+                }
+                matrix_image.setRGB(MatrixHeight - i - 1, j, c.getRGB());
             }
         }
+        Fold = StandardImageSize / MatrixHeight >= StandardImageSize / MatrixWidth ? StandardImageSize / MatrixHeight : StandardImageSize / MatrixWidth;
+        Fold = Fold < 1 ? 1 : Fold;
+        MatrixHeight = MatrixHeight * Fold;
+        MatrixWidth = MatrixWidth * Fold;
         BufferedImage image = new BufferedImage(MatrixWidth + Marginal * 2, MatrixHeight + Marginal * 2, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = image.createGraphics();
         //set transparent background
-        graphics.setColor(new Color(10, 10, 100, 0));
+        graphics.setColor(new Color(255, 255, 255, 0));
         graphics.fillRect(0, 0, image.getWidth(), image.getHeight());
-        graphics.drawImage(matrix_image, Marginal, Marginal, null);
+        graphics.drawImage(matrix_image, Marginal, Marginal, MatrixWidth, MatrixHeight, null);
         //draw x y label
         graphics.setColor(Color.BLACK);
         graphics.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER));
         graphics.drawLine(Marginal, Marginal + MatrixHeight, Marginal + MatrixWidth, Marginal + MatrixHeight);//draw x label line
         graphics.drawLine(Marginal, Marginal + MatrixHeight, Marginal, Marginal);//draw y label line
-        t = new Font(null, Font.PLAIN, 30);
+        t = new Font("Times New Roman", Font.PLAIN, 30);
         //draw x interval
         for (int i = 0; i <= MatrixWidth / interval; i++) {
             graphics.drawLine(Marginal + i * interval, Marginal + MatrixHeight, Marginal + i * interval, Marginal + MatrixHeight + extend_len);
@@ -114,17 +122,18 @@ public class MatrixItem extends AbstractItem {
         graphics.setPaint(new GradientPaint(Marginal + MatrixWidth + interval, Marginal + MatrixHeight, Color.WHITE, Marginal + MatrixWidth + interval, Marginal, Color.RED));
         graphics.fillRect(Marginal + MatrixWidth + interval, Marginal, LegendWidth, MatrixHeight);
         graphics.setColor(Color.BLACK);
+        int min_value = list.get(0).intValue();
         for (int i = 0; i <= 10; i++) {
             graphics.drawLine(Marginal + MatrixWidth + interval + LegendWidth, Math.round(Marginal + MatrixHeight - (float) (i) / 10 * MatrixHeight), Marginal + MatrixWidth + interval + LegendWidth + extend_len, Math.round(Marginal + MatrixHeight - (float) (i) / 10 * MatrixHeight));
-            String value_str = String.format("%.1f", list.get((int) ((float) (i) / 10 * list.size() * threshold)));
+            String value_str = String.format("%.1f", min_value + (ThresholdValue - min_value) * (float) (i) / 10);
             Tools.DrawStringCenter(graphics, value_str, t, Marginal + MatrixWidth + interval + LegendWidth + extend_len + 2 + FontDesignMetrics.getMetrics(t).stringWidth(value_str) / 2, Math.round(Marginal + MatrixHeight - (float) (i) / 10 * MatrixHeight), 0);
         }
         //draw x,y title
-        t = new Font(null, Font.BOLD, 80);
+        t = new Font("Times New Roman", Font.BOLD, 80);
         Tools.DrawStringCenter(graphics, Chr1, t, FontDesignMetrics.getMetrics(t).getHeight() / 2 + 5, Marginal + MatrixHeight / 2, -Math.PI / 2);//draw y title,rotation pi/2 anticlockwise
         Tools.DrawStringCenter(graphics, Chr2, t, Marginal + MatrixWidth / 2, 2 * Marginal + MatrixHeight - 5 - FontDesignMetrics.getMetrics(t).getHeight() / 2, 0);//draw x title
 
-        ImageIO.write(image, "png", OutFile);
+        ImageIO.write(image, OutFile.getName().substring(OutFile.getName().lastIndexOf('.') + 1), OutFile);
     }
 
     public void PlotHeatMap(File OutFile, String Chr1, int StartSite1, String Chr2, int StartSite2, int resolution, float threshold) throws IOException {

@@ -154,28 +154,12 @@ public class Main {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         //==============================================测试区==========================================================
-        MatrixFile file = new MatrixFile("Chr4.dense.matrix");
+        MatrixFile file = new MatrixFile("Chr4_151-157M.dense.matrix");
         file.ReadOpen();
         MatrixItem item = file.ReadItem();
         file.ReadClose();
-        item.PlotHeatMap(new File("Chr4.dense.png"), "Chr4", 0, "Chr4", 0, 100000, 0.99f);
-//        int fringe=10;
-//        BufferedImage image = ImageIO.read(new File("test.jpg"));
-//        image.get
-//        BufferedImage image1 = new BufferedImage(image.getWidth()+fringe,image.getHeight()+fringe,BufferedImage.TYPE_INT_RGB);
-//        Graphics2D g = image1.createGraphics();
-////        Graphics2D test =image.createGraphics();
-//        g.setBackground(Color.WHITE);
-//        g.drawImage(image,fringe,0, null);
-//        g.setColor(Color.RED);
-////        test.setStroke(new BasicStroke(3.0f));
-//        g.drawLine(fringe,image.getHeight(),image.getWidth()+fringe,image.getHeight());
-//        g.drawLine(fringe,image.getHeight(),fringe,0);
-//        g.setColor(Color.BLACK);
-//        g.drawString("ChrX",image.getWidth()/2+fringe/2,image.getHeight()+1);
-////        test.clipRect(0,0,image.getWidth()+1,image.getHeight()+1);
-//        ImageIO.write(image1,"png",new File("test.png"));
-//        ImageIO.write(image1,"pdf",new File("test.pdf"));
+        item.PlotHeatMap(new File("Chr4.dense.bmp"), "Chr4", 151000000, "Chr4", 151000000, 100000, 0.99f);
+//
 //        MemoryUsage memoryUsage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
 //        long maxMemorySize = memoryUsage.getMax();
 //        long usedMemorySize = memoryUsage.getUsed();
