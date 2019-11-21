@@ -178,6 +178,7 @@ java -cp DHat.jar Utils.FastqExtract
 java -cp DHat.jar Utils.PetCluster
 java -cp DHat.jar Utils.RangeCount
 java -cp DHat.jar Utils.SamFilter
+java -cp DHat.jar Utils.PlotHeatMap
 java -cp DHat.jar Component.tool.Annotation
 java -cp DHat.jar Component.tool.LinkerDetection
 java -cp DHat.jar Bin.Guide    (need visual interface)

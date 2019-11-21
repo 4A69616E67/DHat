@@ -21,12 +21,14 @@ import Component.FragmentDigested.RestrictionEnzyme;
 import Component.Process.BedpeProcess;
 import Component.Process.PreProcess;
 import Component.Process.SeProcess;
+import Component.Statistic.Chart.BarChart;
 import Component.SystemDhat.CommandLineDhat;
 import Component.SystemDhat.Qsub;
 import Component.tool.*;
 import Component.unit.*;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
+import org.jfree.data.category.DefaultCategoryDataset;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -159,6 +161,10 @@ public class Main {
 //        long maxMemorySize = memoryUsage.getMax();
 //        long usedMemorySize = memoryUsage.getUsed();
 //        Opts.StepCheck("NoiseReduce - ");
+        BarChart barChart = new BarChart();
+        barChart.loadData(new File("barchart_data.txt"));
+        barChart.drawing(new File("barchart.png"));
+
 
         //================================================初始化========================================================
         if (args.length >= 1 && args[0].equals("install")) {
