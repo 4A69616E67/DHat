@@ -50,27 +50,6 @@ public class BedpeFile extends AbstractFile<BedpeItem> {
         return Item;
     }
 
-//    @Override
-//    protected SortItem<BedpeItem> ExtractSortItem(String[] s) {
-//        BedpeItem Item;
-//        if (s == null) {
-//            return null;
-//        }
-//        String[] ls = s[0].split("\\s+");
-//        if (SortBy == BedItem.Sort.SeqTitle) {
-//            Item = new BedpeItem(ls[3], null, 0, null);
-//        } else {
-//            InterAction i = new InterAction(ls);
-//            Item = new BedpeItem(null, i, 0, null);
-//            if (ls.length > 9) {
-//                Item.getLocation().getLeft().Orientation = ls[8].charAt(0);
-//                Item.getLocation().getRight().Orientation = ls[9].charAt(0);
-//            }
-//        }
-//        Item.SortBy = SortBy;
-//        return new SortItem<>(Item);
-//    }
-
     @Override
     public void WriteItem(BedpeItem item) throws IOException {
         writer.write(item.toString());

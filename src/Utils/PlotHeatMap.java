@@ -5,6 +5,8 @@ import Component.File.MatrixFile.MatrixItem;
 import Component.unit.Opts;
 import org.apache.commons.cli.*;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
@@ -41,7 +43,8 @@ public class PlotHeatMap {
         file.ReadOpen();
         MatrixItem item = file.ReadItem();
         file.ReadClose();
-        item.PlotHeatMap(OutputFile, Chr1, Chr1Site, Chr2, Chr2Site, Resolution, Threshold);
+        BufferedImage image = item.PlotHeatMap(Chr1, Chr1Site, Chr2, Chr2Site, Resolution, Threshold);
+        ImageIO.write(image, OutputFile.getName().substring(OutputFile.getName().lastIndexOf('.') + 1), OutputFile);
 //
     }
 }

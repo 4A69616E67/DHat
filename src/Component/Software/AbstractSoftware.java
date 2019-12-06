@@ -52,7 +52,7 @@ public abstract class AbstractSoftware {
             Execution = Path + "/" + Execution;
             Valid = true;
             temporaryFile.delete();
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException | IndexOutOfBoundsException e) {
             System.err.println("Error! can't locate " + Execution + " full path");
             System.exit(1);
         }

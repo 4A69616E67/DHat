@@ -106,7 +106,7 @@ public class FileTool {
 
     public static String AdapterDetection(FastqFile file, File Prefix, int SubIndex, AbstractFile stat_file) throws IOException, InterruptedException {
         StringBuilder Adapter = new StringBuilder();
-        int SeqNum = 100;
+        int SeqNum = 200;
         FastaFile HeadFile = new FastaFile(Prefix + ".head" + SeqNum);
         file.ReadOpen();
         BufferedWriter writer = new BufferedWriter(new FileWriter(HeadFile));

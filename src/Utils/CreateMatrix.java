@@ -270,7 +270,7 @@ public class CreateMatrix {
     }
 
     public ArrayList<Array2DRowRealMatrix> Run(List<InterAction> list) throws IOException {
-        //初始化矩阵列表
+        //==================================================初始化矩阵列表==============================
         ArrayList<Array2DRowRealMatrix> MatrixList = new ArrayList<>();
         for (InterAction aList : list) {
             Array2DRowRealMatrix aMatrix = new Array2DRowRealMatrix((aList.getLeft().region.End - aList.getLeft().region.Start + 1) / Resolution + 1, (aList.getRight().region.End - aList.getRight().region.Start + 1) / Resolution + 1);
@@ -282,14 +282,14 @@ public class CreateMatrix {
             }
         }
         BufferedReader reader = new BufferedReader(new FileReader(BedpeFile));
-        //多线程构建矩阵
+        //==================================================多线程构建矩阵================================
+        int[] DataIndex = IndexParse(BedpeFile);
         Thread[] t = new Thread[Threads];
         for (int i = 0; i < t.length; i++) {
             t[i] = new Thread(() -> {
                 String Line;
                 String[] Str;
                 try {
-                    int[] DataIndex = IndexParse(BedpeFile);
                     while ((Line = reader.readLine()) != null) {
                         Str = Line.split("\\s+");
                         ChrRegion left = new ChrRegion(new String[]{Str[DataIndex[0]], Str[DataIndex[1]], Str[DataIndex[2]]});
@@ -333,13 +333,13 @@ public class CreateMatrix {
         }
         BufferedReader reader = new BufferedReader(new FileReader(BedpeFile));
         //多线程构建矩阵
+        int[] DataIndex = IndexParse(BedpeFile);
         Thread[] t = new Thread[Threads];
         for (int i = 0; i < t.length; i++) {
             t[i] = new Thread(() -> {
                 String Line;
                 String[] Str;
                 try {
-                    int[] DataIndex = IndexParse(BedpeFile);
                     while ((Line = reader.readLine()) != null) {
                         Str = Line.split("\\s+");
                         ChrRegion left = new ChrRegion(new String[]{Str[DataIndex[0]], Str[DataIndex[1]], Str[DataIndex[2]]});
