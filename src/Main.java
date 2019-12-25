@@ -28,6 +28,7 @@ import Component.tool.*;
 import Component.unit.*;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
+import org.jfree.chart.ChartFactory;
 import org.jfree.data.category.DefaultCategoryDataset;
 
 import javax.imageio.ImageIO;
@@ -161,9 +162,9 @@ public class Main {
 //        long maxMemorySize = memoryUsage.getMax();
 //        long usedMemorySize = memoryUsage.getUsed();
 //        Opts.StepCheck("NoiseReduce - ");
-        BarChart barChart = new BarChart();
-        barChart.loadData(new File("barchart_data.txt"));
-        barChart.drawing(new File("barchart.png"));
+//        BarChart barChart = new BarChart();
+//        barChart.loadData(new File("barchart_data.txt"));
+//        barChart.drawing(new File("barchart.png"));
 
 
         //================================================初始化========================================================
@@ -269,8 +270,11 @@ public class Main {
         Opts.LFStat.WriteLinkerScoreDis(LinkerDisFile);
         Opts.LFStat.LinkerScoreDisPng = new File(Stat.getImageDir() + "/" + LinkerDisFile.getName().replace(".data", ".png"));
         String ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -i " + LinkerDisFile + " -t bar -o " + Opts.LFStat.LinkerScoreDisPng;
-        Opts.CommandOutFile.Append(ComLine + "\n");
-        CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+        BarChart barChart = new BarChart();
+        barChart.loadData(LinkerDisFile);
+        barChart.drawing(Opts.LFStat.LinkerScoreDisPng);
+//        Opts.CommandOutFile.Append(ComLine + "\n");
+//        CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
         CommonFile[] ReadsLenDisFile = new CommonFile[LinkerSeq.length];
         Stat.ReadsLengthDisBase64 = new String[LinkerSeq.length];
         for (int i = 0; i < ReadsLenDisFile.length; i++) {
@@ -279,9 +283,12 @@ public class Main {
         Opts.LFStat.WriteReadsLengthDis(ReadsLenDisFile);
         for (int i = 0; i < ReadsLenDisFile.length; i++) {
             Opts.LFStat.linkers[i].ReadLengthDisPng = new File(Stat.getImageDir() + "/" + ReadsLenDisFile[i].getName().replace(".data", ".png"));
-            ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t bar -y Count --title " + LinkerSeq[i].getType() + " -i " + ReadsLenDisFile[i] + " -o " + Opts.LFStat.linkers[i].ReadLengthDisPng;
-            Opts.CommandOutFile.Append(ComLine + "\n");
-            CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+            barChart = new BarChart();
+            barChart.loadData(ReadsLenDisFile[i]);
+            barChart.drawing(Opts.LFStat.linkers[i].ReadLengthDisPng);
+//            ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t bar -y Count --title " + LinkerSeq[i].getType() + " -i " + ReadsLenDisFile[i] + " -o " + Opts.LFStat.linkers[i].ReadLengthDisPng;
+//            Opts.CommandOutFile.Append(ComLine + "\n");
+//            CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
         }
         //==============================================================================================================
         LinkerFastqFileR1 = preprocess.getFastqR1File();

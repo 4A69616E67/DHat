@@ -13,6 +13,8 @@ import Component.tool.Tools;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Properties;
 
 /**
@@ -222,11 +224,12 @@ public class Configure {
         Restriction = Require.Restriction.Value != null ? new RestrictionEnzyme(Require.Restriction.Value.toString().trim()) : null;
         HalfLinker = Require.HalfLinker.Value != null ? Require.HalfLinker.Value.toString().trim().split("\\s+") : null;
         if (HalfLinker == null) {
-            ArrayList<DNASequence> linkers = LinkerDetection.run(InputFile, new File(""), 0, 70, 5000, Restriction, 10, 0.05f);
-            HalfLinker = new String[linkers.size()];
-            for (int i = 0; i < HalfLinker.length; i++) {
-                HalfLinker[i] = linkers.get(i).getSeq().substring(0, linkers.get(i).getSeq().length() / 2);
+            ArrayList<DNASequence> linkers = LinkerDetection.run(InputFile, 0, 70, 5000, Restriction, 10, 0.05f);
+            HashMap<String, Integer> map = new HashMap<>();
+            for (int i = 0; i < linkers.size(); i++) {
+                map.put(linkers.get(i).getSeq().substring(0, linkers.get(i).getSeq().length() / 2), 1);
             }
+            HalfLinker = map.keySet().toArray(new String[0]);
             Require.HalfLinker.Value = String.join(" ", HalfLinker);
         }
         if (Restriction == null) {
@@ -267,8 +270,14 @@ public class Configure {
         MinUniqueScore = GetIntItem(Advance.MinUniqueScore.Value, MinUniqueScore);
         Bwa = new Bwa(Advance.BWA.Value.toString());
         Bowtie = Advance.Bowtie.Value.toString();
-        Python = new Python(Advance.Python.Value.toString());
-        Mafft = new MAFFT(Advance.MAFFT.Value.toString());
+        try {
+            Python = new Python(Advance.Python.Value.toString());
+        } catch (Exception e) {
+            System.err.println("Warning! System may can't execute python");
+        }
+        if (AdapterSeq != null && AdapterSeq[0].compareToIgnoreCase("auto") == 0) {
+            Mafft = new MAFFT(Advance.MAFFT.Value.toString());
+        }
         Iteration = Boolean.valueOf(Advance.Iteration.Value.toString());
         DeBugLevel = Integer.parseInt(Advance.DeBugLevel.Value.toString());
     }

@@ -43,7 +43,7 @@ public class PlotHeatMap {
         file.ReadOpen();
         MatrixItem item = file.ReadItem();
         file.ReadClose();
-        BufferedImage image = item.PlotHeatMap(Chr1, Chr1Site, Chr2, Chr2Site, Resolution, Threshold);
+        BufferedImage image = item.DrawHeatMap(Chr1, Chr1Site, Chr2, Chr2Site, Resolution, Threshold);
         ImageIO.write(image, OutputFile.getName().substring(OutputFile.getName().lastIndexOf('.') + 1), OutputFile);
 //
     }

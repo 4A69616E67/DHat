@@ -26,7 +26,14 @@ public class MatrixItem extends AbstractItem {
     private int Fold;
     private double MinValue;
     private double MaxValue;
+    private double ThresholdValue;
     private int Marginal = 160;
+
+    public MatrixItem(ChrRegion chr1, ChrRegion chr2, double[][] matrix) {
+        this(matrix);
+        Chr1 = chr1;
+        Chr2 = chr2;
+    }
 
     public MatrixItem(int rowDimension, int columnDimension) throws NotStrictlyPositiveException {
         item = new Array2DRowRealMatrix(rowDimension, columnDimension);
@@ -56,7 +63,7 @@ public class MatrixItem extends AbstractItem {
         Collections.sort(list);
         MinValue = list.get(0);
         MaxValue = list.get(list.size() - 1);
-        double ThresholdValue = list.get((int) ((list.size() - 1) * threshold));
+        ThresholdValue = list.get((int) ((list.size() - 1) * threshold));
         //generate heatmap
         BufferedImage matrix_image = new BufferedImage(MatrixWidth, MatrixHeight, BufferedImage.TYPE_INT_ARGB);
         for (int i = 0; i < MatrixHeight; i++) {
@@ -76,7 +83,11 @@ public class MatrixItem extends AbstractItem {
         return matrix_image;
     }
 
-    public BufferedImage PlotHeatMap(String Chr1, int StartSite1, String Chr2, int StartSite2, int resolution, float threshold) throws IOException {
+    public BufferedImage DrawHeatMap(int resolution, float threshold) {
+        return DrawHeatMap(Chr1.Chr, Chr1.region.Start, Chr2.Chr, Chr2.region.Start, resolution, threshold);
+    }
+
+    public BufferedImage DrawHeatMap(String Chr1, int StartSite1, String Chr2, int StartSite2, int resolution, float threshold) {
         int MatrixHeight = item.getRowDimension();
         int MatrixWidth = item.getColumnDimension();
         int StandardImageSize = 2000;
@@ -150,7 +161,7 @@ public class MatrixItem extends AbstractItem {
 //        int min_value = list.get(0).intValue();
         for (int i = 0; i <= 10; i++) {
             graphics.drawLine(Marginal + MatrixWidth + interval + LegendWidth, Math.round(Marginal + MatrixHeight - (float) (i) / 10 * MatrixHeight), Marginal + MatrixWidth + interval + LegendWidth + extend_len, Math.round(Marginal + MatrixHeight - (float) (i) / 10 * MatrixHeight));
-            String value_str = String.format("%.1f", MinValue + (MaxValue * threshold - MinValue) * (float) (i) / 10);
+            String value_str = String.format("%.1f", MinValue + (ThresholdValue - MinValue) * (float) (i) / 10);
             Tools.DrawStringCenter(graphics, value_str, t, Marginal + MatrixWidth + interval + LegendWidth + extend_len + 2 + FontDesignMetrics.getMetrics(t).stringWidth(value_str) / 2, Math.round(Marginal + MatrixHeight - (float) (i) / 10 * MatrixHeight), 0);
         }
         //draw x,y title
@@ -158,6 +169,7 @@ public class MatrixItem extends AbstractItem {
         Tools.DrawStringCenter(graphics, Chr1, t, FontDesignMetrics.getMetrics(t).getHeight() / 2 + 5, Marginal + MatrixHeight / 2, -Math.PI / 2);//draw y title,rotation pi/2 anticlockwise
         Tools.DrawStringCenter(graphics, Chr2, t, Marginal + MatrixWidth / 2, 2 * Marginal + MatrixHeight - 5 - FontDesignMetrics.getMetrics(t).getHeight() / 2, 0);//draw x title
         return image;
+//        return PlotHeatMap(Chr1, StartSite1, Chr2, StartSite2, item, resolution, threshold);
     }
 
     public int getFold() {

@@ -1,6 +1,5 @@
 package Component.Statistic.Chart;
 
-import org.jfree.chart.ChartColor;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -47,10 +46,11 @@ public class BarChart implements ChartInterface {
                     XSample.add(strs[0]);
                     data.add(new double[Classification.length]);
                     for (int i = 0; i < Classification.length; i++) {
-                        data.get(data.size() - 1)[i] = Double.parseDouble(strs[i + 1].split("\\s+")[0]);
+                        data.get(data.size() - 1)[i] = Double.parseDouble(strs[i + 1].replaceAll("\\s", ""));
                     }
                 } catch (IndexOutOfBoundsException | NumberFormatException e) {
                     System.err.println("Error!\tIncorrect data format in follow line:\n" + Line);
+                    System.exit(1);
                 }
             }
         }
@@ -69,9 +69,13 @@ public class BarChart implements ChartInterface {
     }
 
     public DefaultCategoryDataset getDataSet() {
+        if (Classification[0] == null) {
+            Classification[0] = "";
+        }
         DefaultCategoryDataset DataSet = new DefaultCategoryDataset();
         for (int i = 0; i < Classification.length; i++) {
             for (int j = 0; j < XSample.size(); j++) {
+//                System.out.println("add value: " + data.get(j)[i] + " " + Classification[i] + " " + XSample.get(j));
                 DataSet.addValue(data.get(j)[i], Classification[i], XSample.get(j));
             }
         }
@@ -79,6 +83,7 @@ public class BarChart implements ChartInterface {
     }
 
     public JFreeChart getBarChart() {
+
         DefaultCategoryDataset DataSet = getDataSet();
         barChart = ChartFactory.createBarChart(this.FigureTitle, XLabel, YLabel, DataSet, PlotOrientation.VERTICAL, true, true, false);
         return barChart;
