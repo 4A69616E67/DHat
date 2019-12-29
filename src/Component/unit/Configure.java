@@ -127,15 +127,15 @@ public class Configure {
         Config.load(new FileReader(ConfFile));
         for (Require r : Require.values()) {
             if (Config.getProperty(r.getKey()) != null && !Config.getProperty(r.getKey()).trim().equals(""))
-                r.Value = Config.getProperty(r.getKey()).trim();
+                r.Value = Config.getProperty(r.getKey()).replaceAll("#.*", "").trim();
         }
         for (Optional o : Optional.values()) {
             if (Config.getProperty(o.getKey()) != null && !Config.getProperty(o.getKey()).trim().equals(""))
-                o.Value = Config.getProperty(o.getKey()).trim();
+                o.Value = Config.getProperty(o.getKey()).replaceAll("#.*", "").trim();
         }
         for (Advance a : Advance.values()) {
             if (Config.getProperty(a.getKey()) != null && !Config.getProperty(a.getKey()).trim().equals(""))
-                a.Value = Config.getProperty(a.getKey()).trim();
+                a.Value = Config.getProperty(a.getKey()).replaceAll("#.*", "").trim();
         }
 //        Init();
     }
@@ -268,15 +268,15 @@ public class Configure {
         AlignType = Advance.AlignType.Value != null ? Advance.AlignType.Value.toString().trim() : AlignType;
         AlignMisMatch = GetIntItem(Advance.AlignMisMatch.Value, AlignMisMatch);
         MinUniqueScore = GetIntItem(Advance.MinUniqueScore.Value, MinUniqueScore);
-        Bwa = new Bwa(Advance.BWA.Value.toString());
-        Bowtie = Advance.Bowtie.Value.toString();
+        Bwa = new Bwa(Advance.BWA.Value.toString().split("\\s+")[0]);
+        Bowtie = Advance.Bowtie.Value.toString().split("\\s+")[0];
         try {
-            Python = new Python(Advance.Python.Value.toString());
+            Python = new Python(Advance.Python.Value.toString().split("\\s+")[0]);
         } catch (Exception e) {
             System.err.println("Warning! System may can't execute python");
         }
         if (AdapterSeq != null && AdapterSeq[0].compareToIgnoreCase("auto") == 0) {
-            Mafft = new MAFFT(Advance.MAFFT.Value.toString());
+            Mafft = new MAFFT(Advance.MAFFT.Value.toString().split("\\s+")[0]);
         }
         Iteration = Boolean.valueOf(Advance.Iteration.Value.toString());
         DeBugLevel = Integer.parseInt(Advance.DeBugLevel.Value.toString());

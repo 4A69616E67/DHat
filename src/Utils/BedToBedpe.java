@@ -14,7 +14,7 @@ import java.io.IOException;
 public class BedToBedpe {
     public static void main(String[] args) throws IOException {
 //        new Component.tool.BedToBedpe(new BedFile(args[0]), new BedFile(args[1]), new BedpeFile(args[2]), 4, "");
-        if (args.length <= 3) {
+        if (args.length < 3) {
             System.err.println("usage: java -cp " + Opts.JarFile + " " + BedToBedpe.class.getName() + " <bed file 1> <bed file 2> <bedpe file>");
             System.exit(1);
         }
