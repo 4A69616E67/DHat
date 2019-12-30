@@ -153,8 +153,14 @@ public class CreateMatrix {
                         str = line.split("\\s+");
                         int row = (Integer.parseInt(str[DataIndex[1]]) + Integer.parseInt(str[DataIndex[2]])) / 2 / Resolution;
                         int col = (Integer.parseInt(str[DataIndex[4]]) + Integer.parseInt(str[DataIndex[5]])) / 2 / Resolution;
+                        if (!IndexBias.containsKey(str[DataIndex[0]])) {
+                            continue;
+                        }
                         row += IndexBias.get(str[DataIndex[0]]);
                         if (row >= finalSumBin) {
+                            continue;
+                        }
+                        if (!IndexBias.containsKey(str[DataIndex[3]])) {
                             continue;
                         }
                         col += IndexBias.get(str[DataIndex[3]]);
