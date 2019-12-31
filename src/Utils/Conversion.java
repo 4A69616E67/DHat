@@ -12,6 +12,9 @@ import java.util.Date;
  * Created by snowf on 2019/7/1.
  */
 
+/**
+ * convert the bedpe file to the pre-file of .hic file, so that can convert it to .hic file by juicer box
+ */
 public class Conversion {
     public static void main(String[] args) throws IOException {
         Conversion.run(new BedpeFile(args[0]), new CommonFile(args[1]));

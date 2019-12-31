@@ -43,31 +43,32 @@ $ export PATH=jre1.8.0_201/bin/:$PATH
 ```
 $ echo 'export PATH=jre1.8.0_201/bin/:$PATH' >> ~/.bash_profile
 ```
-By now, we have installed all dependence, then you can download DHat.jar from this page.
+By now, we have installed all dependence, then you can download DHat.jar from [this page](https://github.com/4A69616E67/DHat/releases/download/v1.0/DHat.jar).
 Then, install **DHat**
 ```
 $ java -jar DHat.jar install
 ```
 ## Usage
 
-**Usage**: java -jar DHat.jar [options], you can get the all information of command options by `java -jar DHat`
+**Usage**: java -jar DHat.jar [options], you can get the all information of command options by `java -jar DHat.jar`
 ```
--i          <file>     Input file (FASTQ format)
--o,--out    <dir>      Output directory (must be exist)
--p          <string>   Output prefix
--conf       <file>     Configure file
--adv        <file>     Advanced configure file
--r,--res    <ints>     Resolutions (separated by spaces)
--s,--step   <strings>  Section you want to running (separated by spaces)
--t,--thread <int>      Number of threads
--D,--Debug  <int>      Debug Level (default 0)
--pbs                   running by pbs
+ -adv <file>          Advanced configure file
+ -conf <file>         Configure file
+ -D,--Debug <int>     Debug Level (default 0)
+ -efp <path>          Enzyme fragment path, created by this tool
+ -i <file>            input file
+ -o,--out <dir>       Out put directory
+ -p <string>          Prefix
+ -pbs                 running by pbs
+ -r,--res <ints>      resolution
+ -s,--step <string>   same as "Step" in configure file
+ -t,--thread <int>    number of threads
 ```
 **DHat** support many options, the most general usage of **DHat** is:
 ```
 $ java -jar DHat.jar -conf <configure file>
 ```
-
+*Note*: program will use default path ("path of DHat"/Resource/default.conf or "path of DHat"/Resource/default_adv.conf) if you don't set -conf or -adv
 1. Set the configure file
 
     After install **DHat**, there are two new directory: ***Script*** and ***Resource***. The ***Script*** folder include some python script, ***Resource*** folder include a template of configure file.
@@ -102,10 +103,10 @@ Configure file must keep to the follow format, and the line start with `#` will 
 ```
 #------------------------------required parameters----------------------------  
 InputFile = DLO-test.fastq  
-Restriction = T^TAA  
-HalfLinker = GTCGGAGAACCAGTAGCT  
 GenomeFile = Hg19.clean.fna  
 #------------------------------optional parameters---------------------------  
+Restriction = T^TAA  
+HalfLinker = GTCGGAGAACCAGTAGCT  
 OutPath = ./  
 Prefix = out  
 Index = Hg19  
@@ -126,7 +127,10 @@ MaxReadsLength = 20
 AlignThread = 1  
 AlignType = Short  
 AlignMisMatch = 0  
-MinUniqueScore =  
+MinUniqueScore =
+Bwa = bwa
+Mafft = mafft
+Python = python 
 Iteration = true  
 DeBugLevel = 0  
 ```
@@ -159,6 +163,9 @@ AlignThread         Int         Threads in alignment (default    "2")
 AlignType           String      Reads type include ["Short","Long"] (default    "Short")
 AlignMisMatch       Int         MisMatch number in alignment    (default    "0")
 MinUniqueScore      Int         Minimum mapQ what reads mapQ less than it will be removed
+Bwa                 String      The path of bwa execute file (include the execute file)
+Mafft               String      The path of mafft execute file (include the execute file)
+Python              String      The path of Python execute file (include the execute file)
 Iteration           Bool        "true" or "false" represent whether do iteration alignment
 DeBugLevel          Int         0 means remain base output, 1 means more output, 2 means all output (default    "0")
 ```
@@ -179,6 +186,7 @@ java -cp DHat.jar Utils.PetCluster
 java -cp DHat.jar Utils.RangeCount
 java -cp DHat.jar Utils.SamFilter
 java -cp DHat.jar Utils.PlotHeatMap
+java -cp DHat.jar Utils.MatrixCorrelation
 java -cp DHat.jar Component.tool.Annotation
 java -cp DHat.jar Component.tool.LinkerDetection
 java -cp DHat.jar Bin.Guide    (need visual interface)
