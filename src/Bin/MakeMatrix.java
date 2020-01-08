@@ -12,9 +12,9 @@ import Component.unit.*;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import Utils.CreateMatrix;
+
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 public class MakeMatrix {
     //===============================================================
@@ -33,6 +33,7 @@ public class MakeMatrix {
     private MatrixFile DenseMatrixFile, SparseMatrixFile;
     private MatrixFile[] ChrDenseMatrixFile, ChrSparseMatrixFile, ChrNormalizeDenseMatrix, ChrNormalizeSparseMatrixFile;
     private File BinSizeFile;
+    private ArrayList<ChrRegion> BinSizeList;
     private Properties Config = new Properties();
 
 
@@ -112,6 +113,7 @@ public class MakeMatrix {
         ChrMatrixPrefix = new String[Chromosomes.length];
         cm = new CreateMatrix(BedpeFile, Chromosomes, Resolution, InterMatrixPrefix, Threads);
         BinSizeFile = cm.getBinSizeFile();
+        BinSizeList = cm.getBinSizeList();
         DenseMatrixFile = cm.getDenseMatrixFile();
         SparseMatrixFile = cm.getSparseMatrixFile();
         for (int i = 0; i < Chromosomes.length; i++) {
@@ -198,5 +200,9 @@ public class MakeMatrix {
 
     public File getBinSizeFile() {
         return BinSizeFile;
+    }
+
+    public ArrayList<ChrRegion> getBinSizeList() {
+        return BinSizeList;
     }
 }

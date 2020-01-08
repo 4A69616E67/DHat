@@ -554,15 +554,14 @@ public class Main {
                 }
                 Opts.CMStat.draw_resolutions[i].GenomeWildMatrixFile = matrix.getDenseMatrixFile();
                 Opts.CMStat.draw_resolutions[i].GenomeWildHeatMapPng = new File(OutDir + "/" + Prefix + ".interaction_" + Tools.UnitTrans(aDrawResolution, "B", "M") + "M.png");
-                if (Opts.CMStat.draw_resolutions[i].GenomeWildMatrixFile.PlotHeatMap(matrix.getBinSizeFile(), aDrawResolution, Opts.CMStat.draw_resolutions[i].GenomeWildHeatMapPng) != 0) {
-                    System.err.println("There are some worried in plot heatmap : " + matrix.getDenseMatrixFile());
-                }
+//                if (Opts.CMStat.draw_resolutions[i].GenomeWildMatrixFile.PlotHeatMap(matrix.getBinSizeFile(), aDrawResolution, Opts.CMStat.draw_resolutions[i].GenomeWildHeatMapPng) != 0) {
+//                    System.err.println("There are some worried in plot heatmap : " + matrix.getDenseMatrixFile());
+//                }
+                Opts.CMStat.draw_resolutions[i].GenomeWildMatrixFile.PlotHeatMap(matrix.getBinSizeList(), aDrawResolution, Opts.CMStat.draw_resolutions[i].GenomeWildHeatMapPng);
                 Opts.CMStat.draw_resolutions[i].ChromMatrixFile = matrix.getChrDenseMatrixFile();
                 for (int j = 0; j < Chromosomes.length; j++) {
                     Opts.CMStat.draw_resolutions[i].ChromHeatMapPng[j] = new File(OutDir + "/" + Prefix + "." + Chromosomes[j].Name + "." + Tools.UnitTrans(aDrawResolution, "B", "M") + "M.png");
-                    if (Opts.CMStat.draw_resolutions[i].ChromMatrixFile[j].PlotHeatMap(new String[]{Chromosomes[j].Name + ":0", Chromosomes[j].Name + ":0"}, aDrawResolution, Opts.CMStat.draw_resolutions[i].ChromHeatMapPng[j]) != 0) {
-                        System.err.println("There are some worried in plot heatmap : " + Opts.CMStat.draw_resolutions[i].ChromMatrixFile[j]);
-                    }
+                    Opts.CMStat.draw_resolutions[i].ChromMatrixFile[j].PlotHeatMap(new ChrRegion(Chromosomes[j].Name, 0, 0), new ChrRegion(Chromosomes[j].Name, 0, 0), aDrawResolution, 0.98f, Opts.CMStat.draw_resolutions[i].ChromHeatMapPng[j]);
                 }
             }
         }

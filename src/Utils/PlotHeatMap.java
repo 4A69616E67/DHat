@@ -1,7 +1,10 @@
 package Utils;
 
+import Component.File.BedFile.BedFile;
+import Component.File.BedFile.BedItem;
 import Component.File.MatrixFile.MatrixFile;
 import Component.File.MatrixFile.MatrixItem;
+import Component.unit.ChrRegion;
 import Component.unit.Opts;
 import org.apache.commons.cli.*;
 
@@ -9,6 +12,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Created by snowf on 2019/11/15.
@@ -16,6 +20,16 @@ import java.io.IOException;
 
 public class PlotHeatMap {
     public static void main(String[] args) throws IOException, ParseException {
+//        MatrixFile infile = new MatrixFile("K562-HindIII-test_1.0M.dense.matrix");
+//        BedFile BinSizeFile = new BedFile("K562-HindIII-test_1.0M.matrix.BinSize");
+//        ArrayList<ChrRegion> BinSizeList = new ArrayList<>();
+//        BinSizeFile.ReadOpen();
+//        BedItem bedItem;
+//        while ((bedItem = BinSizeFile.ReadItem()) != null) {
+//            BinSizeList.add(bedItem.getLocation());
+//        }
+//        infile.PlotHeatMap(BinSizeList, 1000000, new File("K562-HindIII-test_1.0M.png"));
+
         Options Argument = new Options();
         Argument.addOption(Option.builder("i").hasArg().argName("file").required().desc("input matrix file").build());
         Argument.addOption(Option.builder("r").hasArg().argName("int").required().desc("resolution").build());

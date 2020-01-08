@@ -43,7 +43,7 @@ $ export PATH=jre1.8.0_201/bin/:$PATH
 ```
 $ echo 'export PATH=jre1.8.0_201/bin/:$PATH' >> ~/.bash_profile
 ```
-By now, we have installed all dependence, then you can download DHat.jar from [this page](https://github.com/4A69616E67/DHat/releases/download/v1.0/DHat.jar).
+By now, we have installed all dependence, then you can download DHat.jar from [this page](https://github.com/4A69616E67/DHat/releases).
 Then, install **DHat**
 ```
 $ java -jar DHat.jar install

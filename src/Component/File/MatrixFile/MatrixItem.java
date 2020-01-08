@@ -21,13 +21,15 @@ import java.util.Comparator;
 
 public class MatrixItem extends AbstractItem {
     public Array2DRowRealMatrix item;
-    public ChrRegion Chr1;
-    public ChrRegion Chr2;
+    public ChrRegion Chr1 = new ChrRegion("C1", 0, 0);
+    public ChrRegion Chr2 = new ChrRegion("C2", 0, 0);
     private int Fold;
     private double MinValue;
     private double MaxValue;
     private double ThresholdValue;
     private int Marginal = 160;
+    public boolean Legend = true;
+    public boolean Label = true;
 
     public MatrixItem(ChrRegion chr1, ChrRegion chr2, double[][] matrix) {
         this(matrix);
@@ -111,65 +113,69 @@ public class MatrixItem extends AbstractItem {
         graphics.setColor(new Color(255, 255, 255, 0));
         graphics.fillRect(0, 0, image.getWidth(), image.getHeight());
         graphics.drawImage(matrix_image, Marginal, Marginal, MatrixWidth, MatrixHeight, null);
-        //draw x y label
         graphics.setColor(Color.BLACK);
         graphics.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER));
-        graphics.drawLine(Marginal, Marginal + MatrixHeight, Marginal + MatrixWidth, Marginal + MatrixHeight);//draw x label line
-        graphics.drawLine(Marginal, Marginal + MatrixHeight, Marginal, Marginal);//draw y label line
-        t = new Font("Times New Roman", Font.PLAIN, 30);
-        //draw sub x interval
-        for (int i = 0; i <= MatrixWidth * 10 / interval; i++) {
-            graphics.drawLine(Marginal + i * interval / 10, Marginal + MatrixHeight, Marginal + i * interval / 10, Marginal + MatrixHeight + extend_len / 2);
-        }
-        //draw x interval
-        for (int i = 0; i <= MatrixWidth / interval; i++) {
-            graphics.drawLine(Marginal + i * interval, Marginal + MatrixHeight, Marginal + i * interval, Marginal + MatrixHeight + extend_len);
-            float value = (float) (StartSite2 + i * interval * resolution) / 1000000;
-            String value_str;
-            if (value == (int) value) {
-                value_str = String.format("%d", (int) (value));
-            } else {
-                value_str = String.format("%.2f", value);
+        //draw x y label
+        if (Label) {
+            t = new Font("Times New Roman", Font.PLAIN, 30);
+            graphics.drawLine(Marginal, Marginal + MatrixHeight, Marginal + MatrixWidth, Marginal + MatrixHeight);//draw x label line
+            graphics.drawLine(Marginal, Marginal + MatrixHeight, Marginal, Marginal);//draw y label line
+            //draw sub x interval
+            for (int i = 0; i <= MatrixWidth * 10 / interval; i++) {
+                graphics.drawLine(Marginal + i * interval / 10, Marginal + MatrixHeight, Marginal + i * interval / 10, Marginal + MatrixHeight + extend_len / 2);
             }
-            int h = FontDesignMetrics.getMetrics(t).getHeight();
-            Tools.DrawStringCenter(graphics, value_str, t, Marginal + i * interval, Marginal + MatrixHeight + extend_len + h / 2 + 2, 0);
-        }
-        //draw sub y interval
-        for (int i = 0; i <= MatrixHeight * 10 / interval; i++) {
-            int y1 = Marginal + MatrixHeight - i * interval / 10;
-            graphics.drawLine(Marginal, y1, Marginal - extend_len / 2, y1);
-        }
-        //draw y interval
-        for (int i = 0; i <= MatrixHeight / interval; i++) {
-            graphics.drawLine(Marginal, Marginal + MatrixHeight - i * interval, Marginal - extend_len, Marginal + MatrixHeight - i * interval);
-            float value = (float) (StartSite1 + i * interval * resolution) / 1000000;
-            String value_str;
-            if (value == (int) value) {
-                value_str = String.format("%d", (int) (value));
-            } else {
-                value_str = String.format("%.2f", value);
+            //draw x interval
+            for (int i = 0; i <= MatrixWidth / interval; i++) {
+                graphics.drawLine(Marginal + i * interval, Marginal + MatrixHeight, Marginal + i * interval, Marginal + MatrixHeight + extend_len);
+                float value = (float) (StartSite2 + i * interval * resolution) / 1000000;
+                String value_str;
+                if (value == (int) value) {
+                    value_str = String.format("%d", (int) (value));
+                } else {
+                    value_str = String.format("%.2f", value);
+                }
+                int h = FontDesignMetrics.getMetrics(t).getHeight();
+                Tools.DrawStringCenter(graphics, value_str, t, Marginal + i * interval, Marginal + MatrixHeight + extend_len + h / 2 + 2, 0);
             }
-            int h = FontDesignMetrics.getMetrics(t).getHeight();
-            Tools.DrawStringCenter(graphics, value_str, t, Marginal - extend_len - h / 2 - 2, Marginal + MatrixHeight - i * interval, -Math.PI / 2);
+            //draw sub y interval
+            for (int i = 0; i <= MatrixHeight * 10 / interval; i++) {
+                int y1 = Marginal + MatrixHeight - i * interval / 10;
+                graphics.drawLine(Marginal, y1, Marginal - extend_len / 2, y1);
+            }
+            //draw y interval
+            for (int i = 0; i <= MatrixHeight / interval; i++) {
+                graphics.drawLine(Marginal, Marginal + MatrixHeight - i * interval, Marginal - extend_len, Marginal + MatrixHeight - i * interval);
+                float value = (float) (StartSite1 + i * interval * resolution) / 1000000;
+                String value_str;
+                if (value == (int) value) {
+                    value_str = String.format("%d", (int) (value));
+                } else {
+                    value_str = String.format("%.2f", value);
+                }
+                int h = FontDesignMetrics.getMetrics(t).getHeight();
+                Tools.DrawStringCenter(graphics, value_str, t, Marginal - extend_len - h / 2 - 2, Marginal + MatrixHeight - i * interval, -Math.PI / 2);
+            }
         }
-//        graphics.setStroke(new BasicStroke(3.0f));
         //draw legend
-        interval = 40;
-        graphics.setPaint(new GradientPaint(Marginal + MatrixWidth + interval, Marginal + MatrixHeight, Color.WHITE, Marginal + MatrixWidth + interval, Marginal, Color.RED));
-        graphics.fillRect(Marginal + MatrixWidth + interval, Marginal, LegendWidth, MatrixHeight);
-        graphics.setColor(Color.BLACK);
-//        int min_value = list.get(0).intValue();
-        for (int i = 0; i <= 10; i++) {
-            graphics.drawLine(Marginal + MatrixWidth + interval + LegendWidth, Math.round(Marginal + MatrixHeight - (float) (i) / 10 * MatrixHeight), Marginal + MatrixWidth + interval + LegendWidth + extend_len, Math.round(Marginal + MatrixHeight - (float) (i) / 10 * MatrixHeight));
-            String value_str = String.format("%.1f", MinValue + (ThresholdValue - MinValue) * (float) (i) / 10);
-            Tools.DrawStringCenter(graphics, value_str, t, Marginal + MatrixWidth + interval + LegendWidth + extend_len + 2 + FontDesignMetrics.getMetrics(t).stringWidth(value_str) / 2, Math.round(Marginal + MatrixHeight - (float) (i) / 10 * MatrixHeight), 0);
+        if (Legend) {
+            interval = 40;
+            t = new Font("Times New Roman", Font.PLAIN, 30);
+            graphics.setPaint(new GradientPaint(Marginal + MatrixWidth + interval, Marginal + MatrixHeight, Color.WHITE, Marginal + MatrixWidth + interval, Marginal, Color.RED));
+            graphics.fillRect(Marginal + MatrixWidth + interval, Marginal, LegendWidth, MatrixHeight);
+            graphics.setColor(Color.BLACK);
+            for (int i = 0; i <= 10; i++) {
+                graphics.drawLine(Marginal + MatrixWidth + interval + LegendWidth, Math.round(Marginal + MatrixHeight - (float) (i) / 10 * MatrixHeight), Marginal + MatrixWidth + interval + LegendWidth + extend_len, Math.round(Marginal + MatrixHeight - (float) (i) / 10 * MatrixHeight));
+                String value_str = String.format("%.1f", MinValue + (ThresholdValue - MinValue) * (float) (i) / 10);
+                Tools.DrawStringCenter(graphics, value_str, t, Marginal + MatrixWidth + interval + LegendWidth + extend_len + 2 + FontDesignMetrics.getMetrics(t).stringWidth(value_str) / 2, Math.round(Marginal + MatrixHeight - (float) (i) / 10 * MatrixHeight), 0);
+            }
         }
         //draw x,y title
-        t = new Font("Times New Roman", Font.BOLD, 80);
-        Tools.DrawStringCenter(graphics, Chr1, t, FontDesignMetrics.getMetrics(t).getHeight() / 2 + 5, Marginal + MatrixHeight / 2, -Math.PI / 2);//draw y title,rotation pi/2 anticlockwise
-        Tools.DrawStringCenter(graphics, Chr2, t, Marginal + MatrixWidth / 2, 2 * Marginal + MatrixHeight - 5 - FontDesignMetrics.getMetrics(t).getHeight() / 2, 0);//draw x title
+        if (Label) {
+            t = new Font("Times New Roman", Font.BOLD, 80);
+            Tools.DrawStringCenter(graphics, Chr1, t, FontDesignMetrics.getMetrics(t).getHeight() / 2 + 5, Marginal + MatrixHeight / 2, -Math.PI / 2);//draw y title,rotation pi/2 anticlockwise
+            Tools.DrawStringCenter(graphics, Chr2, t, Marginal + MatrixWidth / 2, 2 * Marginal + MatrixHeight - 5 - FontDesignMetrics.getMetrics(t).getHeight() / 2, 0);//draw x title
+        }
         return image;
-//        return PlotHeatMap(Chr1, StartSite1, Chr2, StartSite2, item, resolution, threshold);
     }
 
     public int getFold() {

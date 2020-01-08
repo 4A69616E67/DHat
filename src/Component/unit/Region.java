@@ -35,7 +35,7 @@ public class Region implements Comparable<Region> {
     }
 
     public int Distance(Region b) {
-        return Math.abs((Start + End) / 2 - (b.Start + b.End) / 2);
+        return Math.abs(Center() - b.Center());
     }
 
     @Override
@@ -56,4 +56,5 @@ public class Region implements Comparable<Region> {
     public String toString() {
         return Start + "\t" + End;
     }
+
 }

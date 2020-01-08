@@ -18,6 +18,7 @@ public class CreateMatrix {
     private BedpeFile BedpeFile;
     private Chromosome[] Chromosomes;
     private ChrRegion Region1, Region2;
+    private ArrayList<ChrRegion> BinSizeList = new ArrayList<>();
     private int Resolution;
     private String Prefix;
     private MatrixFile DenseMatrixFile, SparseMatrixFile;
@@ -195,11 +196,15 @@ public class CreateMatrix {
         //--------------------------------------------------------------------
         int temp = 0;
         BufferedWriter outfile = new BufferedWriter(new FileWriter(BinSizeFile));
+        BinSizeList = new ArrayList<>();
         for (int i = 0; i < Chromosomes.length; i++) {
             temp = temp + 1;
+            ChrRegion region = new ChrRegion(Chromosomes[i].Name, temp, 0);
             outfile.write(Chromosomes[i].Name + "\t" + temp + "\t");
             temp = temp + ChrBinSize[i] - 1;
             outfile.write(temp + "\n");
+            region.region.End = temp;
+            BinSizeList.add(region);
         }
         outfile.close();
         return InterMatrix;
@@ -403,5 +408,9 @@ public class CreateMatrix {
                 System.exit(1);
         }
         return Index;
+    }
+
+    public ArrayList<ChrRegion> getBinSizeList() {
+        return BinSizeList;
     }
 }
