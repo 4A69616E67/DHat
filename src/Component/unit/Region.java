@@ -6,12 +6,10 @@ package Component.unit;
 public class Region implements Comparable<Region> {
     public int Start;
     public int End;
-    private int Length;
 
     public Region(int start, int end) {
         Start = start;
         End = end;
-        Length = end - start;
     }
 
     public int Center() {
@@ -49,7 +47,7 @@ public class Region implements Comparable<Region> {
     }
 
     public int getLength() {
-        return Length;
+        return End - Start;
     }
 
     @Override

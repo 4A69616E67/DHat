@@ -1,5 +1,7 @@
 package Component.unit;
 
+import java.util.Comparator;
+
 /**
  * Created by snowf on 2019/2/17.
  */
@@ -52,4 +54,5 @@ public class InterAction implements Comparable<InterAction> {
     public int Distance() {
         return Left.Distance(Right);
     }
+
 }

@@ -15,7 +15,7 @@ import java.util.Comparator;
 public class BedpeItem extends AbstractItem {
     private String SeqTitle;
     private InterAction Location;
-    private int Score;
+    public int Score;
     public String[] Extends = new String[0];
 //    public BedItem.Sort SortBy = BedItem.Sort.Location;
 
@@ -32,7 +32,11 @@ public class BedpeItem extends AbstractItem {
             SeqTitle = s[6];
         }
         if (s.length > 7) {
-            Score = Integer.parseInt(s[7]);
+            try {
+                Score = Integer.parseInt(s[7]);
+            } catch (NumberFormatException e) {
+                Score = 0;
+            }
         }
         if (s.length > 9) {
             Location.getLeft().Orientation = s[8].charAt(0);
@@ -59,14 +63,6 @@ public class BedpeItem extends AbstractItem {
             return o1.SeqTitle.compareTo(o2.SeqTitle);
         }
     }
-//    @Override
-//    public int compareTo(BedpeItem o) {
-//        if (SortBy == BedItem.Sort.SeqTitle) {
-//            return SeqTitle.compareTo(o.SeqTitle);
-//        } else {
-//            return Location.compareTo(o.Location);
-//        }
-//    }
 
     @Override
     public String toString() {

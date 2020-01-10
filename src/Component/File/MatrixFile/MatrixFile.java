@@ -106,7 +106,7 @@ public class MatrixFile extends AbstractFile<MatrixItem> {
         int interval = 30;
         ReadClose();
         item.Label = false;
-        BufferedImage image = item.DrawHeatMap(resolution, 0.99f);
+        BufferedImage image = item.DrawHeatMap(resolution, 0.99f, true);
         Graphics2D g = image.createGraphics();
         int fold = item.getFold();
         int marginal = item.getMarginal();
@@ -141,7 +141,7 @@ public class MatrixFile extends AbstractFile<MatrixItem> {
         ReadClose();
         item.Chr1 = chr1;
         item.Chr2 = chr2;
-        ImageIO.write(item.DrawHeatMap(resolution, threshold), outFile.getName().substring(outFile.getName().lastIndexOf('.') + 1), outFile);
+        ImageIO.write(item.DrawHeatMap(resolution, threshold, true), outFile.getName().substring(outFile.getName().lastIndexOf('.') + 1), outFile);
 //        String ComLine = Configure.Python.Exe() + " " + Opts.PlotHeatMapScriptFile + " -t localGenome -m A -i " + getPath() + " -o " + outFile + " -r " + resolution + " -p " + String.join(":", Region) + " -q 95";
 //        Opts.CommandOutFile.Append(ComLine + "\n");
 //        if (Configure.DeBugLevel < 1) {

@@ -9,9 +9,10 @@ import java.util.Hashtable;
 import Component.File.BedPeFile.BedpeFile;
 import Component.unit.LinkerSequence;
 import org.apache.commons.math3.distribution.*;
+import org.apache.commons.math3.linear.RealMatrix;
+
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 public class Statistic {
 
