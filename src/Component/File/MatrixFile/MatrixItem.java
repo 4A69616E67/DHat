@@ -4,6 +4,7 @@ import Component.File.AbstractItem;
 import Component.tool.Tools;
 import Component.unit.ChrRegion;
 import Component.unit.InterAction;
+import Component.unit.Region;
 import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import sun.font.FontDesignMetrics;
@@ -235,18 +236,25 @@ public class MatrixItem extends AbstractItem {
         ChrRegion left = action.getLeft();
         ChrRegion right = action.getRight();
         boolean flag = false;
-        if (left.Chr.equals(Chr1.Chr) && right.Chr.equals(Chr2.Chr) && Chr1.region.IsContain(left.region.Center()) && Chr2.region.IsContain(right.region.Center())) {
-            int[] index = new int[]{(left.region.Center() - Chr1.region.Start) / Resolution, (right.region.Center() - Chr2.region.Start) / Resolution};
-            item.addToEntry(index[0], index[1], value);
+        if (left.Chr.equals(Chr1.Chr) && right.Chr.equals(Chr2.Chr)) {
+            add(left.region, right.region, value);
             flag = true;
         }
-        if (right.Chr.equals(Chr1.Chr) && left.Chr.equals(Chr2.Chr) && Chr1.region.IsContain(right.region.Center()) && Chr2.region.IsContain(left.region.Center())) {
-            int[] index = new int[]{(right.region.Center() - Chr1.region.Start) / Resolution, (left.region.Center() - Chr2.region.Start) / Resolution};
+        if (right.Chr.equals(Chr1.Chr) && left.Chr.equals(Chr2.Chr)) {
+            add(right.region, left.region, value);
+            flag = true;
+        }
+        return flag;
+    }
+
+    public boolean add(Region reg1, Region reg2, double value) {
+        boolean flag = false;
+        if (Chr1.region.IsContain(reg1.Center()) && Chr2.region.IsContain(reg2.Center())) {
+            int[] index = new int[]{(reg1.Center() - Chr1.region.Start) / Resolution, (reg2.Center() - Chr2.region.Start) / Resolution};
             item.addToEntry(index[0], index[1], value);
             flag = true;
         }
         return flag;
-
     }
 
 }

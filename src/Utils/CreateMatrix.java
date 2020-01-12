@@ -270,10 +270,24 @@ public class CreateMatrix {
 
     public ArrayList<MatrixItem> Run(List<InterAction> list) throws IOException {
         //==================================================初始化矩阵列表==============================
-        ArrayList<MatrixItem> MatrixList = new ArrayList<>();
+//        ArrayList<MatrixItem> MatrixList = new ArrayList<>();
+        for (InterAction action : list) {
+            if (action.Left.compareTo(action.Right) > 0) {
+                ChrRegion temp = action.Left;
+                action.Left = action.Right;
+                action.Right = temp;
+            }
+        }
+        Collections.sort(list);
+        HashMap<String, HashMap<String, ArrayList<MatrixItem>>> MatrixList = new HashMap<>();
         for (InterAction aList : list) {
-            MatrixItem aMatrix = new MatrixItem(aList, Resolution);
-            MatrixList.add(aMatrix);
+            String Left = aList.getLeft().Chr;
+            String Right = aList.getRight().Chr;
+            if (!MatrixList.containsKey(Left) || !MatrixList.get(Left).containsKey(Right)) {
+                MatrixList.put(Left, new HashMap<>());
+                MatrixList.get(Left).put(Right, new ArrayList<>());
+            }
+            MatrixList.get(Left).get(Right).add(new MatrixItem(aList, Resolution));
         }
         //==================================================多线程构建矩阵================================
         BedpeFile.ReadOpen();
@@ -286,9 +300,25 @@ public class CreateMatrix {
                         if (!UseCount) {
                             Line.Score = 1;
                         }
-                        for (int j = 0; j < list.size(); j++) {
-                            synchronized (MatrixList.get(j)) {
-                                MatrixList.get(j).add(Line.getLocation(), Line.Score);
+                        String LeftChr = Line.getLocation().getLeft().Chr;
+                        String RightChr = Line.getLocation().getRight().Chr;
+                        if (MatrixList.containsKey(LeftChr)) {
+                            if (MatrixList.get(LeftChr).containsKey(RightChr)) {
+                                ArrayList<MatrixItem> temp_list = MatrixList.get(LeftChr).get(RightChr);
+                                for (int j = 0; j < temp_list.size(); j++) {
+                                    synchronized (temp_list.get(j)) {
+                                        temp_list.get(j).add(Line.getLocation().Left.region, Line.getLocation().Right.region, Line.Score);
+                                    }
+                                }
+                            }
+                        } else if (MatrixList.containsKey(RightChr)) {
+                            if (MatrixList.get(RightChr).containsKey(LeftChr)) {
+                                ArrayList<MatrixItem> temp_list = MatrixList.get(RightChr).get(LeftChr);
+                                for (int j = 0; j < temp_list.size(); j++) {
+                                    synchronized (temp_list.get(j)) {
+                                        temp_list.get(j).add(Line.getLocation().Right.region, Line.getLocation().Left.region, Line.Score);
+                                    }
+                                }
                             }
                         }
                     }
@@ -300,7 +330,13 @@ public class CreateMatrix {
             t[i].start();
         }
         Tools.ThreadsWait(t);
-        return MatrixList;
+        ArrayList<MatrixItem> Result = new ArrayList<>();
+        for (String key1 : MatrixList.keySet()) {
+            for (String key2 : MatrixList.get(key1).keySet()) {
+                Result.addAll(MatrixList.get(key1).get(key2));
+            }
+        }
+        return Result;
     }
 
     public ArrayList<MatrixItem> Run(List<InterAction> list, ArrayList<Integer> Resolution) throws IOException {

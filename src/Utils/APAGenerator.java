@@ -4,7 +4,6 @@ import Component.File.BedPeFile.BedpeFile;
 import Component.File.BedPeFile.BedpeItem;
 import Component.File.MatrixFile.MatrixItem;
 import Component.Statistic.StatUtil;
-import Component.tool.Statistic;
 import Component.tool.Tools;
 import Component.unit.ChrRegion;
 import Component.unit.InterAction;
@@ -31,6 +30,7 @@ public class APAGenerator {
     private int BinNumber = 5;
     private String Title = "";
     public int Threads = 1;
+    public int MergeLen = -1;
     public int MaxDistance = Integer.MAX_VALUE;
     public int MinDistance = Integer.MIN_VALUE;
 
@@ -53,6 +53,7 @@ public class APAGenerator {
         Argument.addOption(Option.builder("title").hasArg().argName("string").desc("figure title").build());
         Argument.addOption(Option.builder("minD").longOpt("mindistance").hasArg().argName("int").desc("program only consider the distance of two anchor large than this value").build());
         Argument.addOption(Option.builder("maxD").longOpt("maxdistance").hasArg().argName("int").desc("program only consider the distance of two anchor less than this value").build());
+        Argument.addOption(Option.builder("merge").hasArg().argName("int").desc("merge interactions which distance less than this value").build());
 //        Argument.addOption(Option.builder("bn").longOpt("binnumber").hasArg().argName("int").desc("the number of extend bin").build());
         CommandLine ComLine = new DefaultParser().parse(Argument, args);
         BedpeFile infile1 = new BedpeFile(Opts.GetFileOpt(ComLine, "i", null));
@@ -60,10 +61,12 @@ public class APAGenerator {
         String title = Opts.GetStringOpt(ComLine, "title", "");
         int bin_size = Opts.GetIntOpt(ComLine, "bs", 0);
         int bin_number = Opts.GetIntOpt(ComLine, "bn", 0);
+        int merge_length = Opts.GetIntOpt(ComLine, "merge", 0);
         APAGenerator generator = new APAGenerator(infile1, infile2, bin_size, bin_number);
         generator.MaxDistance = Opts.GetIntOpt(ComLine, "maxD", Integer.MAX_VALUE);
         generator.MinDistance = Opts.GetIntOpt(ComLine, "minD", Integer.MIN_VALUE);
         generator.Threads = Opts.GetIntOpt(ComLine, "t", 1);
+        generator.MergeLen = merge_length;
         generator.setTitle(title);
         generator.Run();
     }
@@ -77,20 +80,25 @@ public class APAGenerator {
             if (item.getLocation().Distance() > MaxDistance || item.getLocation().Distance() < MinDistance) {
                 continue;
             }
-            int n1 = item.getLocation().getLeft().region.Center();
-            int n2 = item.getLocation().getRight().region.Center();
-            item.getLocation().getLeft().region.Start = n1 - ExtendLength + 1;
-            item.getLocation().getLeft().region.End = n1 + ExtendLength;
-            item.getLocation().getRight().region.Start = n2 - ExtendLength + 1;
-            item.getLocation().getRight().region.End = n2 + ExtendLength;
             if (item.getLocation().getLeft().compareTo(item.getLocation().getRight()) > 0) {
                 List.add(new InterAction(item.getLocation().getRight(), item.getLocation().getLeft()));
             } else {
                 List.add(item.getLocation());
             }
         }
-        Collections.sort(List);
         ClusterFile.ReadClose();
+        Collections.sort(List);
+        if (MergeLen > 0) {
+            List = new PetCluster(List, MergeLen / 2, MergeLen / 2, Threads).Run();
+        }
+        for (int i = 0; i < List.size(); i++) {
+            int n1 = List.get(i).getLeft().region.Center();
+            int n2 = List.get(i).getRight().region.Center();
+            List.get(i).getLeft().region.Start = n1 - ExtendLength + 1;
+            List.get(i).getLeft().region.End = n1 + ExtendLength;
+            List.get(i).getRight().region.Start = n2 - ExtendLength + 1;
+            List.get(i).getRight().region.End = n2 + ExtendLength;
+        }
         CreateMatrix matrix = new CreateMatrix(InteractionFile, null, BinSize, "out", Threads);
         matrix.UseCount = false;
         ArrayList<MatrixItem> MatrixList = matrix.Run(List);
