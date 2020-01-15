@@ -47,20 +47,24 @@ public class APAGenerator {
         Options Argument = new Options();
         Argument.addOption(Option.builder("i").longOpt("input").hasArg().argName("file").desc("input bedpe file").required().build());
         Argument.addOption(Option.builder("l").longOpt("list").hasArg().argName("file").desc("interaction cluster file").required().build());
-        Argument.addOption(Option.builder("bs").longOpt("binsize").hasArg().argName("int").desc("length for each bin").build());
-        Argument.addOption(Option.builder("bn").longOpt("binnumber").hasArg().argName("int").desc("the number of extend bin").build());
-        Argument.addOption(Option.builder("t").longOpt("thread").hasArg().argName("int").desc("the number of thread").build());
+        Argument.addOption(Option.builder("bs").longOpt("binsize").hasArg().argName("int").desc("length for each bin (default 1000)").build());
+        Argument.addOption(Option.builder("bn").longOpt("binnumber").hasArg().argName("int").desc("the number of extend bin (default 10)").build());
+        Argument.addOption(Option.builder("t").longOpt("thread").hasArg().argName("int").desc("the number of thread (default 1)").build());
         Argument.addOption(Option.builder("title").hasArg().argName("string").desc("figure title").build());
-        Argument.addOption(Option.builder("minD").longOpt("mindistance").hasArg().argName("int").desc("program only consider the distance of two anchor large than this value").build());
-        Argument.addOption(Option.builder("maxD").longOpt("maxdistance").hasArg().argName("int").desc("program only consider the distance of two anchor less than this value").build());
-        Argument.addOption(Option.builder("merge").hasArg().argName("int").desc("merge interactions which distance less than this value").build());
-//        Argument.addOption(Option.builder("bn").longOpt("binnumber").hasArg().argName("int").desc("the number of extend bin").build());
+        Argument.addOption(Option.builder("minD").longOpt("mindistance").hasArg().argName("int").desc("program only consider the distance of two anchor large than this value (default 0)").build());
+        Argument.addOption(Option.builder("maxD").longOpt("maxdistance").hasArg().argName("int").desc("program only consider the distance of two anchor less than this value (default inf)").build());
+        Argument.addOption(Option.builder("merge").hasArg().argName("int").desc("merge interactions which distance less than this value (default 0)").build());
+        Argument.addOption(Option.builder("o").longOpt("outfile").hasArg().argName("file").desc("out file name").build());
+        if (args.length < 2) {
+            new HelpFormatter().printHelp("java -cp Path/" + Opts.JarFile.getName() + " " + APAGenerator.class.getName(), Argument, true);
+            System.exit(1);
+        }
         CommandLine ComLine = new DefaultParser().parse(Argument, args);
         BedpeFile infile1 = new BedpeFile(Opts.GetFileOpt(ComLine, "i", null));
         BedpeFile infile2 = new BedpeFile(Opts.GetFileOpt(ComLine, "l", null));
         String title = Opts.GetStringOpt(ComLine, "title", "");
-        int bin_size = Opts.GetIntOpt(ComLine, "bs", 0);
-        int bin_number = Opts.GetIntOpt(ComLine, "bn", 0);
+        int bin_size = Opts.GetIntOpt(ComLine, "bs", 1000);
+        int bin_number = Opts.GetIntOpt(ComLine, "bn", 10);
         int merge_length = Opts.GetIntOpt(ComLine, "merge", 0);
         APAGenerator generator = new APAGenerator(infile1, infile2, bin_size, bin_number);
         generator.MaxDistance = Opts.GetIntOpt(ComLine, "maxD", Integer.MAX_VALUE);
@@ -68,10 +72,12 @@ public class APAGenerator {
         generator.Threads = Opts.GetIntOpt(ComLine, "t", 1);
         generator.MergeLen = merge_length;
         generator.setTitle(title);
-        generator.Run();
+        BufferedImage image = generator.Run();
+        File outFile = Opts.GetFileOpt(ComLine, "o", new File("Test.APA.png"));
+        ImageIO.write(image, "png", outFile);
     }
 
-    public void Run() throws IOException {
+    public BufferedImage Run() throws IOException {
         ClusterFile.ReadOpen();
         ArrayList<InterAction> List = new ArrayList<>();
         BedpeItem item;
@@ -141,22 +147,22 @@ public class APAGenerator {
         YUp = marginal + Height * fold / 6;
         YDown = marginal + Height * fold - Height * fold / 6;
         //--BLMatrix
-        g.drawRect(marginal, marginal + Height * fold - Height * fold / 3, Width * fold / 3, Height * fold / 3);
+        g.drawRect(marginal, marginal + (Height - Height / 3) * fold, Width / 3 * fold, Height / 3 * fold);
         Tools.DrawStringCenter(g, String.format("%.4f", BLValue), t, (int) XLeft, (int) YDown, 0);
         //--BRMatrix
-        g.drawRect(marginal + Width * fold - Width * fold / 3, marginal + Height * fold - Height * fold / 3, Width * fold / 3, Height * fold / 3);
+        g.drawRect(marginal + (Width - Width / 3) * fold, marginal + (Height - Height / 3) * fold, Width / 3 * fold, Height / 3 * fold);
         Tools.DrawStringCenter(g, String.format("%.4f", BRValue), t, (int) XRight, (int) YDown, 0);
         //--ULMatrix
-        g.drawRect(marginal, marginal, Width * fold / 3, Height * fold / 3);
+        g.drawRect(marginal, marginal, Width / 3 * fold, Height / 3 * fold);
         Tools.DrawStringCenter(g, String.format("%.4f", ULValue), t, (int) XLeft, (int) YUp, 0);
         //--URMatrix
-        g.drawRect(marginal + Width * fold - Width * fold / 3, marginal, Width / 3 * fold, Height / 3 * fold);
+        g.drawRect(marginal + (Width - Width / 3) * fold, marginal, Width / 3 * fold, Height / 3 * fold);
         Tools.DrawStringCenter(g, String.format("%.4f", URValue), t, (int) XRight, (int) YUp, 0);
         //-----------------------------------
         Tools.DrawStringCenter(g, Title + "(P2LL=" + String.format("%.4f", BLValue) + ")", new Font("Times New Roman", Font.PLAIN, 90), marginal + Width * fold / 2, marginal - 60, 0);
         g.drawLine(marginal + Width * fold, marginal, marginal + Width * fold, marginal + Height * fold);
         g.drawLine(marginal, marginal, marginal + Width * fold, marginal);
-        ImageIO.write(image, "png", new File("Test.APA.png"));
+        return image;
     }
 
     public void setTitle(String title) {

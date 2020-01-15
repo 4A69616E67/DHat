@@ -17,7 +17,7 @@ public class PetCluster {
     private ArrayList<InterAction> List = new ArrayList<>();
     private ArrayList<InterAction> Cluster = new ArrayList<>();
     private Hashtable<Integer, Integer> CountStat = new Hashtable<>();
-    float CutOff = 0.2f;
+//    float CutOff = 0.2f;
     private int TotalCount;
     private int Threads;
     private HashMap<String, int[]> ChrMatrixCount = new HashMap<>();
@@ -41,10 +41,10 @@ public class PetCluster {
     private PetCluster(String[] args) throws ParseException {
         Options Argument = new Options();
         Argument.addOption(Option.builder("f").argName("file").hasArg().required().desc("[required] bedpe file").build());
-        Argument.addOption(Option.builder("l").argName("int").hasArgs().desc("extend length (default 0, should set when interaction site is a point)").build());
+        Argument.addOption(Option.builder("l").argName("ints").hasArgs().desc("extend length (default 0, should set when interaction site is a point)").build());
         Argument.addOption(Option.builder("p").longOpt("pre").argName("string").hasArg().desc("out prefix (include path)").build());
         Argument.addOption(Option.builder("t").longOpt("thread").argName("int").hasArg().desc("run threads").build());
-        Argument.addOption(Option.builder("c").longOpt("cutoff").argName("float").hasArg().desc("cut off").build());
+//        Argument.addOption(Option.builder("c").longOpt("cutoff").argName("float").hasArg().desc("cut off").build());
         Argument.addOption(Option.builder("sort").hasArg(false).desc("if do sort before pet cluster").build());
         if (args.length == 0) {
             new HelpFormatter().printHelp("java -cp " + Opts.JarFile.getName() + " " + PetCluster.class.getName() + " <-f file> [option]", Argument);
@@ -54,7 +54,7 @@ public class PetCluster {
         InFile = new BedpeFile(ComLine.getOptionValue("f"));
         OutPrefix = ComLine.hasOption("p") ? ComLine.getOptionValue("p") : InFile.getPath();
         Threads = ComLine.hasOption("t") ? Integer.parseInt(ComLine.getOptionValue("t")) : 1;
-        CutOff = ComLine.hasOption("c") ? Float.parseFloat(ComLine.getOptionValue("c")) : CutOff;
+//        CutOff = ComLine.hasOption("c") ? Float.parseFloat(ComLine.getOptionValue("c")) : CutOff;
         Sort = ComLine.hasOption("sort");
         int[] temp_int = Opts.GetIntOpts(ComLine, "l", new int[]{0, 0});
         Length1 = temp_int[0];

@@ -16,7 +16,7 @@ import java.util.*;
  */
 public class BedpeFile extends AbstractFile<BedpeItem> {
     private Opts.FileFormat Format = Opts.FileFormat.BedpeRegionFormat;
-//    public BedItem.Sort SortBy = BedItem.Sort.Location;
+    private int[] DataIndex = new int[]{0, 1, 2, 3, 4, 5};
 
     public static BedpeFile[] Copy(BedpeFile[] files) {
         BedpeFile[] NewFiles = new BedpeFile[files.length];
@@ -43,7 +43,6 @@ public class BedpeFile extends AbstractFile<BedpeItem> {
         if (s != null) {
             String[] ss = s[0].split("\\s+");
             Item = new BedpeItem(ss);
-//            Item.SortBy = SortBy;
         } else {
             Item = null;
         }
