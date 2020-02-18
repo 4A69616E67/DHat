@@ -26,14 +26,18 @@ public class MatrixItem extends AbstractItem {
     public ChrRegion Chr1 = new ChrRegion("C1", 0, 0);
     public ChrRegion Chr2 = new ChrRegion("C2", 0, 0);
     public int Resolution;
-    private int Fold;
+    private int Fold = 1;
     private double MinValue;
     private double MaxValue;
     private double ThresholdValue;
     private int Marginal = 160;
     public boolean Legend = true;
     public boolean Label = true;
-    public String Unit = "Mb";
+    public Unit unit = Unit.MB;
+
+    public enum Unit {
+        BP, KB, MB
+    }
 
     public MatrixItem(InterAction action, int resolution) {
         Chr1 = action.getLeft();
@@ -142,13 +146,17 @@ public class MatrixItem extends AbstractItem {
             //draw x interval
             for (int i = 0; i <= MatrixWidth / interval; i++) {
                 graphics.drawLine(Marginal + i * interval, Marginal + MatrixHeight, Marginal + i * interval, Marginal + MatrixHeight + extend_len);
-                float value;
-                if (Unit.compareToIgnoreCase("Bp") == 0) {
-                    value = (float) (StartSite2 + i * interval * resolution);
-                } else if (Unit.compareToIgnoreCase("Kb") == 0) {
-                    value = (float) (StartSite2 + i * interval * resolution) / 1000;
-                } else {
-                    value = (float) (StartSite2 + i * interval * resolution) / 1000000;
+                float value = 0;
+                switch (unit) {
+                    case BP:
+                        value = (float) (StartSite2 + i * interval * resolution);
+                        break;
+                    case KB:
+                        value = (float) (StartSite2 / 1000 + (float) resolution / 1000 * i * interval);
+                        break;
+                    case MB:
+                        value = (float) (StartSite2 / 1000000 + (float) resolution / 1000000 * i * interval);
+                        break;
                 }
                 String value_str;
                 if (value == (int) value) {
@@ -167,13 +175,17 @@ public class MatrixItem extends AbstractItem {
             //draw y interval
             for (int i = 0; i <= MatrixHeight / interval; i++) {
                 graphics.drawLine(Marginal, Marginal + MatrixHeight - i * interval, Marginal - extend_len, Marginal + MatrixHeight - i * interval);
-                float value, index;
-                if (Unit.compareToIgnoreCase("BP") == 0) {
-                    value = (float) (StartSite2 + i * interval * resolution);
-                } else if (Unit.compareToIgnoreCase("Kb") == 0) {
-                    value = (float) (StartSite2 + i * interval * resolution) / 1000;
-                } else {
-                    value = (float) (StartSite2 + i * interval * resolution) / 1000000;
+                float value = 0, index;
+                switch (unit) {
+                    case BP:
+                        value = (float) (StartSite1 + i * interval * resolution);
+                        break;
+                    case KB:
+                        value = (float) (StartSite1 / 1000 + (float) resolution / 1000 * i * interval);
+                        break;
+                    case MB:
+                        value = (float) (StartSite1 / 1000000 + (float) resolution / 1000000 * i * interval);
+                        break;
                 }
                 String value_str;
                 if (value == (int) value) {
@@ -182,7 +194,7 @@ public class MatrixItem extends AbstractItem {
                     value_str = String.format("%.2f", value);
                 }
                 if (reverse) {
-                    index = MatrixHeight - i;
+                    index = MatrixHeight / interval - i;
                 } else {
                     index = i;
                 }

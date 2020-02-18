@@ -121,7 +121,7 @@ public class APAGenerator {
         int Height = matrixItem.item.getRowDimension();
         //------------------------------------------------
         matrixItem.Chr1 = matrixItem.Chr2 = new ChrRegion("", -ExtendLength, ExtendLength);
-        matrixItem.Unit = "kb";
+        matrixItem.unit = MatrixItem.Unit.KB;
         BufferedImage image = matrixItem.DrawHeatMap(BinSize, 0.95f, false);
         //--------------------------------------------
         double BLValue, BRValue, ULValue, URValue, CenterValue, XLeft, XRight, YUp, YDown;
