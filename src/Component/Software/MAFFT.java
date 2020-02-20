@@ -6,6 +6,7 @@ import Component.unit.Configure;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 
 /**
@@ -31,15 +32,16 @@ public class MAFFT extends AbstractSoftware {
 
     @Override
     protected String getVersion() {
-        CommonFile temporaryFile = new CommonFile(Configure.OutPath + "/mafft.version.tmp");
+//        CommonFile temporaryFile = new CommonFile(Configure.OutPath + "/mafft.version.tmp");
         try {
-            CommandLineDhat.run(Execution + " --version", null, new PrintWriter(temporaryFile));
-            ArrayList<char[]> tempLines = temporaryFile.Read();
-            Version = String.valueOf(tempLines.get(0));
+            StringWriter buffer = new StringWriter();
+            CommandLineDhat.run(Execution + " --version", null, new PrintWriter(buffer));
+//            ArrayList<char[]> tempLines = temporaryFile.Read();
+            Version = buffer.toString().split("\\n")[0];
         } catch (IOException | InterruptedException e) {
             Valid = false;
         }
-        temporaryFile.delete();
+//        temporaryFile.delete();
         return Version;
     }
 }

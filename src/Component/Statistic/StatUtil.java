@@ -82,7 +82,7 @@ public class StatUtil {
     }
 
     public double ToDouble(int i) {
-        return (double) i;
+        return i;
     }
 
     public double ToDouble(long l) {

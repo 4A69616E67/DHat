@@ -12,7 +12,7 @@ public class Control {
         Pre("PreProcess"), Se("SeProcess"), Bedpe("BedpeProcess"), CM("CreateMatrix"), Trans("TransLocation");
         private String Name;
 
-        private OutDir(String s) {
+        OutDir(String s) {
             this.Name = s;
         }
 

@@ -152,10 +152,10 @@ public class MatrixItem extends AbstractItem {
                         value = (float) (StartSite2 + i * interval * resolution);
                         break;
                     case KB:
-                        value = (float) (StartSite2 / 1000 + (float) resolution / 1000 * i * interval);
+                        value = StartSite2 / 1000 + (float) resolution / 1000 * i * interval;
                         break;
                     case MB:
-                        value = (float) (StartSite2 / 1000000 + (float) resolution / 1000000 * i * interval);
+                        value = StartSite2 / 1000000 + (float) resolution / 1000000 * i * interval;
                         break;
                 }
                 String value_str;
@@ -181,10 +181,10 @@ public class MatrixItem extends AbstractItem {
                         value = (float) (StartSite1 + i * interval * resolution);
                         break;
                     case KB:
-                        value = (float) (StartSite1 / 1000 + (float) resolution / 1000 * i * interval);
+                        value = StartSite1 / 1000 + (float) resolution / 1000 * i * interval;
                         break;
                     case MB:
-                        value = (float) (StartSite1 / 1000000 + (float) resolution / 1000000 * i * interval);
+                        value = StartSite1 / 1000000 + (float) resolution / 1000000 * i * interval;
                         break;
                 }
                 String value_str;

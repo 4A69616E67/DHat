@@ -161,7 +161,7 @@ public class Statistic {
                 for (int i = 0; i <= len - ResLength; i++) {
                     if (Seq.substring(i, i + ResLength).equals(Restriction)) {
                         Count++;
-                        chrwrite.write(Count + "\t+\t" + Chr + "\t" + String.valueOf(i + Site) + "\n");
+                        chrwrite.write(Count + "\t+\t" + Chr + "\t" + (i + Site) + "\n");
                     }
                 }
                 chrwrite.write(++Count + "\t+\t" + Chr + "\t" + len + "\n");
@@ -181,7 +181,7 @@ public class Statistic {
         for (int i = 0; i <= len - ResLength; i++) {
             if (Seq.substring(i, i + ResLength).equals(Restriction)) {
                 Count++;
-                chrwrite.write(Count + "\t+\t" + Chr + "\t" + String.valueOf(i + Site) + "\n");
+                chrwrite.write(Count + "\t+\t" + Chr + "\t" + (i + Site) + "\n");
             }
         }
         chrwrite.write(++Count + "\t+\t" + Chr + "\t" + len + "\n");

@@ -62,7 +62,7 @@ public class MatrixFile extends AbstractFile<MatrixItem> {
     public void WriteItem(MatrixItem item, String separator) throws IOException {
         for (int i = 0; i < item.item.getRowDimension(); i++) {
             for (int j = 0; j < item.item.getColumnDimension(); j++) {
-                writer.write(String.valueOf(item.item.getEntry(i, j)) + separator);
+                writer.write(item.item.getEntry(i, j) + separator);
             }
             writer.write("\n");
         }
