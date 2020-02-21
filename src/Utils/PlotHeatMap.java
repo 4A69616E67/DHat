@@ -20,16 +20,6 @@ import java.util.ArrayList;
 
 public class PlotHeatMap {
     public static void main(String[] args) throws IOException, ParseException {
-//        MatrixFile infile = new MatrixFile("K562-HindIII-test_1.0M.dense.matrix");
-//        BedFile BinSizeFile = new BedFile("K562-HindIII-test_1.0M.matrix.BinSize");
-//        ArrayList<ChrRegion> BinSizeList = new ArrayList<>();
-//        BinSizeFile.ReadOpen();
-//        BedItem bedItem;
-//        while ((bedItem = BinSizeFile.ReadItem()) != null) {
-//            BinSizeList.add(bedItem.getLocation());
-//        }
-//        infile.PlotHeatMap(BinSizeList, 1000000, new File("K562-HindIII-test_1.0M.png"));
-
         Options Argument = new Options();
         Argument.addOption(Option.builder("i").hasArg().argName("file").required().desc("input matrix file").build());
         Argument.addOption(Option.builder("r").hasArg().argName("int").required().desc("resolution").build());
@@ -59,6 +49,5 @@ public class PlotHeatMap {
         file.ReadClose();
         BufferedImage image = item.DrawHeatMap(Chr1, Chr1Site, Chr2, Chr2Site, Resolution, Threshold, true);
         ImageIO.write(image, OutputFile.getName().substring(OutputFile.getName().lastIndexOf('.') + 1), OutputFile);
-//
     }
 }

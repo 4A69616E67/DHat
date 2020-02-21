@@ -1,13 +1,10 @@
 package Component.Software;
 
-import Component.File.CommonFile.CommonFile;
 import Component.SystemDhat.CommandLineDhat;
-import Component.unit.Configure;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
 
 /**
  * Created by snowf on 2019/6/14.
@@ -32,16 +29,13 @@ public class MAFFT extends AbstractSoftware {
 
     @Override
     protected String getVersion() {
-//        CommonFile temporaryFile = new CommonFile(Configure.OutPath + "/mafft.version.tmp");
         try {
             StringWriter buffer = new StringWriter();
             CommandLineDhat.run(Execution + " --version", null, new PrintWriter(buffer));
-//            ArrayList<char[]> tempLines = temporaryFile.Read();
             Version = buffer.toString().split("\\n")[0];
         } catch (IOException | InterruptedException e) {
             Valid = false;
         }
-//        temporaryFile.delete();
         return Version;
     }
 }

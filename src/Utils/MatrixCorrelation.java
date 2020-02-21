@@ -8,7 +8,6 @@ import org.apache.commons.math3.stat.StatUtils;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;
 
-import java.io.File;
 import java.io.IOException;
 
 /**
@@ -33,27 +32,15 @@ public class MatrixCorrelation {
         MatrixFile file1 = new MatrixFile(Opts.GetStringOpt(ComLine, "1", ""));
         MatrixFile file2 = new MatrixFile(Opts.GetStringOpt(ComLine, "2", ""));
         RealMatrix matrix1, matrix2;
-//        matrix1 = new Array2DRowRealMatrix(new double[][]{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}});
-//        matrix2 = new Array2DRowRealMatrix(new double[][]{{11, 223, 31}, {8, 10, 12}, {14, 16, 18}});
-        System.err.println("Read data 1 ......");
+        System.err.println("Read " + file1 + " ......");
         file1.ReadOpen();
         matrix1 = file1.ReadItem().item;
         file1.ReadClose();
 
-        System.err.println("Read data 2 ......");
+        System.err.println("Read " + file2 + " ......");
         file2.ReadOpen();
         matrix2 = file2.ReadItem().item;
         file2.ReadClose();
-
-//        RealVector vector1 = new ArrayRealVector();
-//        for (int i = 0; i < matrix1.getRowDimension(); i++) {
-//            vector1 = vector1.append(matrix1.getRowVector(i));
-//        }
-//
-//        RealVector vector2 = new ArrayRealVector();
-//        for (int i = 0; i < matrix2.getRowDimension(); i++) {
-//            vector2 = vector2.append(matrix2.getRowVector(i));
-//        }
         String method = Opts.GetStringOpt(ComLine, "m", "cosine");
         boolean flag = false;
         for (Method m : Method.values()) {
@@ -67,8 +54,6 @@ public class MatrixCorrelation {
         if (!flag) {
             System.err.println("Unknown method : " + method);
         }
-
-//        System.out.println(vector1.dotProduct(vector2) / Math.sqrt(StatUtils.sum(vector1.ebeMultiply(vector1).toArray())) / Math.sqrt(StatUtils.sum(vector2.ebeMultiply(vector2).toArray())));
     }
 
     public static double Calculate(RealMatrix matrix1, RealMatrix matrix2, Method method) {
@@ -88,9 +73,9 @@ public class MatrixCorrelation {
             case COSINE:
                 return vector1.dotProduct(vector2) / Math.sqrt(StatUtils.sum(vector1.ebeMultiply(vector1).toArray())) / Math.sqrt(StatUtils.sum(vector2.ebeMultiply(vector2).toArray()));
             case PEARSON:
-                return new PearsonsCorrelation().correlation(vector1.toArray(),vector2.toArray());
+                return new PearsonsCorrelation().correlation(vector1.toArray(), vector2.toArray());
             case SPEARMAN:
-                return new SpearmansCorrelation().correlation(vector1.toArray(),vector2.toArray());
+                return new SpearmansCorrelation().correlation(vector1.toArray(), vector2.toArray());
             default:
                 return 0;
         }

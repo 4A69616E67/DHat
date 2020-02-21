@@ -36,7 +36,6 @@ public class Configure {
     public static String[] AdapterSeq;
     public static int[] Resolution = new int[]{1000000};
     public static int[] DrawResolution = new int[]{1000000};
-    //    public static int DetectResolution = 100000;
     public static int Thread = 8;
     public static String Step = "-";
     //-----------------------------------------------------------------
@@ -103,9 +102,6 @@ public class Configure {
 
     public static void GetOption(File ConfFile) throws IOException {
         Properties Config = new Properties();
-//        if (AdvConfFile != null && AdvConfFile.isFile()) {
-//            Config.load(new FileReader(AdvConfFile));
-//        }
         Config.load(new FileReader(ConfFile));
         for (Require r : Require.values()) {
             if (Config.getProperty(r.name()) != null && !Config.getProperty(r.name()).trim().equals(""))
@@ -119,7 +115,6 @@ public class Configure {
             if (Config.getProperty(a.name()) != null && !Config.getProperty(a.name()).trim().equals(""))
                 a.Value = Config.getProperty(a.name()).replaceAll("#.*", "").trim();
         }
-//        Init();
     }
 
     public static boolean DependenceCheck() {
@@ -178,12 +173,10 @@ public class Configure {
         Optional.OutPath.Value = OutPath;
         Optional.Prefix.Value = Prefix;
         Optional.Index.Value = Index;
-//        Optional.EnzymeFragmentPath.Value = EnzymeFragmentPath;
         Optional.Chromosomes.Value = Tools.ArraysToString(Chromosome);
         Optional.AdapterSeq.Value = Tools.ArraysToString(AdapterSeq);
         Optional.Resolutions.Value = Tools.ArraysToString(Resolution);
         Optional.DrawResolutions.Value = Tools.ArraysToString(DrawResolution);
-//        Optional.DetectResolution.Value = DetectResolution;
         Optional.Thread.Value = Thread;
         Optional.Step.Value = Step;
         //----------------------------------------------
@@ -196,7 +189,6 @@ public class Configure {
         Advance.MinReadsLength.Value = MinReadsLen;
         Advance.MaxReadsLength.Value = MaxReadsLen;
         Advance.InDelScore.Value = InDelScore;
-//        Advance.AlignThread.Value = AlignThread;
         Advance.AlignType.Value = AlignType;
         Advance.AlignMisMatch.Value = AlignMisMatch;
         Advance.MinUniqueScore.Value = MinUniqueScore;
@@ -228,7 +220,6 @@ public class Configure {
         Opts.StatisticFile = new CommonFile(Configure.OutPath + "/" + Prefix + ".Stat.txt");
         Opts.CommandOutFile = new CommonFile(Configure.OutPath + "/" + Prefix + ".command.log");
         Index = Optional.Index.Value != null ? new File(Optional.Index.Value.toString().trim()) : Index;
-//        EnzymeFragmentPath = Optional.EnzymeFragmentPath.Value != null ? new File(Optional.EnzymeFragmentPath.Value.toString().trim()) : EnzymeFragmentPath;
         if (Optional.Chromosomes.Value != null && !Optional.Chromosomes.Value.toString().trim().equals("")) {
             String[] str = Optional.Chromosomes.Value.toString().trim().split("\\s+");
             Chromosome = new Chromosome[str.length];
@@ -243,7 +234,6 @@ public class Configure {
         Step = Optional.Step.Value != null ? Optional.Step.Value.toString() : Step;
         Opts.StepCheck(Step);
         Opts.Step.FindEnzymeFragment.Execute = true;
-//        Opts.Step.FindEnzymeFragment.Execute = (EnzymeFragmentPath == null || !EnzymeFragmentPath.isDirectory());
         //----------------------------------------------------------------------------------------------------
         MatchScore = GetIntItem(Advance.MatchScore.Value, MatchScore);
         MisMatchScore = GetIntItem(Advance.MisMatchScore.Value, MisMatchScore);
@@ -251,12 +241,10 @@ public class Configure {
         MinLinkerLen = GetIntItem(Advance.MinLinkerLen.Value, MinLinkerLen);
         MinReadsLen = GetIntItem(Advance.MinReadsLength.Value, MinReadsLen);
         MaxReadsLen = GetIntItem(Advance.MaxReadsLength.Value, MaxReadsLen);
-//        AlignThread = GetIntItem(Advance.AlignThread.Value, AlignThread);
         AlignType = Advance.AlignType.Value != null ? Advance.AlignType.Value.toString().trim() : AlignType;
         AlignMisMatch = GetIntItem(Advance.AlignMisMatch.Value, AlignMisMatch);
         MinUniqueScore = GetIntItem(Advance.MinUniqueScore.Value, MinUniqueScore);
         Bwa = new Bwa(Advance.Bwa.Value.toString().split("\\s+")[0]);
-//        Bowtie = Advance.Bowtie.Value.toString().split("\\s+")[0];
         try {
             Python = new Python(Advance.Python.Value.toString().split("\\s+")[0]);
         } catch (Exception e) {

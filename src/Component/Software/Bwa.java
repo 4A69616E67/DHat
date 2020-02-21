@@ -1,7 +1,6 @@
 package Component.Software;
 
 
-import Component.File.CommonFile.CommonFile;
 import Component.SystemDhat.CommandLineDhat;
 import Component.unit.Configure;
 import Component.unit.Opts;
@@ -10,7 +9,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -40,11 +38,9 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
 
     @Override
     protected String getVersion() {
-//        CommonFile temporaryFile = new CommonFile(Configure.OutPath + "/bwa.version.tmp");
         try {
             StringWriter buffer = new StringWriter();
             CommandLineDhat.run(Execution, null, new PrintWriter(buffer));
-//            ArrayList<char[]> tempLines = temporaryFile.Read();
             for (String tempLine : buffer.toString().split("\\n")) {
                 String[] s = tempLine.split("\\s*:\\s*");
                 if (s[0].compareToIgnoreCase("Version") == 0) {
@@ -55,7 +51,6 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
         } catch (IOException | InterruptedException e) {
             Valid = false;
         }
-//        temporaryFile.delete();
         return Version;
     }
 

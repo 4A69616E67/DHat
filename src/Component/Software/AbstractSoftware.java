@@ -1,12 +1,10 @@
 package Component.Software;
 
-import Component.File.CommonFile.CommonFile;
 import Component.SystemDhat.CommandLineDhat;
 import Component.unit.Configure;
 import Component.unit.Opts;
 
 import java.io.*;
-import java.util.ArrayList;
 
 /**
  * Created by snowf on 2019/3/10.
@@ -35,7 +33,6 @@ public abstract class AbstractSoftware {
             System.err.println("Please create out path first: " + Configure.OutPath);
             System.exit(1);
         }
-//        CommonFile temporaryFile = new CommonFile(Configure.OutPath + "/software.path.tmp");
         try {
             String ComLine;
             if (Opts.OsName.matches(".*(?i)windows.*")) {
@@ -43,14 +40,11 @@ public abstract class AbstractSoftware {
             } else {
                 ComLine = "which " + Execution;
             }
-//            Opts.CommandOutFile.Append(ComLine + "\n");
             StringWriter buffer = new StringWriter();
             CommandLineDhat.run(ComLine, new PrintWriter(buffer), null);
-//            ArrayList<char[]> tempLines = buffer.toString().split("\n");
             Path = new File(buffer.toString().split("\\n")[0]).getParentFile();
             Execution = Path + "/" + Execution;
             Valid = true;
-//            temporaryFile.delete();
         } catch (IOException | InterruptedException | IndexOutOfBoundsException e) {
             System.err.println("Error! can't locate " + Execution + " full path");
             System.exit(1);

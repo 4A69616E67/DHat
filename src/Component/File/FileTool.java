@@ -31,7 +31,6 @@ public class FileTool {
     public static Opts.FileFormat ReadsType(FastqFile fastqfile) throws IOException {
         int LineNumber = 100, i = 0, Count = 0;
         fastqfile.ReadOpen();
-//        BufferedReader reader = new BufferedReader(new FileReader(fastqfile));
         FastqItem item;
         while ((item = fastqfile.ReadItem()) != null) {
             Count += item.Sequence.length();
