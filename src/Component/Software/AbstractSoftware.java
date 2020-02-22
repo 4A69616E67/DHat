@@ -1,7 +1,6 @@
 package Component.Software;
 
 import Component.SystemDhat.CommandLineDhat;
-import Component.unit.Configure;
 import Component.unit.Opts;
 
 import java.io.*;
@@ -20,6 +19,7 @@ public abstract class AbstractSoftware {
         Execution = exe;
         if (new File(exe).isFile()) {
             Path = new File(new File(exe).getParent());
+            Execution = new File(exe).getName();
         }
         Init();
     }
@@ -28,11 +28,7 @@ public abstract class AbstractSoftware {
 
     protected abstract String getVersion();
 
-    protected File getPath() {
-        if (!Configure.OutPath.isDirectory()) {
-            System.err.println("Please create out path first: " + Configure.OutPath);
-            System.exit(1);
-        }
+    protected File FindPath() {
         try {
             String ComLine;
             if (Opts.OsName.matches(".*(?i)windows.*")) {
@@ -43,11 +39,12 @@ public abstract class AbstractSoftware {
             StringWriter buffer = new StringWriter();
             CommandLineDhat.run(ComLine, new PrintWriter(buffer), null);
             Path = new File(buffer.toString().split("\\n")[0]).getParentFile();
-            Execution = Path + "/" + Execution;
+//            Execution = Path + "/" + Execution;
             Valid = true;
         } catch (IOException | InterruptedException | IndexOutOfBoundsException e) {
-            System.err.println("Error! can't locate " + Execution + " full path");
-            System.exit(1);
+            System.err.println("Warning! can't locate " + Execution + " full path");
+            System.err.println("Please check the name of execute file or set absolute path in configure file");
+//            System.exit(1);
         }
         return Path;
     }
@@ -67,5 +64,13 @@ public abstract class AbstractSoftware {
 
     public String Exe() {
         return Execution;
+    }
+
+    public File Path() {
+        return Path;
+    }
+
+    public File FullExe() {
+        return new File(Path + "/" + Execution);
     }
 }

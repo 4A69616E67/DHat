@@ -6,6 +6,8 @@ import Component.File.FastaFile.FastaFile;
 import Component.File.FastaFile.FastaItem;
 import Component.SystemDhat.CommandLineDhat;
 import Component.unit.*;
+import org.apache.commons.math3.random.RandomDataGenerator;
+import org.apache.commons.math3.random.RandomGenerator;
 
 import java.io.*;
 import java.util.*;
@@ -136,7 +138,7 @@ public class FileTool {
         int[] CountArrays = new int[255];
         FastaItem[] ResItems;
         //----------------------------------------------------------------------
-        String ComLine = Configure.Mafft.Exe() + " " + file.getPath();
+        String ComLine = Configure.Mafft.FullExe() + " " + file.getPath();
         Opts.CommandOutFile.Append(ComLine + "\n");
         PrintWriter msa = new PrintWriter(MsaFile);
         if (Configure.DeBugLevel < 1) {

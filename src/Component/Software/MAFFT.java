@@ -20,8 +20,8 @@ public class MAFFT extends AbstractSoftware {
         if (Execution.trim().equals("")) {
             System.err.println("[mafft]\tNo execute file");
         } else {
-            if (Path.getName().equals("")) {
-                getPath();
+            if (!Path.isDirectory()) {
+                FindPath();
             }
             getVersion();
         }
@@ -31,7 +31,7 @@ public class MAFFT extends AbstractSoftware {
     protected String getVersion() {
         try {
             StringWriter buffer = new StringWriter();
-            CommandLineDhat.run(Execution + " --version", null, new PrintWriter(buffer));
+            CommandLineDhat.run(FullExe() + " --version", null, new PrintWriter(buffer));
             Version = buffer.toString().split("\\n")[0];
         } catch (IOException | InterruptedException e) {
             Valid = false;

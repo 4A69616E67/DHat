@@ -29,8 +29,8 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
         if (Execution.trim().equals("")) {
             System.err.println("[bwa]\tNo execute file");
         } else {
-            if (Path.getName().equals("")) {
-                getPath();
+            if (!Path.isDirectory()) {
+                FindPath();
             }
             getVersion();
         }
@@ -40,7 +40,7 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
     protected String getVersion() {
         try {
             StringWriter buffer = new StringWriter();
-            CommandLineDhat.run(Execution, null, new PrintWriter(buffer));
+            CommandLineDhat.run(FullExe().toString(), null, new PrintWriter(buffer));
             for (String tempLine : buffer.toString().split("\\n")) {
                 String[] s = tempLine.split("\\s*:\\s*");
                 if (s[0].compareToIgnoreCase("Version") == 0) {
@@ -67,7 +67,7 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
      * @return command string
      */
     public String index(File genomeFile, File prefix) {
-        return Execution + " index -p " + prefix + " " + genomeFile;
+        return FullExe() + " index -p " + prefix + " " + genomeFile;
     }
 
     /**
@@ -77,7 +77,7 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
      * @return command string
      */
     public String mem(File fastqFile, int thread) {
-        return Execution + " mem -t" + thread + " " + IndexPrefix + " " + fastqFile;
+        return FullExe() + " mem -t" + thread + " " + IndexPrefix + " " + fastqFile;
     }
 
     /**
@@ -89,7 +89,7 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
      * @return command string
      */
     public String aln(File fastqFile, File saiFile, int maxDiff, int thread) {
-        return Execution + " aln -t " + thread + " -n " + maxDiff + " -f " + saiFile + " " + IndexPrefix + " " + fastqFile;
+        return FullExe() + " aln -t " + thread + " -n " + maxDiff + " -f " + saiFile + " " + IndexPrefix + " " + fastqFile;
     }
 
     /**
@@ -103,7 +103,7 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
      */
 
     public String samse(File samFile, File index, File saiFile, File fastqFile) {
-        return Execution + " samse -f " + samFile + " " + index + " " + saiFile + " " + fastqFile;
+        return FullExe() + " samse -f " + samFile + " " + index + " " + saiFile + " " + fastqFile;
     }
 
     public boolean IndexCheck() {

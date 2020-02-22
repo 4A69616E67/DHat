@@ -1,6 +1,7 @@
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import Bin.*;
@@ -144,6 +145,9 @@ public class Main {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
+
+        File ss = new File("   ");
+        String prefix= new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         //==============================================测试区==========================================================
 //        MemoryUsage memoryUsage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
 //        long maxMemorySize = memoryUsage.getMax();
@@ -232,7 +236,7 @@ public class Main {
                     CommonFile StatFile = new CommonFile(PreProcessDir + "/" + Prefix + ".adapter_detection.base.freq");
                     AdapterSeq[0] = FileTool.AdapterDetection(InputFile, new File(PreProcessDir + "/" + Prefix), LinkerLength + MaxReadsLength, StatFile);
                     Opts.LFStat.AdapterBaseDisPng = new File(Stat.getImageDir() + "/" + StatFile.getName() + ".png");
-                    String ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t stackbar -y Percentage --title Base_Frequency" + " -i " + StatFile + " -o " + Opts.LFStat.AdapterBaseDisPng;
+                    String ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -t stackbar -y Percentage --title Base_Frequency" + " -i " + StatFile + " -o " + Opts.LFStat.AdapterBaseDisPng;
                     Opts.CommandOutFile.Append(ComLine + "\n");
                     CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
                     System.out.println(new Date() + "\tDetected adapter seq:\t" + AdapterSeq[0]);
@@ -257,7 +261,7 @@ public class Main {
         CommonFile LinkerDisFile = new CommonFile(Stat.getDataDir() + "/LinkerScoreDis.data");
         Opts.LFStat.WriteLinkerScoreDis(LinkerDisFile);
         Opts.LFStat.LinkerScoreDisPng = new File(Stat.getImageDir() + "/" + LinkerDisFile.getName().replace(".data", ".png"));
-        String ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -i " + LinkerDisFile + " -t bar -o " + Opts.LFStat.LinkerScoreDisPng;
+        String ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -i " + LinkerDisFile + " -t bar -o " + Opts.LFStat.LinkerScoreDisPng;
         BarChart barChart = new BarChart();
         barChart.loadData(LinkerDisFile);
         barChart.drawing(Opts.LFStat.LinkerScoreDisPng);
@@ -464,28 +468,28 @@ public class Main {
         CommonFile InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".all.interaction_distance_distribution.data");
         Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, Integer.MAX_VALUE), "1M", 2, 10);
         Opts.NRStat.InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
-        ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat.InteractionRangeDistributionPng;
+        ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat.InteractionRangeDistributionPng;
         Opts.CommandOutFile.Append(ComLine + "\n");
         CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
         //----------------------------------
         InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".50M.interaction_distance_distribution.data");
         Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, 50000000), "1M", 2, 10);
         Opts.NRStat._50M_InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
-        ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._50M_InteractionRangeDistributionPng;
+        ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._50M_InteractionRangeDistributionPng;
         Opts.CommandOutFile.Append(ComLine + "\n");
         CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
         //------------------------------------
         InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".10M.interaction_distance_distribution.data");
         Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, 10000000), "100k", 2, 10);
         Opts.NRStat._10M_InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
-        ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._10M_InteractionRangeDistributionPng;
+        ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._10M_InteractionRangeDistributionPng;
         Opts.CommandOutFile.Append(ComLine + "\n");
         CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
         //---------------------------------------
         InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".2M.interaction_distance_distribution.data");
         Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, 2000000), "10k", 2, 10);
         Opts.NRStat._2M_InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
-        ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._2M_InteractionRangeDistributionPng;
+        ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._2M_InteractionRangeDistributionPng;
         Opts.CommandOutFile.Append(ComLine + "\n");
         CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
 
@@ -556,7 +560,7 @@ public class Main {
             t.join();
         }
         Opts.StatisticFile.Append(Opts.OVStat.Show() + "\n");
-        Stat.ReportHtml(new File(ReportDir + Prefix + ".report.html"));
+        Stat.ReportHtml(new File(ReportDir + "/" + Prefix + ".report.html"));
         Tools.RemoveEmptyFile(OutPath);
         Opts.RSStat.Finish();
     }

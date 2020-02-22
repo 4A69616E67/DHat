@@ -20,7 +20,9 @@ public class Python extends AbstractSoftware {
         if (Execution.trim().equals("")) {
             System.err.println("[python]\tNo execute file");
         } else {
-            getPath();
+            if (!Path.isDirectory()) {
+                FindPath();
+            }
             getVersion();
         }
     }
@@ -29,7 +31,7 @@ public class Python extends AbstractSoftware {
     protected String getVersion() {
         try {
             StringWriter buffer = new StringWriter();
-            CommandLineDhat.run(Execution + " -V", null, new PrintWriter(buffer));
+            CommandLineDhat.run(FullExe() + " -V", null, new PrintWriter(buffer));
             Version = buffer.toString().split("\\n")[0].split("\\s+")[1];
         } catch (IOException | InterruptedException | IndexOutOfBoundsException e) {
             Valid = false;
