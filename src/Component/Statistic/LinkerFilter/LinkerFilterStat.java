@@ -183,12 +183,12 @@ public class LinkerFilterStat extends AbstractStat {
 
     public void WriteLinkerScoreDis(AbstractFile f) throws IOException {
         BufferedWriter outfile = f.WriteOpen();
-        outfile.write("#Score\t|\tCount\n");
+        outfile.write("Score\tCount\n");
         int[] Keys = StringArrays.toInteger(LinkerMatchScoreDistribution.keySet().toArray(new String[0]));
         int max = StatUtil.maxValue(Keys);
         int min = StatUtil.min(Keys);
         for (int i = min; i <= max; i++) {
-            outfile.write(i + "\t|\t");
+            outfile.write(i + "\t");
             if (!LinkerMatchScoreDistribution.containsKey(String.valueOf(i))) {
                 outfile.write(0 + "\n");
             } else {
@@ -202,7 +202,7 @@ public class LinkerFilterStat extends AbstractStat {
     public void WriteReadsLengthDis(AbstractFile[] f) throws IOException {
         for (int i = 0; i < f.length; i++) {
             BufferedWriter outfile = f[i].WriteOpen();
-            outfile.write("#Length\t|\tCount\t|\tR1\tR2\n");
+            outfile.write("Length\tR1\tR2\n");
             int[] R1Keys = new int[linkers[i].ReadsLengthDistributionR1.size()];
             int[] R2Keys = new int[linkers[i].ReadsLengthDistributionR2.size()];
             try {
@@ -219,11 +219,11 @@ public class LinkerFilterStat extends AbstractStat {
                 int max = Math.max(StatUtil.maxValue(R1Keys), StatUtil.maxValue(R2Keys));
                 int min = Math.min(StatUtil.min(R1Keys), StatUtil.min(R2Keys));
                 for (int j = min; j <= max; j++) {
-                    outfile.write(j + "\t|\t");
+                    outfile.write(j + "\t");
                     if (!linkers[i].ReadsLengthDistributionR1.containsKey(j)) {
-                        outfile.write(0 + "\t|\t");
+                        outfile.write(0 + "\t");
                     } else {
-                        outfile.write(linkers[i].ReadsLengthDistributionR1.get(j)[0] + "\t|\t");
+                        outfile.write(linkers[i].ReadsLengthDistributionR1.get(j)[0] + "\t");
                     }
                     if (!linkers[i].ReadsLengthDistributionR2.containsKey(j)) {
                         outfile.write(0 + "\n");

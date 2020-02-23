@@ -333,7 +333,7 @@
                         <li><a href="#AL_Basic_statistics">Basic statistics</a></li>
                     </ul>
                 </li>
-                <li><a href="#Noise_reduce">Noise reducing</a>
+                <li><a href="#Noise_reduction">Noise Reduction</a>
                     <ul>
                         <li><a href="#NR_Basic_statistics">Basic statistics</a></li>
                         <li><a href="#NR_OriPosStat">Orientation-Position statistics</a></li>
@@ -584,7 +584,7 @@
         <h2>
             <hr>
         </h2>
-        <h1 class="title" id="Noise_reduce">Noise reduce</h1>
+        <h1 class="title" id="Noise_reduction">Noise Reduction</h1>
         <h2 id="NR_Basic_statistics"><strong>Basic statistics</strong></h2>
 
         <p th:text="'Input: '+${#numbers.formatInteger(NoiseReduceStat.total.RawDataNum,1,'COMMA')}">Input:</p>
@@ -595,9 +595,9 @@
                     <td width="91" align="center" nowrap="nowrap">Item</td>
                     <td width="70" align="center">Number</td>
                     <td width="90" align="center" nowrap="nowrap">Percentage</td>
-                    <td width="90" align="center" nowrap="nowrap">Item</td>
-                    <td width="66" align="center" nowrap="nowrap">Number</td>
-                    <td width="94" align="center" nowrap="nowrap">Percentage</td>
+                    <!--                    <td width="90" align="center" nowrap="nowrap">Item</td>-->
+                    <!--                    <td width="66" align="center" nowrap="nowrap">Number</td>-->
+                    <!--                    <td width="94" align="center" nowrap="nowrap">Percentage</td>-->
                 </tr>
                 <tr>
                     <td align="center" nowrap="nowrap">Self-Ligation:</td>
@@ -609,6 +609,7 @@
                         th:text="${#numbers.formatDecimal(NoiseReduceStat.total.SelfLigationNum*100/Tool.ToDouble(NoiseReduceStat.total.RawDataNum),1,2)}+'%'">
                         &nbsp;
                     </td>
+                <tr>
                     <td align="center" nowrap="nowrap">ReLigation:</td>
                     <td nowrap="nowrap"
                         th:text="${#numbers.formatInteger(NoiseReduceStat.total.ReLigationNum,1,'COMMA')}">
@@ -618,6 +619,7 @@
                         th:text="${#numbers.formatDecimal(NoiseReduceStat.total.ReLigationNum*100/Tool.ToDouble(NoiseReduceStat.total.RawDataNum),1,2)}+'%'">
                         &nbsp;
                     </td>
+                </tr>
                 </tr>
                 <tr>
                     <td align="center" nowrap="nowrap">Duplicate:</td>
@@ -629,9 +631,6 @@
                         th:text="${#numbers.formatDecimal(NoiseReduceStat.total.DuplicateNum*100/Tool.ToDouble(NoiseReduceStat.total.RawDataNum),1,2)}+'%'">
                         &nbsp;
                     </td>
-                    <td nowrap="nowrap">&nbsp;</td>
-                    <td nowrap="nowrap">&nbsp;</td>
-                    <td nowrap="nowrap">&nbsp;</td>
                 </tr>
                 <tr>
                     <td align="center" nowrap="nowrap">Clean data:</td>
@@ -642,9 +641,6 @@
                         th:text="${#numbers.formatDecimal(NoiseReduceStat.total.CleanNum*100/Tool.ToDouble(NoiseReduceStat.total.RawDataNum),1,2)}+'%'">
                         &nbsp;
                     </td>
-                    <td nowrap="nowrap">&nbsp;</td>
-                    <td nowrap="nowrap">&nbsp;</td>
-                    <td nowrap="nowrap">&nbsp;</td>
                 </tr>
                 <tr>
                     <td align="center" nowrap="nowrap">Intra-chrom:</td>
@@ -656,6 +652,7 @@
                         th:text="${#numbers.formatDecimal(NoiseReduceStat.total.SameCleanNum*100/Tool.ToDouble(NoiseReduceStat.total.CleanNum),1,2)}+'%'">
                         &nbsp;
                     </td>
+                <tr>
                     <td align="center" nowrap="nowrap">Inter-chrom:</td>
                     <td nowrap="nowrap"
                         th:text="${#numbers.formatInteger(NoiseReduceStat.total.DiffCleanNum,1,'COMMA')}">
@@ -665,6 +662,7 @@
                         th:text="${#numbers.formatDecimal(NoiseReduceStat.total.DiffCleanNum*100/Tool.ToDouble(NoiseReduceStat.total.CleanNum),1,2)}+'%'">
                         &nbsp;
                     </td>
+                </tr>
                 </tr>
                 <tr>
                     <td align="center" nowrap="nowrap">Short range:</td>
@@ -676,6 +674,7 @@
                         th:text="${#numbers.formatDecimal(NoiseReduceStat.total.ShortRangeNum*100/Tool.ToDouble(NoiseReduceStat.total.SameCleanNum),1,2)}+'%'">
                         &nbsp;
                     </td>
+                <tr>
                     <td align="center" nowrap="nowrap">Long range:</td>
                     <td nowrap="nowrap"
                         th:text="${#numbers.formatInteger(NoiseReduceStat.total.LongRangeNum,1,'COMMA')}">
@@ -685,6 +684,7 @@
                         th:text="${#numbers.formatDecimal(NoiseReduceStat.total.LongRangeNum*100/Tool.ToDouble(NoiseReduceStat.total.SameCleanNum),1,2)}+'%'">
                         &nbsp;
                     </td>
+                </tr>
                 </tr>
                 </tbody>
             </table>
@@ -821,8 +821,8 @@
 
         <h2 id="MR_Heatmap">Interaction heatmap</h2>
         <li style="list-style: none" th:each="HeatMap : ${CreateMatrixStat.draw_resolutions}">
-            <h4 th:text="'Resolution '+${#numbers.formatInteger(HeatMap.Resolution,1,'COMMA')}">Resolution
-                1,000,000</h4>
+            <h4 th:text="'Resolution '+${#numbers.formatInteger(HeatMap.Resolution,1,'COMMA')}+' bp'">Resolution
+                1,000,000 bp</h4>
             <h2 align="center">
                 <img src="./images/Test.interaction.1.0M.png" alt="" width="667"
                      height="546" th:src="'data:image/png;base64,'+${Report.GetBase64(HeatMap.GenomeWildHeatMapPng)}"/>
@@ -851,7 +851,7 @@
                     <td th:text="${MappingTime}">&nbsp;</td>
                 </tr>
                 <tr>
-                    <td height="20" nowrap="nowrap">Noise Reduce:</td>
+                    <td height="20" nowrap="nowrap">Noise Reduction:</td>
                     <td th:text="${NoiseReduceTime}">&nbsp;</td>
                 </tr>
                 <tr>

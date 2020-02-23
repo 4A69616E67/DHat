@@ -7,6 +7,7 @@ import java.util.Hashtable;
 
 
 import Component.File.BedPeFile.BedpeFile;
+import Component.unit.Chromosome;
 import Component.unit.LinkerSequence;
 import org.apache.commons.math3.distribution.*;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -83,10 +84,10 @@ public class Statistic {
         return Count;
     }
 
-    public static int[] CalculatorBinSize(int[] ChrSize, int Resolution) {
-        int[] ChrBinSize = new int[ChrSize.length];
+    public static Chromosome[] CalculatorBinSize(Chromosome[] ChrSize, int Resolution) {
+        Chromosome[] ChrBinSize = new Chromosome[ChrSize.length];
         for (int i = 0; i < ChrSize.length; i++) {
-            ChrBinSize[i] = ChrSize[i] / Resolution + 1;
+            ChrBinSize[i] = new Chromosome(ChrSize[i].Name, (int) Math.ceil((double) ChrSize[i].Size / Resolution));
         }
         return ChrBinSize;
     }

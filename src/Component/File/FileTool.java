@@ -191,7 +191,7 @@ public class FileTool {
             for (int i = 0; i < BaseFreq.size(); i++) {
                 writer.write(String.valueOf(i + 1));
                 for (char base : new char[]{'A', 'T', 'C', 'G', '-'}) {
-                    writer.write("\t" + String.format("%.2f", BaseFreq.get(i)[base]));
+                    writer.write("\t" + String.format("%.4f", BaseFreq.get(i)[base]));
                 }
                 writer.write("\n");
             }

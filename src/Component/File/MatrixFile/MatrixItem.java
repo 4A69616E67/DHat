@@ -12,6 +12,7 @@ import sun.font.FontDesignMetrics;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -106,6 +107,32 @@ public class MatrixItem extends AbstractItem {
 
     public BufferedImage DrawHeatMap(int resolution, float threshold, boolean reverse) {
         return DrawHeatMap(Chr1.Chr, Chr1.region.Start, Chr2.Chr, Chr2.region.Start, resolution, threshold, reverse);
+    }
+
+    public BufferedImage DrawHeatMap(ArrayList<ChrRegion> bin_size, int resolution) {
+        int High = item.getRowDimension();
+        int Width = item.getColumnDimension();
+        int interval = 30;
+        Label = false;
+        BufferedImage image = DrawHeatMap(resolution, 0.99f, true);
+        Graphics2D g = image.createGraphics();
+        int fold = getFold();
+        int marginal = getMarginal();
+        BasicStroke stroke = new BasicStroke(1, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND, 2, new float[]{10, 5}, 0);
+        g.setStroke(stroke);
+        Font t = new Font("Times New Roman", Font.PLAIN, 20);
+        g.setFont(t);
+        g.setColor(Color.BLACK);
+        for (int i = 0; i < bin_size.size(); i++) {
+            ChrRegion r = bin_size.get(i);
+            if (i > 0) {
+                g.drawLine(marginal + r.region.Start * fold - 1, marginal, marginal + r.region.Start * fold - 1, marginal + High * fold);//draw vertical line
+                g.drawLine(marginal, (High - r.region.Start) * fold + marginal, marginal + Width * fold, (High - r.region.Start) * fold + marginal);// draw horizontal line
+            }
+            Tools.DrawStringCenter(g, r.Chr, t, marginal + r.region.Center() * fold, High * fold + interval + marginal, 0);// draw X label
+            Tools.DrawStringCenter(g, r.Chr, t, marginal - interval, (High - r.region.Center()) * fold + marginal, -Math.PI / 2);// draw Y label
+        }
+        return image;
     }
 
     public BufferedImage DrawHeatMap(String Chr1, int StartSite1, String Chr2, int StartSite2, int resolution, float threshold, boolean reverse) {

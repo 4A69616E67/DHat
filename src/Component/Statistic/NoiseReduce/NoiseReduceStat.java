@@ -295,13 +295,11 @@ public class NoiseReduceStat extends AbstractStat {
         } else {
             bin = "";
         }
-        output.write("Distance/(" + bin);
+        output.write("Distance/(" + bin + ")");
         if (x_log > 1) {
-            output.write("log" + x_log + ")");
-        } else {
-            output.write(")");
+            output.write("(log" + x_log + ")");
         }
-        output.write(new DecimalFormat("#,###").format(reg.Start) + ":" + new DecimalFormat("#,###").format(reg.End));
+        output.write("[" + new DecimalFormat("#,###").format(reg.Start) + ":" + new DecimalFormat("#,###").format(reg.End) + "]");
         if (y_log > 1) {
             output.write("\tCount/(log" + y_log + ")\n");
         } else {

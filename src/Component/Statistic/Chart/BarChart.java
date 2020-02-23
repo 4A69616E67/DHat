@@ -30,28 +30,26 @@ public class BarChart implements ChartInterface {
     @Override
     public void loadData(File inputFile) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-        String Line;
+        String Line = reader.readLine();
+        String[] strs = Line.split("\\s+");
+        try {
+            XLabel = strs[0];
+            YLabel = strs[1];
+            System.arraycopy(strs, 1, Classification, 0, strs.length - 1);
+        } catch (IndexOutOfBoundsException ignored) {
+
+        }
         while ((Line = reader.readLine()) != null) {
-            if (Line.matches("^#.*")) {
-                String[] strs = Line.replaceAll("^#\\s*", "").split("\\s*\\|\\s*");
-                try {
-                    XLabel = strs[0];
-                    YLabel = strs[1];
-                    Classification = strs[2].split("\\s+");
-                } catch (IndexOutOfBoundsException ignored) {
+            strs = Line.split("\\s+");
+            try {
+                XSample.add(strs[0]);
+                data.add(new double[Classification.length]);
+                for (int i = 0; i < Classification.length; i++) {
+                    data.get(data.size() - 1)[i] = Double.parseDouble(strs[i + 1].replaceAll("\\s", ""));
                 }
-            } else {
-                String[] strs = Line.split("\\s*\\|\\s*");
-                try {
-                    XSample.add(strs[0]);
-                    data.add(new double[Classification.length]);
-                    for (int i = 0; i < Classification.length; i++) {
-                        data.get(data.size() - 1)[i] = Double.parseDouble(strs[i + 1].replaceAll("\\s", ""));
-                    }
-                } catch (IndexOutOfBoundsException | NumberFormatException e) {
-                    System.err.println("Error!\tIncorrect data format in follow line:\n" + Line);
-                    System.exit(1);
-                }
+            } catch (IndexOutOfBoundsException | NumberFormatException e) {
+                System.err.println("Error!\tIncorrect data format in follow line:\n" + Line);
+                System.exit(1);
             }
         }
     }

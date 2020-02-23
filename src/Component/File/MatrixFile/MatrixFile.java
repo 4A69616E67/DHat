@@ -101,29 +101,8 @@ public class MatrixFile extends AbstractFile<MatrixItem> {
     public void PlotHeatMap(ArrayList<ChrRegion> bin_size, int resolution, File outFile) throws IOException {
         ReadOpen();
         MatrixItem item = ReadItem();
-        int High = item.item.getRowDimension();
-        int Width = item.item.getColumnDimension();
-        int interval = 30;
         ReadClose();
-        item.Label = false;
-        BufferedImage image = item.DrawHeatMap(resolution, 0.99f, true);
-        Graphics2D g = image.createGraphics();
-        int fold = item.getFold();
-        int marginal = item.getMarginal();
-        BasicStroke stroke = new BasicStroke(1, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND, 2, new float[]{10, 5}, 0);
-        g.setStroke(stroke);
-        Font t = new Font("Times New Roman", Font.PLAIN, 20);
-        g.setFont(t);
-        g.setColor(Color.BLACK);
-        for (int i = 0; i < bin_size.size(); i++) {
-            ChrRegion r = bin_size.get(i);
-            if (i > 0) {
-                g.drawLine(marginal + r.region.Start * fold - 1, marginal, marginal + r.region.Start * fold - 1, marginal + High * fold);//draw vertical line
-                g.drawLine(marginal, (High - r.region.Start) * fold + marginal, marginal + Width * fold, (High - r.region.Start) * fold + marginal);// draw horizontal line
-            }
-            Tools.DrawStringCenter(g, r.Chr, t, marginal + r.region.Center() * fold, High * fold + interval + marginal, 0);// draw X label
-            Tools.DrawStringCenter(g, r.Chr, t, marginal - interval, (High - r.region.Center()) * fold + marginal, -Math.PI / 2);// draw Y label
-        }
+        BufferedImage image = item.DrawHeatMap(bin_size,resolution);
         ImageIO.write(image, outFile.getName().substring(outFile.getName().lastIndexOf('.') + 1), outFile);
         //=======================================================
 //        String ComLine = Configure.Python.Exe() + " " + Opts.PlotHeatMapScriptFile + " -m A -i " + getPath() + " -o " + outFile + " -r " + resolution + " -c " + binSizeFile + " -q 98";

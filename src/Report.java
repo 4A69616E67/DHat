@@ -103,7 +103,7 @@ public class Report {
         context.setVariable("NoiseReduceStat", Opts.NRStat);
         context.setVariable("OverViewStat", Opts.OVStat);
         context.setVariable("CreateMatrixStat", Opts.CMStat);
-        context.setVariable("AdapterSeq", String.join(" ", Configure.AdapterSeq).replaceAll("\\s+", "<br/>"));
+        context.setVariable("AdapterSeq", String.join(" ", Opts.LFStat.Adapters).replaceAll("\\s+", "<br/>"));
         context.setVariables(map);
 //        context.setVariable("LinkerAliScoreDis", GetBase64(Opts.LFStat.LinkerScoreDisPng));
 //        context.setVariable("ReadsLenDiss", ReadsLengthDisBase64);

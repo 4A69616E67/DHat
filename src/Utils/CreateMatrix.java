@@ -124,18 +124,18 @@ public class CreateMatrix {
             System.err.println("Error! no -chr  argument");
             System.exit(1);
         }
-        int[] ChrSize = new int[Chromosomes.length];
+//        int[] ChrSize = new int[Chromosomes.length];
         System.out.println(new Date() + "\tBegin to create interaction matrix " + BedpeFile.getName() + " Resolution=" + Resolution + " Threads=" + Threads);
-        for (int i = 0; i < Chromosomes.length; i++) {
-            ChrSize[i] = Chromosomes[i].Size;
-        }
+//        for (int i = 0; i < Chromosomes.length; i++) {
+//            ChrSize[i] = Chromosomes[i].Size;
+//        }
         int SumBin = 0;
-        int[] ChrBinSize = Statistic.CalculatorBinSize(ChrSize, Resolution);
+        Chromosome[] ChrBinSize = Statistic.CalculatorBinSize(Chromosomes, Resolution);
         Hashtable<String, Integer> IndexBias = new Hashtable<>();
         //计算bin的总数
         for (int i = 0; i < ChrBinSize.length; i++) {
             IndexBias.put(Chromosomes[i].Name, SumBin);
-            SumBin = SumBin + ChrBinSize[i];
+            SumBin = SumBin + ChrBinSize[i].Size;
         }
         if (SumBin > Opts.MaxBinNum) {
             System.err.println("Error ! too many bins, there are " + SumBin + " bins.");
@@ -198,15 +198,9 @@ public class CreateMatrix {
         //--------------------------------------------------------------------
         int temp = 0;
         BufferedWriter outfile = new BufferedWriter(new FileWriter(BinSizeFile));
-        BinSizeList = new ArrayList<>();
-        for (int i = 0; i < Chromosomes.length; i++) {
-            temp = temp + 1;
-            ChrRegion region = new ChrRegion(Chromosomes[i].Name, temp, 0);
-            outfile.write(Chromosomes[i].Name + "\t" + temp + "\t");
-            temp = temp + ChrBinSize[i] - 1;
-            outfile.write(temp + "\n");
-            region.region.End = temp;
-            BinSizeList.add(region);
+        BinSizeList = getBinSizeList();
+        for (int i = 0; i < BinSizeList.size(); i++) {
+            outfile.write(BinSizeList.get(i).toString());
         }
         outfile.close();
         return InterMatrix;
@@ -214,10 +208,10 @@ public class CreateMatrix {
 
     public Array2DRowRealMatrix Run(ChrRegion reg1, ChrRegion reg2) throws IOException {
         System.out.println(new Date() + "\tBegin to create interaction matrix " + reg1.toString().replace("\t", ":") + " " + reg2.toString().replace("\t", ":"));
-        int[] ChrBinSize;
-        ChrBinSize = Statistic.CalculatorBinSize(new int[]{reg1.region.getLength(), reg2.region.getLength()}, Resolution);
-        if (Math.max(ChrBinSize[0], ChrBinSize[1]) > Opts.MaxBinNum) {
-            System.err.println("Error ! too many bins, there are " + Math.max(ChrBinSize[0], ChrBinSize[1]) + " bins.");
+        Chromosome[] ChrBinSize;
+        ChrBinSize = Statistic.CalculatorBinSize(new Chromosome[]{new Chromosome(reg1.Chr, reg1.region.getLength()), new Chromosome(reg2.Chr, reg2.region.getLength())}, Resolution);
+        if (Math.max(ChrBinSize[0].Size, ChrBinSize[1].Size) > Opts.MaxBinNum) {
+            System.err.println("Error ! too many bins, there are " + Math.max(ChrBinSize[0].Size, ChrBinSize[1].Size) + " bins.");
             System.exit(0);
         }
         MatrixItem InterMatrix = new MatrixItem(new InterAction(reg1, reg2), Resolution);
@@ -405,6 +399,18 @@ public class CreateMatrix {
     }
 
     public ArrayList<ChrRegion> getBinSizeList() {
+        if (BinSizeList.size() == 0) {
+            Chromosome[] ChrBinSize = Statistic.CalculatorBinSize(Chromosomes, Resolution);
+            int temp = 0;
+            BinSizeList = new ArrayList<>();
+            for (int i = 0; i < Chromosomes.length; i++) {
+                temp = temp + 1;
+                ChrRegion region = new ChrRegion(Chromosomes[i].Name, temp, 0);
+                temp = temp + ChrBinSize[i].Size - 1;
+                region.region.End = temp;
+                BinSizeList.add(region);
+            }
+        }
         return BinSizeList;
     }
 }

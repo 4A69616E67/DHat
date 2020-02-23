@@ -145,9 +145,6 @@ public class Main {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-
-        File ss = new File("   ");
-        String prefix= new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         //==============================================测试区==========================================================
 //        MemoryUsage memoryUsage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
 //        long maxMemorySize = memoryUsage.getMax();
@@ -261,10 +258,21 @@ public class Main {
         CommonFile LinkerDisFile = new CommonFile(Stat.getDataDir() + "/LinkerScoreDis.data");
         Opts.LFStat.WriteLinkerScoreDis(LinkerDisFile);
         Opts.LFStat.LinkerScoreDisPng = new File(Stat.getImageDir() + "/" + LinkerDisFile.getName().replace(".data", ".png"));
-        String ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -i " + LinkerDisFile + " -t bar -o " + Opts.LFStat.LinkerScoreDisPng;
-        BarChart barChart = new BarChart();
-        barChart.loadData(LinkerDisFile);
-        barChart.drawing(Opts.LFStat.LinkerScoreDisPng);
+        String ComLine;
+        try {
+            ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -i " + LinkerDisFile + " -t bar -o " + Opts.LFStat.LinkerScoreDisPng;
+            int ExitValue = CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+            if (!(ExitValue == 0)) {
+                throw new InterruptedException("can't draw figure by python");
+            }
+            Opts.CommandOutFile.Append(ComLine + "\n");
+        } catch (IOException | InterruptedException e) {
+            System.err.println(new Date() + "\tCan't draw Linker score distribution by python, try to draw it by java");
+            BarChart barChart = new BarChart();
+            barChart.loadData(LinkerDisFile);
+            barChart.drawing(Opts.LFStat.LinkerScoreDisPng);
+        }
+
         CommonFile[] ReadsLenDisFile = new CommonFile[LinkerSeq.length];
         Stat.ReadsLengthDisBase64 = new String[LinkerSeq.length];
         for (int i = 0; i < ReadsLenDisFile.length; i++) {
@@ -273,12 +281,21 @@ public class Main {
         Opts.LFStat.WriteReadsLengthDis(ReadsLenDisFile);
         for (int i = 0; i < ReadsLenDisFile.length; i++) {
             Opts.LFStat.linkers[i].ReadLengthDisPng = new File(Stat.getImageDir() + "/" + ReadsLenDisFile[i].getName().replace(".data", ".png"));
-            barChart = new BarChart();
-            barChart.loadData(ReadsLenDisFile[i]);
-            barChart.drawing(Opts.LFStat.linkers[i].ReadLengthDisPng);
-//            ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t bar -y Count --title " + LinkerSeq[i].getType() + " -i " + ReadsLenDisFile[i] + " -o " + Opts.LFStat.linkers[i].ReadLengthDisPng;
-//            Opts.CommandOutFile.Append(ComLine + "\n");
-//            CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+            try {
+                ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -t bar -y Count --title " + LinkerSeq[i].getType() + " -i " + ReadsLenDisFile[i] + " -o " + Opts.LFStat.linkers[i].ReadLengthDisPng;
+                int ExitValue = CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+                if (!(ExitValue == 0)) {
+                    throw new InterruptedException("can't draw figure by python");
+                }
+                Opts.CommandOutFile.Append(ComLine + "\n");
+            } catch (IOException | InterruptedException e) {
+                System.err.println(new Date() + "\tCan't draw reads length distribution by python, try to draw it by java");
+                BarChart barChart = new BarChart();
+                barChart.loadData(ReadsLenDisFile[i]);
+                barChart.YLabel = "Count";
+                barChart.drawing(Opts.LFStat.linkers[i].ReadLengthDisPng);
+            }
+
         }
         //==============================================================================================================
         LinkerFastqFileR1 = preprocess.getFastqR1File();
@@ -504,6 +521,7 @@ public class Main {
                 if (s.Size == 0) {
                     findenzy.start();
                     findenzy.join();
+                    break;
                 }
             }
             Thread[] mmt = new Thread[Resolution.length];
@@ -535,11 +553,12 @@ public class Main {
                 }
                 Opts.CMStat.draw_resolutions[i].GenomeWildMatrixFile = matrix.getDenseMatrixFile();
                 Opts.CMStat.draw_resolutions[i].GenomeWildHeatMapPng = new File(OutDir + "/" + Prefix + ".interaction_" + Tools.UnitTrans(aDrawResolution, "B", "M") + "M.png");
+                //绘制全基因组热图
                 Opts.CMStat.draw_resolutions[i].GenomeWildMatrixFile.PlotHeatMap(matrix.getBinSizeList(), aDrawResolution, Opts.CMStat.draw_resolutions[i].GenomeWildHeatMapPng);
                 Opts.CMStat.draw_resolutions[i].ChromMatrixFile = matrix.getChrDenseMatrixFile();
                 for (int j = 0; j < Chromosomes.length; j++) {
                     Opts.CMStat.draw_resolutions[i].ChromHeatMapPng[j] = new File(OutDir + "/" + Prefix + "." + Chromosomes[j].Name + "." + Tools.UnitTrans(aDrawResolution, "B", "M") + "M.png");
-                    Opts.CMStat.draw_resolutions[i].ChromMatrixFile[j].PlotHeatMap(new ChrRegion(Chromosomes[j].Name, 0, 0), new ChrRegion(Chromosomes[j].Name, 0, 0), aDrawResolution, 0.98f, Opts.CMStat.draw_resolutions[i].ChromHeatMapPng[j]);
+                    Opts.CMStat.draw_resolutions[i].ChromMatrixFile[j].PlotHeatMap(new ChrRegion(Chromosomes[j].Name, 0, 0), new ChrRegion(Chromosomes[j].Name, 0, 0), aDrawResolution / 10 , 0.98f, Opts.CMStat.draw_resolutions[i].ChromHeatMapPng[j]);
                 }
             }
         }
