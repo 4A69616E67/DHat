@@ -12,9 +12,9 @@ import Component.unit.*;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import Utils.CreateMatrix;
+
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 public class MakeMatrix {
     //===============================================================
@@ -30,9 +30,10 @@ public class MakeMatrix {
     private BedpeFile[] ChrBedpeFile;
     //==============================================================
     private String[] ChrMatrixPrefix;
-    private MatrixFile DenseMatrixFile, SpareMatrixFile;
-    private MatrixFile[] ChrDenseMatrixFile, ChrSpareMatrixFile, ChrNormalizeDenseMatrix, ChrNormalizeSpareMatrixFile;
+    private MatrixFile DenseMatrixFile, SparseMatrixFile;
+    private MatrixFile[] ChrDenseMatrixFile, ChrSparseMatrixFile, ChrNormalizeDenseMatrix, ChrNormalizeSparseMatrixFile;
     private File BinSizeFile;
+    private ArrayList<ChrRegion> BinSizeList;
     private Properties Config = new Properties();
 
 
@@ -59,7 +60,7 @@ public class MakeMatrix {
         for (int j = 0; j < Chromosomes.length; j++) {
             cm = new CreateMatrix(ChrBedpeFile[j], new Chromosome[]{Chromosomes[j]}, Resolution / 10, ChrMatrixPrefix[j], Threads);
             Matrix = cm.Run();
-            Tools.PrintMatrix(MatrixNormalize(Matrix), ChrNormalizeDenseMatrix[j], ChrNormalizeSpareMatrixFile[j]);
+            Tools.PrintMatrix(MatrixNormalize(Matrix), ChrNormalizeDenseMatrix[j], ChrNormalizeSparseMatrixFile[j]);
         }
     }
 
@@ -106,21 +107,22 @@ public class MakeMatrix {
         CreateMatrix cm;
         InterMatrixPrefix = OutPath + "/" + Prefix + "_" + Tools.UnitTrans(Resolution, "B", "M") + "M";
         ChrDenseMatrixFile = new MatrixFile[Chromosomes.length];
-        ChrSpareMatrixFile = new MatrixFile[Chromosomes.length];
+        ChrSparseMatrixFile = new MatrixFile[Chromosomes.length];
         ChrNormalizeDenseMatrix = new MatrixFile[Chromosomes.length];
-        ChrNormalizeSpareMatrixFile = new MatrixFile[Chromosomes.length];
+        ChrNormalizeSparseMatrixFile = new MatrixFile[Chromosomes.length];
         ChrMatrixPrefix = new String[Chromosomes.length];
         cm = new CreateMatrix(BedpeFile, Chromosomes, Resolution, InterMatrixPrefix, Threads);
         BinSizeFile = cm.getBinSizeFile();
+        BinSizeList = cm.getBinSizeList();
         DenseMatrixFile = cm.getDenseMatrixFile();
-        SpareMatrixFile = cm.getSpareMatrixFile();
+        SparseMatrixFile = cm.getSparseMatrixFile();
         for (int i = 0; i < Chromosomes.length; i++) {
             ChrMatrixPrefix[i] = OutPath + "/" + Prefix + "." + Chromosomes[i].Name + "_" + Tools.UnitTrans((double) Resolution / 10, "B", "M") + "M";
             cm = new CreateMatrix(ChrBedpeFile[i], new Chromosome[]{Chromosomes[i]}, Resolution / 10, ChrMatrixPrefix[i], Threads);
             ChrDenseMatrixFile[i] = cm.getDenseMatrixFile();
-            ChrSpareMatrixFile[i] = cm.getSpareMatrixFile();
+            ChrSparseMatrixFile[i] = cm.getSparseMatrixFile();
             ChrNormalizeDenseMatrix[i] = new MatrixFile(OutPath + "/" + Prefix + "." + Chromosomes[i].Name + "_" + Tools.UnitTrans((double) Resolution / 10, "B", "M") + "M" + ".normalize.2d.matrix");
-            ChrNormalizeSpareMatrixFile[i] = new MatrixFile(OutPath + "/" + Prefix + "." + Chromosomes[i].Name + "_" + Tools.UnitTrans((double) Resolution / 10, "B", "M") + "M" + ".normalize.spare.matrix");
+            ChrNormalizeSparseMatrixFile[i] = new MatrixFile(OutPath + "/" + Prefix + "." + Chromosomes[i].Name + "_" + Tools.UnitTrans((double) Resolution / 10, "B", "M") + "M" + ".normalize.sparse.matrix");
         }
     }
 
@@ -180,12 +182,12 @@ public class MakeMatrix {
         return DenseMatrixFile;
     }
 
-    public MatrixFile getSpareMatrixFile() {
-        return SpareMatrixFile;
+    public MatrixFile getSparseMatrixFile() {
+        return SparseMatrixFile;
     }
 
-    public MatrixFile[] getChrSpareMatrixFile() {
-        return ChrSpareMatrixFile;
+    public MatrixFile[] getChrSparseMatrixFile() {
+        return ChrSparseMatrixFile;
     }
 
     public MatrixFile[] getChrDenseMatrixFile() {
@@ -198,5 +200,9 @@ public class MakeMatrix {
 
     public File getBinSizeFile() {
         return BinSizeFile;
+    }
+
+    public ArrayList<ChrRegion> getBinSizeList() {
+        return BinSizeList;
     }
 }

@@ -2,7 +2,7 @@ package Component.FragmentDigested;
 
 import Component.File.BedFile.BedFile;
 import Component.File.BedFile.BedItem;
-import Component.File.CommonFile;
+import Component.File.CommonFile.CommonFile;
 import Component.File.FastaFile.FastaFile;
 import Component.File.FastaFile.FastaItem;
 import Component.tool.Tools;

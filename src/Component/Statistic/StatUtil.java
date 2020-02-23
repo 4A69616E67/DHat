@@ -1,5 +1,7 @@
 package Component.Statistic;
 
+import org.apache.commons.math3.linear.RealMatrix;
+
 /**
  * Created by 浩 on 2019/3/2.
  */
@@ -25,6 +27,16 @@ public class StatUtil {
             }
         }
         return res;
+    }
+
+    public static double sum(RealMatrix matrix) {
+        double Total = 0;
+        for (int i = 0; i < matrix.getRowDimension(); i++) {
+            for (int j = 0; j < matrix.getColumnDimension(); j++) {
+                Total += matrix.getEntry(i, j);
+            }
+        }
+        return Total;
     }
 
     public static int maxValue(int[] i) {
@@ -59,8 +71,18 @@ public class StatUtil {
         return min;
     }
 
+    public static double min(double[] i) {
+        double min = Double.MAX_VALUE;
+        for (double a : i) {
+            if (a < min) {
+                min = a;
+            }
+        }
+        return min;
+    }
+
     public double ToDouble(int i) {
-        return (double) i;
+        return i;
     }
 
     public double ToDouble(long l) {

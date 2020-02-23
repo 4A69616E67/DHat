@@ -1,11 +1,14 @@
 package Component.File.SamFile;
 
+import Component.File.AbstractItem;
+
+import java.util.Comparator;
 import java.util.HashMap;
 
 /**
  * Created by snowf on 2019/2/17.
  */
-public class SamItem implements Comparable<SamItem> {
+public class SamItem extends AbstractItem {
     public String Title;
     public int Stat;
     public String Chr;
@@ -35,17 +38,38 @@ public class SamItem implements Comparable<SamItem> {
         }
     }
 
-    @Override
-    public int compareTo(SamItem o) {
-        if (SortByName) {
-            return Title.compareTo(o.Title);
-        } else {
-            int result = Chr.compareTo(o.Chr);
+    public static class NameComparator implements Comparator<SamItem> {
+
+        @Override
+        public int compare(SamItem o1, SamItem o2) {
+            return o1.Title.compareTo(o2.Title);
+        }
+    }
+
+    public static class LocationComparator implements Comparator<SamItem> {
+
+        @Override
+        public int compare(SamItem o1, SamItem o2) {
+            int result = o1.Chr.compareTo(o2.Chr);
             if (result == 0) {
-                return BeginSite - o.BeginSite;
+                return o1.BeginSite - o2.BeginSite;
             } else {
                 return result;
             }
         }
     }
+
+//    @Override
+//    public int compareTo(SamItem o) {
+//        if (SortByName) {
+//            return Title.compareTo(o.Title);
+//        } else {
+//            int result = Chr.compareTo(o.Chr);
+//            if (result == 0) {
+//                return BeginSite - o.BeginSite;
+//            } else {
+//                return result;
+//            }
+//        }
+//    }
 }

@@ -47,13 +47,13 @@ public class LinkerDetection {
         float Threshold = Opts.GetFloatOpt(ComLine, "f", 0.05f);
         RestrictionEnzyme enzyme = Opts.GetStringOpt(ComLine, "e", null) == null ? null : new RestrictionEnzyme(Opts.GetStringOpt(ComLine, "e", null));
         //--------------------------------------------------------------------------------------------------------------
-        ArrayList<DNASequence> result = run(InPutFile, new File(Prefix), Index1, Index2, SeqNum, enzyme, KmerLen, Threshold);
+        ArrayList<DNASequence> result = run(InPutFile, Index1, Index2, SeqNum, enzyme, KmerLen, Threshold);
         for (DNASequence d : result) {
             System.out.println(d);
         }
     }
 
-    public static ArrayList<DNASequence> run(FastqFile InPutFile, File prefix, int start, int end, int seqNum, RestrictionEnzyme enzyme, int k_merLen, float threshold) throws IOException {
+    public static ArrayList<DNASequence> run(FastqFile InPutFile, int start, int end, int seqNum, RestrictionEnzyme enzyme, int k_merLen, float threshold) throws IOException {
         ArrayList<DNASequence> linkers = LinkerDetection.SimilarSeqDetection(InPutFile, new File("test"), start, end, seqNum, k_merLen, threshold);
         if (enzyme == null) {
             //find out restriction enzyme
@@ -128,14 +128,18 @@ public class LinkerDetection {
 
 
     public static ArrayList<DNASequence> SimilarSeqDetection(FastqFile input_file, File prefix, int start, int end, int SeqNum, int k_merLen, float threshold) throws IOException {
-        start = start < 0 ? 0 : start;
-        end = end < start ? start : end;
+        start = Math.max(start, 0);
+        end = Math.max(end, start);
         SeqNum = SeqNum == 0 ? 5000 : SeqNum;
         k_merLen = k_merLen == 0 ? 10 : k_merLen;
         threshold = threshold == 0 ? 0.05f : threshold;
         ArrayList<FastqItem> list = input_file.Extraction(SeqNum);
         for (FastqItem item : list) {
-            item.Sequence = item.Sequence.substring(start, Math.min(end, item.Sequence.length()));
+            if (start > item.Sequence.length() - 1) {
+                item.Sequence = "";
+            } else {
+                item.Sequence = item.Sequence.substring(start, Math.min(end, item.Sequence.length()));
+            }
         }
         ArrayList<KmerStructure> ValidKmerList = GetValidKmer(list, k_merLen, threshold * SeqNum);
         ArrayList<KmerStructure> assembly_list = Assembly(ValidKmerList);

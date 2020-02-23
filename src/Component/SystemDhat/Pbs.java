@@ -1,6 +1,6 @@
 package Component.SystemDhat;
 
-import Component.File.CommonFile;
+import Component.File.CommonFile.CommonFile;
 
 /**
  * Created by snowf on 2019/6/15.

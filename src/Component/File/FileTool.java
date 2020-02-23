@@ -6,6 +6,8 @@ import Component.File.FastaFile.FastaFile;
 import Component.File.FastaFile.FastaItem;
 import Component.SystemDhat.CommandLineDhat;
 import Component.unit.*;
+import org.apache.commons.math3.random.RandomDataGenerator;
+import org.apache.commons.math3.random.RandomGenerator;
 
 import java.io.*;
 import java.util.*;
@@ -31,7 +33,6 @@ public class FileTool {
     public static Opts.FileFormat ReadsType(FastqFile fastqfile) throws IOException {
         int LineNumber = 100, i = 0, Count = 0;
         fastqfile.ReadOpen();
-//        BufferedReader reader = new BufferedReader(new FileReader(fastqfile));
         FastqItem item;
         while ((item = fastqfile.ReadItem()) != null) {
             Count += item.Sequence.length();
@@ -106,7 +107,7 @@ public class FileTool {
 
     public static String AdapterDetection(FastqFile file, File Prefix, int SubIndex, AbstractFile stat_file) throws IOException, InterruptedException {
         StringBuilder Adapter = new StringBuilder();
-        int SeqNum = 100;
+        int SeqNum = 200;
         FastaFile HeadFile = new FastaFile(Prefix + ".head" + SeqNum);
         file.ReadOpen();
         BufferedWriter writer = new BufferedWriter(new FileWriter(HeadFile));
@@ -137,7 +138,7 @@ public class FileTool {
         int[] CountArrays = new int[255];
         FastaItem[] ResItems;
         //----------------------------------------------------------------------
-        String ComLine = Configure.Mafft.Exe() + " " + file.getPath();
+        String ComLine = Configure.Mafft.FullExe() + " " + file.getPath();
         Opts.CommandOutFile.Append(ComLine + "\n");
         PrintWriter msa = new PrintWriter(MsaFile);
         if (Configure.DeBugLevel < 1) {
@@ -190,7 +191,7 @@ public class FileTool {
             for (int i = 0; i < BaseFreq.size(); i++) {
                 writer.write(String.valueOf(i + 1));
                 for (char base : new char[]{'A', 'T', 'C', 'G', '-'}) {
-                    writer.write("\t" + String.format("%.2f", BaseFreq.get(i)[base]));
+                    writer.write("\t" + String.format("%.4f", BaseFreq.get(i)[base]));
                 }
                 writer.write("\n");
             }

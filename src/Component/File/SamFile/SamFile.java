@@ -2,7 +2,6 @@ package Component.File.SamFile;
 
 import Component.File.AbstractFile;
 import Component.File.BedFile.BedFile;
-import Component.unit.SortItem;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -41,10 +40,10 @@ public class SamFile extends AbstractFile<SamItem> {
         writer.write(item.toString());
     }
 
-    @Override
-    protected SortItem<SamItem> ExtractSortItem(String[] s) {
-        return null;
-    }
+//    @Override
+//    protected SortItem<SamItem> ExtractSortItem(String[] s) {
+//        return null;
+//    }
 
 
     private static int CalculateFragLength(String s) {

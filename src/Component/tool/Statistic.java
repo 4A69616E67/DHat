@@ -7,11 +7,13 @@ import java.util.Hashtable;
 
 
 import Component.File.BedPeFile.BedpeFile;
+import Component.unit.Chromosome;
 import Component.unit.LinkerSequence;
 import org.apache.commons.math3.distribution.*;
+import org.apache.commons.math3.linear.RealMatrix;
+
 /**
  * Created by snowf on 2019/2/17.
- *
  */
 public class Statistic {
 
@@ -82,10 +84,10 @@ public class Statistic {
         return Count;
     }
 
-    public static int[] CalculatorBinSize(int[] ChrSize, int Resolution) {
-        int[] ChrBinSize = new int[ChrSize.length];
+    public static Chromosome[] CalculatorBinSize(Chromosome[] ChrSize, int Resolution) {
+        Chromosome[] ChrBinSize = new Chromosome[ChrSize.length];
         for (int i = 0; i < ChrSize.length; i++) {
-            ChrBinSize[i] = ChrSize[i] / Resolution + 1;
+            ChrBinSize[i] = new Chromosome(ChrSize[i].Name, (int) Math.ceil((double) ChrSize[i].Size / Resolution));
         }
         return ChrBinSize;
     }
@@ -160,7 +162,7 @@ public class Statistic {
                 for (int i = 0; i <= len - ResLength; i++) {
                     if (Seq.substring(i, i + ResLength).equals(Restriction)) {
                         Count++;
-                        chrwrite.write(Count + "\t+\t" + Chr + "\t" + String.valueOf(i + Site) + "\n");
+                        chrwrite.write(Count + "\t+\t" + Chr + "\t" + (i + Site) + "\n");
                     }
                 }
                 chrwrite.write(++Count + "\t+\t" + Chr + "\t" + len + "\n");
@@ -180,7 +182,7 @@ public class Statistic {
         for (int i = 0; i <= len - ResLength; i++) {
             if (Seq.substring(i, i + ResLength).equals(Restriction)) {
                 Count++;
-                chrwrite.write(Count + "\t+\t" + Chr + "\t" + String.valueOf(i + Site) + "\n");
+                chrwrite.write(Count + "\t+\t" + Chr + "\t" + (i + Site) + "\n");
             }
         }
         chrwrite.write(++Count + "\t+\t" + Chr + "\t" + len + "\n");

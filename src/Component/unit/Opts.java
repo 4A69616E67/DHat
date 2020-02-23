@@ -1,6 +1,6 @@
 package Component.unit;
 
-import Component.File.CommonFile;
+import Component.File.CommonFile.CommonFile;
 import Component.FragmentDigested.FragmentDigested;
 import Component.Statistic.*;
 import Component.Statistic.Alignment.AlignmentStat;
@@ -10,6 +10,7 @@ import Component.Statistic.NoiseReduce.NoiseReduceStat;
 import org.apache.commons.cli.CommandLine;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
@@ -165,13 +166,13 @@ public class Opts {
     public static final File JarFile = new File(Opts.class.getProtectionDomain().getCodeSource().getLocation().getFile());
     public static final File OutScriptDir = new File(JarFile.getParent() + "/Script");//脚本文件存放的位置
     public static final File OutResourceDir = new File(JarFile.getParent() + "/Resource");//资源文件存放的位置
-    public static CommonFile CommandOutFile = new CommonFile(Configure.OutPath + "/Command.log");
-    public static CommonFile StatisticFile = new CommonFile(Configure.OutPath + "/Statistic.txt");
+    public static CommonFile CommandOutFile = new CommonFile(Configure.OutPath + "/" + Configure.Prefix + ".command.txt");
+    public static CommonFile StatisticFile = new CommonFile(Configure.OutPath + "/" + Configure.Prefix + ".Stat.txt");
     public static CommonFile ResourceStatFile = new CommonFile(Configure.OutPath + "/JVM_stat.txt");
-    public static final String[] ResourceFile = new String[]{"default.conf", "default_adv.conf"};
+    //    public static final String[] ResourceFile = new String[]{"default.conf", "default_adv.conf"};
     public static final String[] ScriptFile = new String[]{"PlotHeatMap.py", "StatisticPlot.py", "RegionPlot.py"};
-    public static final CommonFile ConfigFile = new CommonFile(OutResourceDir + "/" + ResourceFile[0]);
-    public static final CommonFile AdvConfigFile = new CommonFile(OutResourceDir + "/" + ResourceFile[1]);
+    public static final CommonFile ConfigFile = new CommonFile(OutResourceDir + "/default.conf");
+//    public static final CommonFile AdvConfigFile = new CommonFile(OutResourceDir + "/default_adv.conf");
     public static final File PlotHeatMapScriptFile = new File(OutScriptDir + "/" + ScriptFile[0]);
     public static final File StatisticPlotFile = new File(OutScriptDir + "/" + ScriptFile[1]);
     public static final File StyleCss = new File("/" + InterResourceDir + "/style.css");
@@ -179,12 +180,13 @@ public class Opts {
     public static final File ScriptJs = new File("/" + InterResourceDir + "/script.js");
     public static final File TemplateReportHtml = new File("/" + InterResourceDir + "/Report.html");
     public static final File ReadMeFile = new File("/" + InterResourceDir + "/ReadMe.txt");
-    public static final Float Version = 1.0F;
+    public static final Float Version = 1.5F;
     public static final String Author = "Snowflakes";
     public static final String Email = "john-jh@foxmail.com";
     public static final long MaxMemory = Runtime.getRuntime().maxMemory();//java能获取的最大内存
     public static Hashtable<String, Integer> ChrSize = new Hashtable<>();
     public static final Date StartTime = new Date();
+    public static SimpleDateFormat DF = new SimpleDateFormat("yyyyMMddHHmmss");
     //==================================================================================================================
     public static final LinkerFilterStat LFStat = new LinkerFilterStat();
     public static final AlignmentStat ALStat = new AlignmentStat();

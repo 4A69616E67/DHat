@@ -14,6 +14,9 @@
       <element id="extracted-dir" path="$PROJECT_DIR$/Libraries/Thymeleaf/thymeleaf-3.0.9.RELEASE.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/Libraries/Thymeleaf/unbescape-1.1.5.RELEASE.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/Libraries/Thymeleaf/attoparser-2.0.4.RELEASE.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/Libraries/JHeatChart/jfreechart-1.0.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/Libraries/JHeatChart/jcommon-1.0.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/Libraries/JHeatChart/junit-3.8.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

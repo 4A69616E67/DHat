@@ -58,13 +58,13 @@ public class FastqFile extends AbstractFile<FastqItem> {
         writer.write(item.toString());
     }
 
-    @Override
-    protected SortItem<FastqItem> ExtractSortItem(String[] s) {
-        if (s == null) {
-            return null;
-        }
-        return new SortItem<>(new FastqItem(s[0]));
-    }
+//    @Override
+//    protected SortItem<FastqItem> ExtractSortItem(String[] s) {
+//        if (s == null) {
+//            return null;
+//        }
+//        return new SortItem<>(new FastqItem(s[0]));
+//    }
 
 
     public Opts.FileFormat FastqPhred() throws IOException {

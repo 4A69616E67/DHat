@@ -1,7 +1,6 @@
 package Component.File.FastaFile;
 
 import Component.File.AbstractFile;
-import Component.unit.SortItem;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -59,16 +58,16 @@ public class FastaFile extends AbstractFile<FastaItem> {
     }
 
     @Override
-    public void WriteItem(FastaItem item) {
-
+    public void WriteItem(FastaItem item) throws IOException {
+        writer.write(item.toString());
     }
 
-    @Override
-    protected SortItem<FastaItem> ExtractSortItem(String[] s) {
-        if (s == null) {
-            return null;
-        }
-        return new SortItem<>(new FastaItem(s[0]));
-    }
+//    @Override
+//    protected SortItem<FastaItem> ExtractSortItem(String[] s) {
+//        if (s == null) {
+//            return null;
+//        }
+//        return new SortItem<>(new FastaItem(s[0]));
+//    }
 
 }

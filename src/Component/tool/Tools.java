@@ -4,7 +4,10 @@ import Component.File.AbstractFile;
 import Component.unit.Chromosome;
 import Component.unit.Opts;
 import org.apache.commons.math3.linear.RealMatrix;
+import sun.font.FontDesignMetrics;
 
+import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.io.*;
 import java.util.*;
 
@@ -137,26 +140,26 @@ public class Tools {
         outfile.close();
     }
 
-    public static void PrintMatrix(RealMatrix Matrix, File DenseFile, File SpareMatrix) throws IOException {
-        BufferedWriter twodfile = new BufferedWriter(new FileWriter(DenseFile));
-        BufferedWriter sparefile = new BufferedWriter(new FileWriter(SpareMatrix));
+    public static void PrintMatrix(RealMatrix Matrix, File DenseFile, File SparseMatrix) throws IOException {
+        BufferedWriter dense_file = new BufferedWriter(new FileWriter(DenseFile));
+        BufferedWriter sparse_file = new BufferedWriter(new FileWriter(SparseMatrix));
         //打印二维矩阵
         for (int i = 0; i < Matrix.getRowDimension(); i++) {
             for (double data : Matrix.getRow(i)) {
-                twodfile.write(data + "\t");
+                dense_file.write(data + "\t");
             }
-            twodfile.write("\n");
+            dense_file.write("\n");
         }
         //打印稀疏矩阵
         for (int i = 0; i < Matrix.getRowDimension(); i++) {
             for (int j = 0; j < Matrix.getColumnDimension(); j++) {
                 if (Matrix.getEntry(i, j) != 0) {
-                    sparefile.write((i + 1) + "\t" + (j + 1) + "\t" + Matrix.getEntry(i, j) + "\n");
+                    sparse_file.write((i + 1) + "\t" + (j + 1) + "\t" + Matrix.getEntry(i, j) + "\n");
                 }
             }
         }
-        sparefile.close();
-        twodfile.close();
+        sparse_file.close();
+        dense_file.close();
     }
 
     public static String DateFormat(long Date) {
@@ -191,7 +194,7 @@ public class Tools {
     }
 
     public static String[] GetKmer(String str, int l) {
-        if (l > str.length()) {
+        if (l > str.length() || l <= 0) {
             return new String[0];
         }
         String[] Kmer = new String[str.length() - l + 1];
@@ -223,6 +226,16 @@ public class Tools {
             }
         }
         return new String(RevComStr);
+    }
+
+    public static void DrawStringCenter(Graphics2D g, String s, Font t, int x, int y, double rotate_theta) {
+        FontDesignMetrics metrics = FontDesignMetrics.getMetrics(t);
+        int StrHeight = metrics.getHeight();
+        int StrWidth = metrics.stringWidth(s);
+        AffineTransform affineTransform = new AffineTransform();
+        affineTransform.rotate(rotate_theta, (float) (StrWidth) / 2, (float) (StrHeight) / 2 - metrics.getAscent());//anchorx和anchory表示相对字符串原点坐标的值
+        g.setFont(t.deriveFont(affineTransform));
+        g.drawString(s, x - StrWidth / 2, y + metrics.getAscent() - StrHeight / 2);
     }
 
 }

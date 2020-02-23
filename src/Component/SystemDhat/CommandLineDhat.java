@@ -15,7 +15,6 @@ public class CommandLineDhat {
      */
     public static int run(String CommandStr, PrintWriter Out, PrintWriter Error) throws IOException, InterruptedException {
         int ExitValue;
-//        SystemDhat.out.println(new Date() + "\t" + CommandStr);
         Process P = Runtime.getRuntime().exec(CommandStr);
         Thread OutThread = new Thread(() -> {
             try {

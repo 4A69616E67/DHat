@@ -83,7 +83,7 @@ public class Guide {
                 jc.showDialog(null, null);
                 if (jc.getSelectedFile() != null) {
                     try {
-                        Configure.GetOption(jc.getSelectedFile(), null);
+                        Configure.GetOption(jc.getSelectedFile());
                     } catch (IOException ignored) {
 
                     }
