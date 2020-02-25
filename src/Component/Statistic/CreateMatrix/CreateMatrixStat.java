@@ -2,7 +2,9 @@ package Component.Statistic.CreateMatrix;
 
 import Component.File.MatrixFile.MatrixFile;
 import Component.Statistic.AbstractStat;
+import Component.tool.Tools;
 import Component.unit.Configure;
+import Component.unit.Opts;
 
 import java.io.File;
 
@@ -19,7 +21,9 @@ public class CreateMatrixStat extends AbstractStat {
 
     @Override
     public void Stat() {
-
+        for (int i = 0; i < DrawResolutions.length; i++) {
+            draw_resolutions[i].GenomeWildHeatMapPng = new File(OutDir + "/img_" + Tools.UnitTrans(DrawResolutions[i], "B", "M") + "M" + "/" + Configure.Prefix + ".interaction_" + Tools.UnitTrans(DrawResolutions[i], "B", "M") + "M.png");
+        }
     }
 
     @Override

@@ -114,8 +114,13 @@ public class FileTool {
         FastqItem fastq_item;
         int linenumber = 0;
         while ((fastq_item = file.ReadItem()) != null && ++linenumber <= SeqNum) {
-            writer.write(fastq_item.Title.replace("@", ">") + "\n");
-            writer.write(fastq_item.Sequence.substring(SubIndex) + "\n");
+            //去除含N的序列 
+            if (!fastq_item.Sequence.matches(".*[Nn].*")) {
+                writer.write(fastq_item.Title.replace("@", ">") + "\n");
+                writer.write(fastq_item.Sequence.substring(SubIndex) + "\n");
+            } else {
+                linenumber--;
+            }
         }
         file.ReadClose();
         writer.close();

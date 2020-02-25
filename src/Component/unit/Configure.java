@@ -31,7 +31,6 @@ public class Configure {
     public static File OutPath = new File("./");
     public static String Prefix = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
     public static File Index;
-    //    public static File EnzymeFragmentPath = new File(OutPath + "/" + Opts.OutDir.EnzyFragDir);
     public static Chromosome[] Chromosome;
     public static String[] AdapterSeq;
     public static int[] Resolution = new int[]{1000000};
@@ -52,7 +51,7 @@ public class Configure {
     public static int AlignThread = 1;
     public static String AlignType = "Short";
     public static int AlignMisMatch = 0;
-    public static int MinUniqueScore;
+    public static int MinUniqueScore = 20;
     public static boolean Iteration = false;
     public static int DeBugLevel = 0;
 

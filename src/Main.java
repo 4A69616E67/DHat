@@ -1,7 +1,6 @@
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 import Bin.*;
@@ -19,6 +18,7 @@ import Component.Process.BedpeProcess;
 import Component.Process.PreProcess;
 import Component.Process.SeProcess;
 import Component.Statistic.Chart.BarChart;
+import Component.Statistic.Report;
 import Component.SystemDhat.CommandLineDhat;
 import Component.SystemDhat.Qsub;
 import Component.tool.*;
@@ -39,11 +39,9 @@ public class Main {
     private String Restriction;
     private String Prefix;
     private FastqFile InputFile;
-    //    private File GenomeFile;
     private File LinkerFile;
     private File AdapterFile;
     private String[] AdapterSeq;
-    //    private File IndexPrefix;
     private int MatchScore, MisMatchScore, InDelScore;
     private Opts.FileFormat ReadsType;
     private int AlignMisMatch;
@@ -74,9 +72,7 @@ public class Main {
         Argument.addOption(Option.builder("i").hasArg().argName("file").desc("input file").build());//输入文件
         Argument.addOption(Option.builder("conf").hasArg().argName("file").desc("Configure file").build());//配置文件
         Argument.addOption(Option.builder("p").hasArg().argName("string").desc("Prefix").build());//输出前缀(不需要包括路径)
-//        Argument.addOption(Option.builder("adv").hasArg().argName("file").desc("Advanced configure file").build());//高级配置文件(一般不用修改)
         Argument.addOption(Option.builder("o").longOpt("out").hasArg().argName("dir").desc("Out put directory").build());//输出路径
-//        Argument.addOption(Option.builder("efp").hasArg().argName("path").desc("Enzyme fragment path, created by this tool").build());//酶切片段目录
         Argument.addOption(Option.builder("r").longOpt("res").hasArgs().argName("ints").desc("resolution").build());//分辨率
         Argument.addOption(Option.builder("s").longOpt("step").hasArgs().argName("string").desc("same as \"Step\" in configure file").build());//运行步骤
         Argument.addOption(Option.builder("t").longOpt("thread").hasArg().argName("int").desc("number of threads").build());//线程数
@@ -100,7 +96,6 @@ public class Main {
         }
         //获取配置文件和高级配置文件
         File ConfigureFile = ComLine.hasOption("conf") ? new File(ComLine.getOptionValue("conf")) : Opts.ConfigFile;
-//        File AdvConfigFile = ComLine.hasOption("adv") ? new File(ComLine.getOptionValue("adv")) : Opts.AdvConfigFile;
         Configure.GetOption(ConfigureFile);//读取配置信息
         //获取命令行参数信息
         if (ComLine.hasOption("i"))
@@ -109,8 +104,6 @@ public class Main {
             Configure.Optional.Prefix.Value = ComLine.getOptionValue("p");
         if (ComLine.hasOption("o"))
             Configure.Optional.OutPath.Value = ComLine.getOptionValue("o");
-//        if (ComLine.hasOption("efp"))
-//            Configure.Optional.EnzymeFragmentPath.Value = ComLine.getOptionValue("efp");
         if (ComLine.hasOption("s")) {
             Configure.Optional.Step.Value = String.join(" ", ComLine.getOptionValues("s"));
         }
@@ -146,18 +139,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         //==============================================测试区==========================================================
-//        MemoryUsage memoryUsage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
-//        long maxMemorySize = memoryUsage.getMax();
-//        long usedMemorySize = memoryUsage.getUsed();
-//        Opts.StepCheck("NoiseReduce - ");
-//        BarChart barChart = new BarChart();
-//        barChart.loadData(new File("barchart_data.txt"));
-//        barChart.drawing(new File("barchart.png"));
-//        StringWriter buffer1 = new StringWriter();
-//        StringWriter buffer2 = new StringWriter();
-//        CommandLineDhat.run("java -version",new PrintWriter(buffer1),new PrintWriter(buffer2));
-//        System.out.println(buffer1);
-//        System.err.println(buffer2);
+
 
         //================================================初始化========================================================
         if (args.length >= 1 && args[0].equals("install")) {
@@ -229,18 +211,19 @@ public class Main {
                 //若Adapter序列不为空
                 if (AdapterSeq[0].compareToIgnoreCase("auto") == 0) {
                     //标记为自动识别Adapter
-                    AdapterSeq = new String[1];
-                    CommonFile StatFile = new CommonFile(PreProcessDir + "/" + Prefix + ".adapter_detection.base.freq");
-                    AdapterSeq[0] = FileTool.AdapterDetection(InputFile, new File(PreProcessDir + "/" + Prefix), LinkerLength + MaxReadsLength, StatFile);
-                    Opts.LFStat.AdapterBaseDisPng = new File(Stat.getImageDir() + "/" + StatFile.getName() + ".png");
-                    String ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -t stackbar -y Percentage --title Base_Frequency" + " -i " + StatFile + " -o " + Opts.LFStat.AdapterBaseDisPng;
-                    Opts.CommandOutFile.Append(ComLine + "\n");
-                    CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+                    AdapterSeq = Opts.LFStat.AdapterStat(InputFile, Stat, Prefix, LinkerLength + MaxReadsLength);
+//                    AdapterSeq = new String[1];
+//                    CommonFile StatFile = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".adapter_detection.base.freq");
+//                    AdapterSeq[0] = FileTool.AdapterDetection(InputFile, new File(PreProcessDir + "/" + Prefix), LinkerLength + MaxReadsLength, StatFile);
+//                    Opts.LFStat.AdapterBaseDisPng = new File(Stat.getImageDir() + "/" + StatFile.getName() + ".png");
+//                    String ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -t stackbar -y Percentage --title Base_Frequency" + " -i " + StatFile + " -o " + Opts.LFStat.AdapterBaseDisPng;
+//                    Opts.CommandOutFile.Append(ComLine + "\n");
+//                    CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
                     System.out.println(new Date() + "\tDetected adapter seq:\t" + AdapterSeq[0]);
                 }
                 //将Adapter序列输出到文件中
                 FileUtils.write(AdapterFile, String.join("\n", AdapterSeq), StandardCharsets.UTF_8);
-                Opts.LFStat.Adapters = AdapterSeq;
+//                Opts.LFStat.Adapters = AdapterSeq;
             }
             //-----------------------------------------------------------------------------
             preprocess.run();//运行预处理部分
@@ -249,6 +232,10 @@ public class Main {
         File PastFile = preprocess.getLinkerFilterOutFile();//获取past文件位置
         //=================================================统计信息=====================================================
         if (Opts.Step.Statistic.Execute) {
+            if (AdapterSeq != null && AdapterSeq[0].compareToIgnoreCase("auto") == 0) {
+                System.out.println(new Date() + " [statistic]:\tStart Adapter detection statistic");
+                Opts.LFStat.AdapterStat(InputFile, Stat, Prefix, LinkerLength + MaxReadsLength);
+            }
             System.out.println(new Date() + " [statistic]:\tStart Linker filter statistic");
             Opts.LFStat.InputFile = new CommonFile(PastFile);
             Opts.LFStat.Stat(Configure.Thread);
@@ -300,7 +287,6 @@ public class Main {
         //==============================================================================================================
         LinkerFastqFileR1 = preprocess.getFastqR1File();
         LinkerFastqFileR2 = preprocess.getFastqR2File();
-//        Stat.ReadsLengthDisBase64 = new String[LinkerSeq.length];
         //==============================================================================================================
         for (int i = 0; i < ValidLinkerSeq.length; i++) {
             for (int j = 0; j < LinkerSeq.length; j++) {
@@ -558,9 +544,12 @@ public class Main {
                 Opts.CMStat.draw_resolutions[i].ChromMatrixFile = matrix.getChrDenseMatrixFile();
                 for (int j = 0; j < Chromosomes.length; j++) {
                     Opts.CMStat.draw_resolutions[i].ChromHeatMapPng[j] = new File(OutDir + "/" + Prefix + "." + Chromosomes[j].Name + "." + Tools.UnitTrans(aDrawResolution, "B", "M") + "M.png");
-                    Opts.CMStat.draw_resolutions[i].ChromMatrixFile[j].PlotHeatMap(new ChrRegion(Chromosomes[j].Name, 0, 0), new ChrRegion(Chromosomes[j].Name, 0, 0), aDrawResolution / 10 , 0.98f, Opts.CMStat.draw_resolutions[i].ChromHeatMapPng[j]);
+                    Opts.CMStat.draw_resolutions[i].ChromMatrixFile[j].PlotHeatMap(new ChrRegion(Chromosomes[j].Name, 0, 0), new ChrRegion(Chromosomes[j].Name, 0, 0), aDrawResolution / 10, 0.98f, Opts.CMStat.draw_resolutions[i].ChromHeatMapPng[j]);
                 }
             }
+        }
+        if (Opts.Step.Statistic.Execute) {
+            Opts.CMStat.Stat();
         }
         Opts.StatisticFile.Append(Opts.CMStat.Show() + "\n");
         //==============================================================================================================
@@ -574,7 +563,7 @@ public class Main {
         System.out.println("BedpeProcess:\t" + Tools.DateFormat((matrixTime.getTime() - bedpeTime.getTime()) / 1000));
         System.out.println("MakeMatrix:\t" + Tools.DateFormat((endTime.getTime() - matrixTime.getTime()) / 1000));
         System.out.println("Total:\t" + Tools.DateFormat((endTime.getTime() - preTime.getTime()) / 1000));
-        //===================================Report=====================================================================
+        //===================================Component.Statistic.Report=====================================================================
         for (Thread t : SThread) {
             t.join();
         }
@@ -739,6 +728,7 @@ public class Main {
         String[] tempstrs;
         InputFile = Opts.OVStat.InputFile = Configure.InputFile;
         Configure.Bwa.GenomeFile = Opts.ALStat.GenomeFile = Configure.GenomeFile;
+        //-----------------------------------------可选参数赋值----------------------------------------------------------
         Restriction = Opts.LFStat.EnzymeCuttingSite = Configure.Restriction.toString();
         if (Configure.Restriction.getSequence().length() <= 4) {
             Opts.OVStat.RangeThreshold = 5000;
@@ -757,7 +747,6 @@ public class Main {
         } else {
             LinkerLength += LinkerA.length();
         }
-        //-----------------------------------------可选参数赋值----------------------------------------------------------
         OutPath = Opts.OVStat.OutDir = Configure.OutPath;
         Opts.CommandOutFile = new CommonFile(Configure.OutPath + "/" + Opts.CommandOutFile.getName());
         Opts.StatisticFile = new CommonFile(Configure.OutPath + "/" + Opts.StatisticFile.getName());
@@ -784,7 +773,6 @@ public class Main {
         ChrEnzyFile = new BedFile[Chromosomes.length];
 
         //-------------------------------------------高级参数赋值--------------------------------------------------------
-//        Python = Configure.Python;
         MatchScore = Configure.MatchScore;
         MisMatchScore = Configure.MisMatchScore;
         InDelScore = Configure.InDelScore;
