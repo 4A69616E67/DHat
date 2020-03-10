@@ -40,7 +40,7 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
     protected String getVersion() {
         try {
             StringWriter buffer = new StringWriter();
-            CommandLineDhat.run(FullExe().toString(), null, new PrintWriter(buffer));
+            new CommandLineDhat().run(FullExe().toString(), null, new PrintWriter(buffer));
             for (String tempLine : buffer.toString().split("\\n")) {
                 String[] s = tempLine.split("\\s*:\\s*");
                 if (s[0].compareToIgnoreCase("Version") == 0) {
@@ -141,9 +141,9 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
         }
         try {
             if (Configure.DeBugLevel < 1) {
-                CommandLineDhat.run(s, null, null);
+                new CommandLineDhat().run(s, null, null);
             } else {
-                CommandLineDhat.run(s, null, new PrintWriter(System.err));
+                new CommandLineDhat().run(s, null, new PrintWriter(System.err));
             }
             GenomeFile = genomeFile;
             IndexPrefix = prefix;

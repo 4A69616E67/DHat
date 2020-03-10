@@ -9,6 +9,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.*;
+import java.util.Date;
 
 /**
  * Created by snowf on 2019/2/17.
@@ -22,8 +23,11 @@ public class Guide {
     private JButton Button_Run;
     private JTextArea TextArea_Err;
     private JButton Button_LoadConfigure;
+    private JButton button_terminal;
+    private JTextField textField_extraOption;
     private Config ConfigDialog;
     private Thread MainThread;
+    private CommandLineDhat P = new CommandLineDhat();
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Guide");
@@ -50,6 +54,7 @@ public class Guide {
         Button_Show.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                TextArea_Out.setText("");
                 Configure.Update();
                 Print(Configure.ShowParameter());
             }
@@ -61,12 +66,21 @@ public class Guide {
                     @Override
                     public void run() {
                         try {
+                            TextArea_Out.setText("");
+                            TextArea_Err.setText("");
+                            Button_Configure.setEnabled(false);
+                            Button_LoadConfigure.setEnabled(false);
+                            Button_Show.setEnabled(false);
+                            Button_Run.setEnabled(false);
                             PrintWriter out = new PrintWriter(new PrintStream(new GuideOutStream(TextArea_Out)));
                             PrintWriter err = new PrintWriter(new PrintStream(new GuideOutStream(TextArea_Err)));
                             File configfile = new File(Opts.JarFile.getParent() + "/" + Configure.Prefix + ".conf");
                             Configure.SaveParameter(configfile);
-                            CommandLineDhat.run("java -jar " + Opts.JarFile + " -conf " + configfile, out, err);
-
+                            P.run("java " + textField_extraOption.getText() + " -jar " + Opts.JarFile + " -conf " + configfile, out, err);
+                            Button_Configure.setEnabled(true);
+                            Button_LoadConfigure.setEnabled(true);
+                            Button_Show.setEnabled(true);
+                            Button_Run.setEnabled(true);
                         } catch (InterruptedException | IOException exp) {
                             exp.printStackTrace();
                         }
@@ -84,10 +98,18 @@ public class Guide {
                 if (jc.getSelectedFile() != null) {
                     try {
                         Configure.GetOption(jc.getSelectedFile());
+                        Configure.Init();
                     } catch (IOException ignored) {
 
                     }
                 }
+            }
+        });
+        button_terminal.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                P.interrupt();
+                TextArea_Err.append(new Date() + "\tProcess terminal!");
             }
         });
     }

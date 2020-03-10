@@ -253,7 +253,7 @@ public class LinkerFilterStat extends AbstractStat {
         AdapterBaseDisPng = new File(out.getImageDir() + "/" + StatFile.getName() + ".png");
         String ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -t stackbar -y Percentage --title Base_Frequency" + " -i " + StatFile + " -o " + Opts.LFStat.AdapterBaseDisPng;
         Opts.CommandOutFile.Append(ComLine + "\n");
-        CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+        new CommandLineDhat().run(ComLine, null, new PrintWriter(System.err));
 //        System.out.println(new Date() + "\tDetected adapter seq:\t" + AdapterSeq[0]);
         //将Adapter序列输出到文件中
 //        FileUtils.write(AdapterFile, String.join("\n", AdapterSeq), StandardCharsets.UTF_8);

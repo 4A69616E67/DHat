@@ -37,7 +37,7 @@ public abstract class AbstractSoftware {
                 ComLine = "which " + Execution;
             }
             StringWriter buffer = new StringWriter();
-            CommandLineDhat.run(ComLine, new PrintWriter(buffer), null);
+            new CommandLineDhat().run(ComLine, new PrintWriter(buffer), null);
             Path = new File(buffer.toString().split("\\n")[0]).getParentFile();
 //            Execution = Path + "/" + Execution;
             Valid = true;
@@ -71,6 +71,6 @@ public abstract class AbstractSoftware {
     }
 
     public File FullExe() {
-        return new File(Path + "/" + Execution);
+        return new File((Path == null ? "" : Path + "/") + Execution);
     }
 }

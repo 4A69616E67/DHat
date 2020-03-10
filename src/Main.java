@@ -218,7 +218,7 @@ public class Main {
 //                    Opts.LFStat.AdapterBaseDisPng = new File(Stat.getImageDir() + "/" + StatFile.getName() + ".png");
 //                    String ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -t stackbar -y Percentage --title Base_Frequency" + " -i " + StatFile + " -o " + Opts.LFStat.AdapterBaseDisPng;
 //                    Opts.CommandOutFile.Append(ComLine + "\n");
-//                    CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+//                    new CommandLineDhat().run(ComLine, null, new PrintWriter(System.err));
                     System.out.println(new Date() + "\tDetected adapter seq:\t" + AdapterSeq[0]);
                 }
                 //将Adapter序列输出到文件中
@@ -248,7 +248,7 @@ public class Main {
         String ComLine;
         try {
             ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -i " + LinkerDisFile + " -t bar -o " + Opts.LFStat.LinkerScoreDisPng;
-            int ExitValue = CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+            int ExitValue = new CommandLineDhat().run(ComLine, null, new PrintWriter(System.err));
             if (!(ExitValue == 0)) {
                 throw new InterruptedException("can't draw figure by python");
             }
@@ -270,7 +270,7 @@ public class Main {
             Opts.LFStat.linkers[i].ReadLengthDisPng = new File(Stat.getImageDir() + "/" + ReadsLenDisFile[i].getName().replace(".data", ".png"));
             try {
                 ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -t bar -y Count --title " + LinkerSeq[i].getType() + " -i " + ReadsLenDisFile[i] + " -o " + Opts.LFStat.linkers[i].ReadLengthDisPng;
-                int ExitValue = CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+                int ExitValue = new CommandLineDhat().run(ComLine, null, new PrintWriter(System.err));
                 if (!(ExitValue == 0)) {
                     throw new InterruptedException("can't draw figure by python");
                 }
@@ -311,7 +311,7 @@ public class Main {
             SeBedpeFile[i] = new BedpeFile(SeProcessDir + "/" + Prefix + "." + ValidLinkerSeq[i].getType() + ".bedpe");
             Opts.NRStat.linkers[i].InputFile = SeBedpeFile[i];
         }
-        if (Opts.Step.SeProcess.Execute) {
+        if (Opts.Step.Alignment.Execute) {
             if (Configure.Bwa.IndexPrefix == null || Configure.Bwa.IndexCheck == Opts.FileFormat.ErrorFormat) {
                 CreateIndex(Configure.Bwa.GenomeFile);
                 Configure.Bwa.IndexCheck = Opts.FileFormat.Valid;
@@ -374,7 +374,7 @@ public class Main {
             bedpe[i] = new BedpeProcess(new File(BedpeProcessDir + "/" + ValidLinkerSeq[i].getType()), Prefix + "." + ValidLinkerSeq[i].getType(), Chromosomes, SeBedpeFile[i]);//bedpe文件处理类
             bedpe[i].Threads = Math.max(1, Threads / LinkerProcess.length);//设置线程数
         }
-        if (Opts.Step.BedPeProcess.Execute) {
+        if (Opts.Step.NoiseReduce.Execute) {
             //==========================================获取酶切片段和染色体大小==========================================
             findenzy.start();
             findenzy.join();
@@ -473,28 +473,28 @@ public class Main {
         Opts.NRStat.InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
         ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat.InteractionRangeDistributionPng;
         Opts.CommandOutFile.Append(ComLine + "\n");
-        CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+        new CommandLineDhat().run(ComLine, null, new PrintWriter(System.err));
         //----------------------------------
         InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".50M.interaction_distance_distribution.data");
         Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, 50000000), "1M", 2, 10);
         Opts.NRStat._50M_InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
         ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._50M_InteractionRangeDistributionPng;
         Opts.CommandOutFile.Append(ComLine + "\n");
-        CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+        new CommandLineDhat().run(ComLine, null, new PrintWriter(System.err));
         //------------------------------------
         InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".10M.interaction_distance_distribution.data");
         Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, 10000000), "100k", 2, 10);
         Opts.NRStat._10M_InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
         ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._10M_InteractionRangeDistributionPng;
         Opts.CommandOutFile.Append(ComLine + "\n");
-        CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+        new CommandLineDhat().run(ComLine, null, new PrintWriter(System.err));
         //---------------------------------------
         InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".2M.interaction_distance_distribution.data");
         Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, 2000000), "10k", 2, 10);
         Opts.NRStat._2M_InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
         ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._2M_InteractionRangeDistributionPng;
         Opts.CommandOutFile.Append(ComLine + "\n");
-        CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+        new CommandLineDhat().run(ComLine, null, new PrintWriter(System.err));
 
         //---------------------------------------
 
@@ -502,7 +502,7 @@ public class Main {
         Date matrixTime = new Date();
         System.err.println("Noise reducing: " + bedpeTime + " - " + matrixTime);
         Opts.NRStat.Time = matrixTime.getTime() - bedpeTime.getTime();
-        if (Opts.Step.MakeMatrix.Execute) {
+        if (Opts.Step.CreateMatrix.Execute) {
             for (Chromosome s : Chromosomes) {
                 if (s.Size == 0) {
                     findenzy.start();

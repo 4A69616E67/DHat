@@ -30,7 +30,7 @@ public class Opts {
      * 断点枚举类
      */
     public enum Step {
-        PreProcess("PreProcess"), SeProcess("Alignment"), BedPeProcess("NoiseReduce"), BedPe2Inter("BedPe2Inter"), MakeMatrix("CreateMatrix"), CreateIndex("Index"), FindEnzymeFragment("Fragment"), Statistic("Stat");
+        PreProcess("PreProcess"), Alignment("Alignment"), NoiseReduce("NoiseReduce"), BedPe2Inter("BedPe2Inter"), CreateMatrix("CreateMatrix"), CreateIndex("Index"), FindEnzymeFragment("Fragment"), Statistic("Stat");
 
         private String Str;
         public boolean Execute = false;//是否需要执行
@@ -124,12 +124,12 @@ public class Opts {
             if (l.matches(".*" + Connector + ".*")) {
                 Step start = null, end = null;
                 if (l.matches(".+" + Connector)) {
-                    l += Step.MakeMatrix.Str;
+                    l += Step.CreateMatrix.Str;
                 } else if (l.matches(Connector + ".+")) {
                     l = Step.PreProcess.Str + l;
                 } else if (l.equals(Connector)) {
                     l = Step.PreProcess.Str + l;
-                    l += Step.MakeMatrix.Str;
+                    l += Step.CreateMatrix.Str;
                 }
                 String[] ll = l.split(Connector);
                 for (Step t : Step.values()) {
