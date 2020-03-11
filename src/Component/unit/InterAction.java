@@ -1,20 +1,24 @@
 package Component.unit;
 
+
 /**
  * Created by snowf on 2019/2/17.
  */
 public class InterAction implements Comparable<InterAction> {
-    private ChrRegion Left;
-    private ChrRegion Right;
-//    public String Name;
-//    public int Score;
-//    public int LeftFragment;
-//    public int RightFragment;
-//    public boolean SortByName = false;
+    public ChrRegion Left;
+    public ChrRegion Right;
+    public int Score;
+
 
     public InterAction(ChrRegion reg1, ChrRegion reg2) {
         Left = reg1;
         Right = reg2;
+    }
+
+    public InterAction(ChrRegion reg1, ChrRegion reg2, int score) {
+        Left = reg1;
+        Right = reg2;
+        Score = score;
     }
 
     public InterAction(String[] s) {
@@ -52,4 +56,5 @@ public class InterAction implements Comparable<InterAction> {
     public int Distance() {
         return Left.Distance(Right);
     }
+
 }

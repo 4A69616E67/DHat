@@ -6,6 +6,7 @@ import java.util.Hashtable;
 
 import Component.File.*;
 import Component.File.BedFile.BedFile;
+import Component.File.BedFile.BedItem;
 import Component.File.FastQFile.FastqFile;
 import Component.File.SamFile.SamFile;
 import Component.File.SamFile.SamItem;
@@ -129,7 +130,7 @@ public class SeProcess {
         }
         //Sam文件转bed
         UniqSamFile.ToBedFile(BedFile);
-        BedFile.SplitSortFile(SortBedFile);
+        BedFile.SplitSortFile(SortBedFile, new BedItem.TitleComparator());
         System.out.println(new Date() + "\tDelete " + BedFile.getName());
         if (Configure.DeBugLevel < 1) {
             BedFile.delete();
@@ -197,17 +198,17 @@ public class SeProcess {
                 CommandStr = Configure.Bwa.aln(fastqFile, SaiFile, MisMatchNum, Threads);
                 Opts.CommandOutFile.Append(CommandStr + "\n");
                 if (Configure.DeBugLevel < 1) {
-                    CommandLineDhat.run(CommandStr);//执行命令行
+                    new CommandLineDhat().run(CommandStr);//执行命令行
                 } else {
-                    CommandLineDhat.run(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
+                    new CommandLineDhat().run(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
                 }
                 System.out.println(new Date() + "\tsai to sam\t" + fastqFile.getName());
                 CommandStr = Configure.Bwa.samse(samFile, bwa.IndexPrefix, SaiFile, fastqFile);
                 Opts.CommandOutFile.Append(CommandStr + "\n");
                 if (Configure.DeBugLevel < 1) {
-                    CommandLineDhat.run(CommandStr, null, null);//执行命令行
+                    new CommandLineDhat().run(CommandStr, null, null);//执行命令行
                 } else {
-                    CommandLineDhat.run(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
+                    new CommandLineDhat().run(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
                 }
                 if (Configure.DeBugLevel < 1) {
                     System.out.println(new Date() + "\tDelete " + SaiFile.getName());
@@ -218,9 +219,9 @@ public class SeProcess {
                 Opts.CommandOutFile.Append(CommandStr + "\n");
                 PrintWriter sam = new PrintWriter(samFile);
                 if (Configure.DeBugLevel < 1) {
-                    CommandLineDhat.run(CommandStr, sam, null);//执行命令
+                    new CommandLineDhat().run(CommandStr, sam, null);//执行命令
                 } else {
-                    CommandLineDhat.run(CommandStr, sam, new PrintWriter(System.err));//执行命令
+                    new CommandLineDhat().run(CommandStr, sam, new PrintWriter(System.err));//执行命令
                 }
                 sam.close();
             } else {
@@ -231,9 +232,9 @@ public class SeProcess {
             CommandStr = Configure.Bowtie + " " + (fastqFile.FastqPhred() == Opts.FileFormat.Phred33 ? "--phred33" : "--phred64") + " -p " + Threads + " -x " + bwa.IndexPrefix + " -U " + fastqFile + " -S " + samFile;
             Opts.CommandOutFile.Append(CommandStr + "\n");
             if (Configure.DeBugLevel < 1) {
-                CommandLineDhat.run(CommandStr, null, null);//执行命令行
+                new CommandLineDhat().run(CommandStr, null, null);//执行命令行
             } else {
-                CommandLineDhat.run(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
+                new CommandLineDhat().run(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
             }
         } else {
             System.err.println(new Date() + ":\tError! No alignment software");
@@ -242,96 +243,96 @@ public class SeProcess {
         System.out.println(new Date() + "\tEnd align\t" + fastqFile.getName());
     }
 
-    /**
-     * @param ReadsList 序列列表
-     * @param Prefix    前缀
-     * @param Num       序号
-     * @return <>samfile of unique map and multi map</p>
-     */
-    private SamFile[] IterationAlignment(Hashtable<String, char[]> ReadsList, String Prefix, int Num) throws IOException, InterruptedException {
-        System.out.println(new Date() + "\tIteration align start " + Num);
-        SamFile UniqSamFile = new SamFile(IterationDir + "/" + Prefix + ".iteration" + Num + ".uniq.sam");
-        SamFile UnMapSamFile = new SamFile(IterationDir + "/" + Prefix + ".iteration" + Num + ".unmap.sam");
-        SamFile MultiSamFile = new SamFile(IterationDir + "/" + Prefix + ".iteration" + Num + ".multi.sam");
-        FastqFile FastaFile = new FastqFile(IterationDir + "/" + Prefix + ".iteration" + Num + ".fasta");
-        BufferedWriter fasta_write = new BufferedWriter(new FileWriter(FastaFile));
-        String Line;
-        String[] Str;
-        //------------------------------------------fasta file write----------------------------------------------------
-        for (String title : ReadsList.keySet()) {
-            char[] Seq = ReadsList.get(title);
-            String[] KSeq = Tools.GetKmer(String.valueOf(Seq), Seq.length - Num);
-            for (String aKSeq : KSeq) {
-                fasta_write.write(">" + title + "\n");
-                fasta_write.write(aKSeq + "\n");
-            }
-        }
-        fasta_write.close();
-        //--------------------------------------------------------------------------------------------------------------
-        SamFile TempSamFile = new SamFile(IterationDir + "/" + Prefix + ".iteration" + Num + ".sam.temp");
-        try {
-            Align(FastaFile, TempSamFile, ReadsType);// align
-            SamFilter.Execute(TempSamFile, UniqSamFile, UnMapSamFile, MultiSamFile, MinQuality, Threads);//filter
-        } catch (IOException e) {
-            //不知道为什么有时在sam文件过滤时找不到sam文件，这是暂时的解决办法
-            System.err.println(e.getMessage());
-            FileUtils.touch(UniqSamFile);
-            FileUtils.touch(MultiSamFile);
-            ReadsList.clear();
-            return new SamFile[]{UniqSamFile, MultiSamFile};
-        }
-        //delete useless file
-        if (Configure.DeBugLevel < 1) {
-            FastaFile.delete();
-            UnMapSamFile.delete();
-            TempSamFile.delete();
-        }
-        //remove uniq and multi map reads name
-        BufferedReader sam_reader = new BufferedReader(new FileReader(UniqSamFile));
-        while ((Line = sam_reader.readLine()) != null) {
-            Str = Line.split("\\s+");
-            ReadsList.remove(Str[0]);
-        }
-        sam_reader.close();
-        sam_reader = new BufferedReader(new FileReader(MultiSamFile));
-        while ((Line = sam_reader.readLine()) != null) {
-            Str = Line.split("\\s+");
-            ReadsList.remove(Str[0]);
-        }
-        sam_reader.close();
-        //------------------------------------remove multi unique map-----------------------------------------------------
-        UniqSamFile.SortFile(new SamFile(UniqSamFile + ".sort"));
-        sam_reader = new BufferedReader(new FileReader(UniqSamFile + ".sort"));
-        Hashtable<String, Integer> TempHash = new Hashtable<>();
-        while ((Line = sam_reader.readLine()) != null) {
-            Str = Line.split("\\s+");
-            TempHash.put(Str[0], TempHash.getOrDefault(Str[0], 0) + 1);
-        }
-        sam_reader = new BufferedReader(new FileReader(UniqSamFile + ".sort"));
-        BufferedWriter writer = new BufferedWriter(new FileWriter(UniqSamFile));
-        while ((Line = sam_reader.readLine()) != null) {
-            Str = Line.split("\\s+");
-            if (TempHash.get(Str[0]) == 1) {
-                writer.write(Line + "\n");
-            }
-        }
-        TempHash.clear();
-        writer.close();
-        sam_reader.close();
-        new File(UniqSamFile + ".sort").delete();
-        //--------------------------------------------------------------------------------------------------------------
-        if (ReadsList.keySet().size() == 0) {
-            return new SamFile[]{UniqSamFile, MultiSamFile};
-        }
-        SamFile[] TempFile = IterationAlignment(ReadsList, Prefix, ++Num);
-        UniqSamFile.Append(TempFile[0]);
-        MultiSamFile.Append(TempFile[1]);
-        if (Configure.DeBugLevel < 1) {
-            TempFile[0].delete();
-            TempFile[1].delete();
-        }
-        return new SamFile[]{UniqSamFile, MultiSamFile};
-    }
+//    /**
+//     * @param ReadsList 序列列表
+//     * @param Prefix    前缀
+//     * @param Num       序号
+//     * @return <>samfile of unique map and multi map</p>
+//     */
+//    private SamFile[] IterationAlignment(Hashtable<String, char[]> ReadsList, String Prefix, int Num) throws IOException, InterruptedException {
+//        System.out.println(new Date() + "\tIteration align start " + Num);
+//        SamFile UniqSamFile = new SamFile(IterationDir + "/" + Prefix + ".iteration" + Num + ".uniq.sam");
+//        SamFile UnMapSamFile = new SamFile(IterationDir + "/" + Prefix + ".iteration" + Num + ".unmap.sam");
+//        SamFile MultiSamFile = new SamFile(IterationDir + "/" + Prefix + ".iteration" + Num + ".multi.sam");
+//        FastqFile FastaFile = new FastqFile(IterationDir + "/" + Prefix + ".iteration" + Num + ".fasta");
+//        BufferedWriter fasta_write = new BufferedWriter(new FileWriter(FastaFile));
+//        String Line;
+//        String[] Str;
+//        //------------------------------------------fasta file write----------------------------------------------------
+//        for (String title : ReadsList.keySet()) {
+//            char[] Seq = ReadsList.get(title);
+//            String[] KSeq = Tools.GetKmer(String.valueOf(Seq), Seq.length - Num);
+//            for (String aKSeq : KSeq) {
+//                fasta_write.write(">" + title + "\n");
+//                fasta_write.write(aKSeq + "\n");
+//            }
+//        }
+//        fasta_write.close();
+//        //--------------------------------------------------------------------------------------------------------------
+//        SamFile TempSamFile = new SamFile(IterationDir + "/" + Prefix + ".iteration" + Num + ".sam.temp");
+//        try {
+//            Align(FastaFile, TempSamFile, ReadsType);// align
+//            SamFilter.Execute(TempSamFile, UniqSamFile, UnMapSamFile, MultiSamFile, MinQuality, Threads);//filter
+//        } catch (IOException e) {
+//            //不知道为什么有时在sam文件过滤时找不到sam文件，这是暂时的解决办法
+//            System.err.println(e.getMessage());
+//            FileUtils.touch(UniqSamFile);
+//            FileUtils.touch(MultiSamFile);
+//            ReadsList.clear();
+//            return new SamFile[]{UniqSamFile, MultiSamFile};
+//        }
+//        //delete useless file
+//        if (Configure.DeBugLevel < 1) {
+//            FastaFile.delete();
+//            UnMapSamFile.delete();
+//            TempSamFile.delete();
+//        }
+//        //remove uniq and multi map reads name
+//        BufferedReader sam_reader = new BufferedReader(new FileReader(UniqSamFile));
+//        while ((Line = sam_reader.readLine()) != null) {
+//            Str = Line.split("\\s+");
+//            ReadsList.remove(Str[0]);
+//        }
+//        sam_reader.close();
+//        sam_reader = new BufferedReader(new FileReader(MultiSamFile));
+//        while ((Line = sam_reader.readLine()) != null) {
+//            Str = Line.split("\\s+");
+//            ReadsList.remove(Str[0]);
+//        }
+//        sam_reader.close();
+//        //------------------------------------remove multi unique map-----------------------------------------------------
+//        UniqSamFile.SortFile(new SamFile(UniqSamFile + ".sort"));
+//        sam_reader = new BufferedReader(new FileReader(UniqSamFile + ".sort"));
+//        Hashtable<String, Integer> TempHash = new Hashtable<>();
+//        while ((Line = sam_reader.readLine()) != null) {
+//            Str = Line.split("\\s+");
+//            TempHash.put(Str[0], TempHash.getOrDefault(Str[0], 0) + 1);
+//        }
+//        sam_reader = new BufferedReader(new FileReader(UniqSamFile + ".sort"));
+//        BufferedWriter writer = new BufferedWriter(new FileWriter(UniqSamFile));
+//        while ((Line = sam_reader.readLine()) != null) {
+//            Str = Line.split("\\s+");
+//            if (TempHash.get(Str[0]) == 1) {
+//                writer.write(Line + "\n");
+//            }
+//        }
+//        TempHash.clear();
+//        writer.close();
+//        sam_reader.close();
+//        new File(UniqSamFile + ".sort").delete();
+//        //--------------------------------------------------------------------------------------------------------------
+//        if (ReadsList.keySet().size() == 0) {
+//            return new SamFile[]{UniqSamFile, MultiSamFile};
+//        }
+//        SamFile[] TempFile = IterationAlignment(ReadsList, Prefix, ++Num);
+//        UniqSamFile.Append(TempFile[0]);
+//        MultiSamFile.Append(TempFile[1]);
+//        if (Configure.DeBugLevel < 1) {
+//            TempFile[0].delete();
+//            TempFile[1].delete();
+//        }
+//        return new SamFile[]{UniqSamFile, MultiSamFile};
+//    }
 
 
     private void IterationAlignment_new(FastqFile inFile, SamFile uniqSamFile, SamFile multiSamFile, int Num) throws IOException, InterruptedException {
@@ -342,17 +343,17 @@ public class SeProcess {
         String CommandStr = Configure.Bwa.aln(inFile, SaiFile, Num, Threads);
         Opts.CommandOutFile.Append(CommandStr + "\n");
         if (Configure.DeBugLevel < 1) {
-            CommandLineDhat.run(CommandStr);//执行命令行
+            new CommandLineDhat().run(CommandStr);//执行命令行
         } else {
-            CommandLineDhat.run(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
+            new CommandLineDhat().run(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
         }
         System.out.println(new Date() + "\tsai to sam\t" + inFile.getName());
         CommandStr = Configure.Bwa.samse(samFile, bwa.IndexPrefix, SaiFile, inFile);
         Opts.CommandOutFile.Append(CommandStr + "\n");
         if (Configure.DeBugLevel < 1) {
-            CommandLineDhat.run(CommandStr, null, null);//执行命令行
+            new CommandLineDhat().run(CommandStr, null, null);//执行命令行
         } else {
-            CommandLineDhat.run(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
+            new CommandLineDhat().run(CommandStr, new PrintWriter(System.out), new PrintWriter(System.err));//执行命令行
         }
         if (Configure.DeBugLevel < 1) {
             System.out.println(new Date() + "\tDelete " + SaiFile.getName());

@@ -9,5 +9,11 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Apache Commons" level="project" />
     <orderEntry type="library" name="Thymeleaf" level="project" />
+    <orderEntry type="library" name="jfree:jfreechart:1.0.1" level="project" />
+  </component>
+  <component name="copyright">
+    <Base>
+      <setting name="state" value="2" />
+    </Base>
   </component>
 </module>

@@ -126,7 +126,7 @@ public class BedpeProcess {
                     if (finalI < 0) {
                         BedpeFile SortDiffFile = new BedpeFile(FragmentDiffFile + ".sort");
                         FragmentLocation(DiffFile, new BedFile(AllEnzyFile.getPath()), FragmentDiffFile);
-                        FragmentDiffFile.SplitSortFile(SortDiffFile);
+                        FragmentDiffFile.SplitSortFile(SortDiffFile, new BedpeItem.LocationComparator());
                         DiffOriPosStat[0] = RemoveRepeat(SortDiffFile, DiffNoDumpFile, DiffRepeatFile);//去duplication
                         finalI = index.Add(1);
                     }
@@ -138,7 +138,7 @@ public class BedpeProcess {
                         SeparateLigationType(ChrFragLocationFile[finalI], ChrLigationFile[0][finalI], ChrLigationFile[1][finalI], ChrLigationFile[2][finalI]);
                         BedpeFile SortChrLigationFile = new BedpeFile(ChrLigationFile[2][finalI] + ".sort");
                         //按交互位置排序
-                        ChrLigationFile[2][finalI].SortFile(SortChrLigationFile);
+                        ChrLigationFile[2][finalI].SplitSortFile(SortChrLigationFile, new BedpeItem.LocationComparator());
                         //去除duplication
                         SameOriPosStat[finalI] = RemoveRepeat(SortChrLigationFile, ChrSameNoDumpFile[finalI], ChrSameRepetaFile[finalI]);
                         if (Configure.DeBugLevel < 1) {

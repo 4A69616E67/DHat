@@ -1,7 +1,6 @@
 package Component.Software;
 
 
-import Component.File.CommonFile;
 import Component.SystemDhat.CommandLineDhat;
 import Component.unit.Configure;
 import Component.unit.Opts;
@@ -9,7 +8,7 @@ import Component.unit.Opts;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
+import java.io.StringWriter;
 import java.util.Date;
 
 /**
@@ -30,8 +29,8 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
         if (Execution.trim().equals("")) {
             System.err.println("[bwa]\tNo execute file");
         } else {
-            if (Path.getName().equals("")) {
-                getPath();
+            if (!Path.isDirectory()) {
+                FindPath();
             }
             getVersion();
         }
@@ -39,12 +38,11 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
 
     @Override
     protected String getVersion() {
-        CommonFile temporaryFile = new CommonFile(Configure.OutPath + "/bwa.version.tmp");
         try {
-            CommandLineDhat.run(Execution, null, new PrintWriter(temporaryFile));
-            ArrayList<char[]> tempLines = temporaryFile.Read();
-            for (char[] tempLine : tempLines) {
-                String[] s = String.valueOf(tempLine).split("\\s*:\\s*");
+            StringWriter buffer = new StringWriter();
+            new CommandLineDhat().run(FullExe().toString(), null, new PrintWriter(buffer));
+            for (String tempLine : buffer.toString().split("\\n")) {
+                String[] s = tempLine.split("\\s*:\\s*");
                 if (s[0].compareToIgnoreCase("Version") == 0) {
                     Version = s[1];
                     break;
@@ -53,7 +51,6 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
         } catch (IOException | InterruptedException e) {
             Valid = false;
         }
-        temporaryFile.delete();
         return Version;
     }
 
@@ -70,7 +67,7 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
      * @return command string
      */
     public String index(File genomeFile, File prefix) {
-        return Execution + " index -p " + prefix + " " + genomeFile;
+        return FullExe() + " index -p " + prefix + " " + genomeFile;
     }
 
     /**
@@ -80,7 +77,7 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
      * @return command string
      */
     public String mem(File fastqFile, int thread) {
-        return Execution + " mem -t" + thread + " " + IndexPrefix + " " + fastqFile;
+        return FullExe() + " mem -t" + thread + " " + IndexPrefix + " " + fastqFile;
     }
 
     /**
@@ -92,7 +89,7 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
      * @return command string
      */
     public String aln(File fastqFile, File saiFile, int maxDiff, int thread) {
-        return Execution + " aln -t " + thread + " -n " + maxDiff + " -f " + saiFile + " " + IndexPrefix + " " + fastqFile;
+        return FullExe() + " aln -t " + thread + " -n " + maxDiff + " -f " + saiFile + " " + IndexPrefix + " " + fastqFile;
     }
 
     /**
@@ -106,7 +103,7 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
      */
 
     public String samse(File samFile, File index, File saiFile, File fastqFile) {
-        return Execution + " samse -f " + samFile + " " + index + " " + saiFile + " " + fastqFile;
+        return FullExe() + " samse -f " + samFile + " " + index + " " + saiFile + " " + fastqFile;
     }
 
     public boolean IndexCheck() {
@@ -144,9 +141,9 @@ public class Bwa extends AbstractSoftware implements Comparable<Bwa> {
         }
         try {
             if (Configure.DeBugLevel < 1) {
-                CommandLineDhat.run(s, null, null);
+                new CommandLineDhat().run(s, null, null);
             } else {
-                CommandLineDhat.run(s, null, new PrintWriter(System.err));
+                new CommandLineDhat().run(s, null, new PrintWriter(System.err));
             }
             GenomeFile = genomeFile;
             IndexPrefix = prefix;

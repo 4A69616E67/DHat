@@ -1,12 +1,10 @@
 package Component.Software;
 
-import Component.File.CommonFile;
 import Component.SystemDhat.CommandLineDhat;
-import Component.unit.Configure;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
+import java.io.StringWriter;
 
 /**
  * Created by snowf on 2019/3/11.
@@ -22,22 +20,22 @@ public class Python extends AbstractSoftware {
         if (Execution.trim().equals("")) {
             System.err.println("[python]\tNo execute file");
         } else {
-            getPath();
+            if (!Path.isDirectory()) {
+                FindPath();
+            }
             getVersion();
         }
     }
 
     @Override
     protected String getVersion() {
-        CommonFile temporaryFile = new CommonFile(Configure.OutPath + "/python.version.tmp");
         try {
-            CommandLineDhat.run(Execution + " -V", null, new PrintWriter(temporaryFile));
-            ArrayList<char[]> lines = temporaryFile.Read();
-            Version = String.valueOf(lines.get(0)).split("\\s+")[1];
+            StringWriter buffer = new StringWriter();
+            new CommandLineDhat().run(FullExe() + " -V", null, new PrintWriter(buffer));
+            Version = buffer.toString().split("\\n")[0].split("\\s+")[1];
         } catch (IOException | InterruptedException | IndexOutOfBoundsException e) {
             Valid = false;
         }
-        temporaryFile.delete();
         return Version;
     }
 
@@ -49,19 +47,16 @@ public class Python extends AbstractSoftware {
     public String getPackageVersion(String packageName) {
         String version = null;
         String commandLine = Path + "/Scripts/pip list";
-        CommonFile temporaryFile = new CommonFile(Configure.OutPath + "/python.package_list.tmp");
         try {
-            CommandLineDhat.run(commandLine, new PrintWriter(temporaryFile), null);
-            ArrayList<char[]> lines = temporaryFile.Read();
-            temporaryFile.delete();
-            for (char[] c : lines) {
-                String[] p = String.valueOf(c).split("\\s+");
+            StringWriter buffer = new StringWriter();
+            new CommandLineDhat().run(commandLine, new PrintWriter(buffer), null);
+            for (String c : buffer.toString().split("\\n")) {
+                String[] p = c.split("\\s+");
                 if (p[0].equals(packageName)) {
                     version = p[1].replaceAll("\\(|\\)", "");
                 }
             }
         } catch (IOException | InterruptedException e) {
-            temporaryFile.delete();
             System.err.println("Warning! can't get python package: " + packageName);
         }
         return version;

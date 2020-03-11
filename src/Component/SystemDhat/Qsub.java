@@ -1,6 +1,6 @@
 package Component.SystemDhat;
 
-import Component.File.CommonFile;
+import Component.File.CommonFile.CommonFile;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -47,7 +47,7 @@ public class Qsub extends Pbs {
     public String run() throws InterruptedException, IOException {
         StringWriter Out = new StringWriter();
         CreateSubmitFile();
-        int ExitValue = CommandLineDhat.run(ExeName + " " + SubmitFile, new PrintWriter(Out), new PrintWriter(System.err));
+        int ExitValue = new CommandLineDhat().run(ExeName + " " + SubmitFile, new PrintWriter(Out), new PrintWriter(System.err));
         if (ExitValue != 0) {
             throw new InterruptedException("qsub error");
         }

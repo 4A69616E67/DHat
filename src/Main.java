@@ -1,3 +1,4 @@
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -5,7 +6,9 @@ import java.util.*;
 import Bin.*;
 import Component.File.*;
 import Component.File.BedFile.BedFile;
+import Component.File.BedFile.BedItem;
 import Component.File.BedPeFile.BedpeFile;
+import Component.File.CommonFile.CommonFile;
 import Component.File.FastQFile.FastqFile;
 import Component.File.FastaFile.FastaFile;
 import Component.File.SamFile.SamFile;
@@ -14,6 +17,8 @@ import Component.FragmentDigested.RestrictionEnzyme;
 import Component.Process.BedpeProcess;
 import Component.Process.PreProcess;
 import Component.Process.SeProcess;
+import Component.Statistic.Chart.BarChart;
+import Component.Statistic.Report;
 import Component.SystemDhat.CommandLineDhat;
 import Component.SystemDhat.Qsub;
 import Component.tool.*;
@@ -34,11 +39,9 @@ public class Main {
     private String Restriction;
     private String Prefix;
     private FastqFile InputFile;
-    //    private File GenomeFile;
     private File LinkerFile;
     private File AdapterFile;
     private String[] AdapterSeq;
-    //    private File IndexPrefix;
     private int MatchScore, MisMatchScore, InDelScore;
     private Opts.FileFormat ReadsType;
     private int AlignMisMatch;
@@ -69,9 +72,7 @@ public class Main {
         Argument.addOption(Option.builder("i").hasArg().argName("file").desc("input file").build());//输入文件
         Argument.addOption(Option.builder("conf").hasArg().argName("file").desc("Configure file").build());//配置文件
         Argument.addOption(Option.builder("p").hasArg().argName("string").desc("Prefix").build());//输出前缀(不需要包括路径)
-        Argument.addOption(Option.builder("adv").hasArg().argName("file").desc("Advanced configure file").build());//高级配置文件(一般不用修改)
         Argument.addOption(Option.builder("o").longOpt("out").hasArg().argName("dir").desc("Out put directory").build());//输出路径
-        Argument.addOption(Option.builder("efp").hasArg().argName("path").desc("Enzyme fragment path, created by this tool").build());//酶切片段目录
         Argument.addOption(Option.builder("r").longOpt("res").hasArgs().argName("ints").desc("resolution").build());//分辨率
         Argument.addOption(Option.builder("s").longOpt("step").hasArgs().argName("string").desc("same as \"Step\" in configure file").build());//运行步骤
         Argument.addOption(Option.builder("t").longOpt("thread").hasArg().argName("int").desc("number of threads").build());//线程数
@@ -95,8 +96,7 @@ public class Main {
         }
         //获取配置文件和高级配置文件
         File ConfigureFile = ComLine.hasOption("conf") ? new File(ComLine.getOptionValue("conf")) : Opts.ConfigFile;
-        File AdvConfigFile = ComLine.hasOption("adv") ? new File(ComLine.getOptionValue("adv")) : Opts.AdvConfigFile;
-        Configure.GetOption(ConfigureFile, AdvConfigFile);//读取配置信息
+        Configure.GetOption(ConfigureFile);//读取配置信息
         //获取命令行参数信息
         if (ComLine.hasOption("i"))
             Configure.Require.InputFile.Value = ComLine.getOptionValue("i");
@@ -104,8 +104,6 @@ public class Main {
             Configure.Optional.Prefix.Value = ComLine.getOptionValue("p");
         if (ComLine.hasOption("o"))
             Configure.Optional.OutPath.Value = ComLine.getOptionValue("o");
-        if (ComLine.hasOption("efp"))
-            Configure.Optional.EnzymeFragmentPath.Value = ComLine.getOptionValue("efp");
         if (ComLine.hasOption("s")) {
             Configure.Optional.Step.Value = String.join(" ", ComLine.getOptionValues("s"));
         }
@@ -126,9 +124,6 @@ public class Main {
                 PbsFile.Append(comline);
                 String SubmitId = new Qsub(PbsFile, "1", Integer.parseInt(Configure.Optional.Thread.Value.toString()), Opts.MaxMemory, Configure.Optional.Prefix.Value.toString()).run();
                 System.out.println(SubmitId);
-//                comline = "qsub -d ./ -l nodes=1:ppn=" + Configure.Optional.Thread.Value.toString() + ",mem=" + (int) Math.ceil(Opts.MaxMemory / Math.pow(10, 9)) + "g -N " + Configure.Optional.Prefix.Value.toString() + " " + PbsFile;
-//                SystemDhat.out.println(comline);
-//                Component.SystemDhat.CommandLine.run(comline, new PrintWriter(SystemDhat.out), new PrintWriter(SystemDhat.err));
                 System.exit(0);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -144,10 +139,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         //==============================================测试区==========================================================
-//        MemoryUsage memoryUsage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
-//        long maxMemorySize = memoryUsage.getMax();
-//        long usedMemorySize = memoryUsage.getUsed();
-//        Opts.StepCheck("NoiseReduce - ");
+
 
         //================================================初始化========================================================
         if (args.length >= 1 && args[0].equals("install")) {
@@ -159,13 +151,18 @@ public class Main {
                 System.out.println("Extract " + Opts.OutScriptDir + "/" + f);
                 FileTool.ExtractFile("/" + Opts.InterArchiveDir + "/" + f, new File(Opts.OutScriptDir + "/" + f));
             }
-            for (String f : Opts.ResourceFile) {
-                System.out.println("Extract " + Opts.OutResourceDir + "/" + f);
-                FileTool.ExtractFile("/" + Opts.InterResourceDir + "/" + f, new File(Opts.OutResourceDir + "/" + f));
-            }
+            Opts.ConfigFile.clean();
+            Opts.ConfigFile.Append(Configure.ShowParameter());
             System.out.println("Extract " + Opts.JarFile.getParent() + "/" + Opts.ReadMeFile.getName());
             FileTool.ExtractFile(Opts.ReadMeFile.getPath(), new File(Opts.JarFile.getParent() + "/" + Opts.ReadMeFile.getName()));
             System.out.println("Install finish!");
+            System.exit(0);
+        } else if (args.length >= 1 && args[0].equals("clean")) {
+            for (Opts.OutDir d : Opts.OutDir.values()) {
+                System.out.println("Cleaning " + d.toString());
+                FileUtils.deleteDirectory(new File(d.toString()));
+            }
+            System.out.println("clean finish!");
             System.exit(0);
         }
         //==============================================================================================================
@@ -214,19 +211,19 @@ public class Main {
                 //若Adapter序列不为空
                 if (AdapterSeq[0].compareToIgnoreCase("auto") == 0) {
                     //标记为自动识别Adapter
-                    AdapterSeq = new String[1];
-//                    AdapterSeq[0] = InputFile.AdapterDetection(new File(PreProcessDir + "/" + Prefix), LinkerLength + MaxReadsLength);
-                    CommonFile StatFile = new CommonFile(PreProcessDir + "/" + Prefix + ".adapter_detection.base.freq");
-                    AdapterSeq[0] = FileTool.AdapterDetection(InputFile, new File(PreProcessDir + "/" + Prefix), LinkerLength + MaxReadsLength, StatFile);
-                    Opts.LFStat.AdapterBaseDisPng = new File(Stat.getImageDir() + "/" + StatFile.getName() + ".png");
-                    String ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t stackbar -y Percentage --title Base_Frequency" + " -i " + StatFile + " -o " + Opts.LFStat.AdapterBaseDisPng;
-                    Opts.CommandOutFile.Append(ComLine + "\n");
-                    CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+                    AdapterSeq = Opts.LFStat.AdapterStat(InputFile, Stat, Prefix, LinkerLength + MaxReadsLength);
+//                    AdapterSeq = new String[1];
+//                    CommonFile StatFile = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".adapter_detection.base.freq");
+//                    AdapterSeq[0] = FileTool.AdapterDetection(InputFile, new File(PreProcessDir + "/" + Prefix), LinkerLength + MaxReadsLength, StatFile);
+//                    Opts.LFStat.AdapterBaseDisPng = new File(Stat.getImageDir() + "/" + StatFile.getName() + ".png");
+//                    String ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -t stackbar -y Percentage --title Base_Frequency" + " -i " + StatFile + " -o " + Opts.LFStat.AdapterBaseDisPng;
+//                    Opts.CommandOutFile.Append(ComLine + "\n");
+//                    new CommandLineDhat().run(ComLine, null, new PrintWriter(System.err));
                     System.out.println(new Date() + "\tDetected adapter seq:\t" + AdapterSeq[0]);
                 }
                 //将Adapter序列输出到文件中
                 FileUtils.write(AdapterFile, String.join("\n", AdapterSeq), StandardCharsets.UTF_8);
-                Opts.LFStat.Adapters = AdapterSeq;
+//                Opts.LFStat.Adapters = AdapterSeq;
             }
             //-----------------------------------------------------------------------------
             preprocess.run();//运行预处理部分
@@ -235,6 +232,10 @@ public class Main {
         File PastFile = preprocess.getLinkerFilterOutFile();//获取past文件位置
         //=================================================统计信息=====================================================
         if (Opts.Step.Statistic.Execute) {
+            if (AdapterSeq != null && AdapterSeq[0].compareToIgnoreCase("auto") == 0) {
+                System.out.println(new Date() + " [statistic]:\tStart Adapter detection statistic");
+                Opts.LFStat.AdapterStat(InputFile, Stat, Prefix, LinkerLength + MaxReadsLength);
+            }
             System.out.println(new Date() + " [statistic]:\tStart Linker filter statistic");
             Opts.LFStat.InputFile = new CommonFile(PastFile);
             Opts.LFStat.Stat(Configure.Thread);
@@ -244,9 +245,21 @@ public class Main {
         CommonFile LinkerDisFile = new CommonFile(Stat.getDataDir() + "/LinkerScoreDis.data");
         Opts.LFStat.WriteLinkerScoreDis(LinkerDisFile);
         Opts.LFStat.LinkerScoreDisPng = new File(Stat.getImageDir() + "/" + LinkerDisFile.getName().replace(".data", ".png"));
-        String ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -i " + LinkerDisFile + " -t bar -o " + Opts.LFStat.LinkerScoreDisPng;
-        Opts.CommandOutFile.Append(ComLine + "\n");
-        CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+        String ComLine;
+        try {
+            ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -i " + LinkerDisFile + " -t bar -o " + Opts.LFStat.LinkerScoreDisPng;
+            int ExitValue = new CommandLineDhat().run(ComLine, null, new PrintWriter(System.err));
+            if (!(ExitValue == 0)) {
+                throw new InterruptedException("can't draw figure by python");
+            }
+            Opts.CommandOutFile.Append(ComLine + "\n");
+        } catch (IOException | InterruptedException e) {
+            System.err.println(new Date() + "\tCan't draw Linker score distribution by python, try to draw it by java");
+            BarChart barChart = new BarChart();
+            barChart.loadData(LinkerDisFile);
+            barChart.drawing(Opts.LFStat.LinkerScoreDisPng);
+        }
+
         CommonFile[] ReadsLenDisFile = new CommonFile[LinkerSeq.length];
         Stat.ReadsLengthDisBase64 = new String[LinkerSeq.length];
         for (int i = 0; i < ReadsLenDisFile.length; i++) {
@@ -255,14 +268,25 @@ public class Main {
         Opts.LFStat.WriteReadsLengthDis(ReadsLenDisFile);
         for (int i = 0; i < ReadsLenDisFile.length; i++) {
             Opts.LFStat.linkers[i].ReadLengthDisPng = new File(Stat.getImageDir() + "/" + ReadsLenDisFile[i].getName().replace(".data", ".png"));
-            ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t bar -y Count --title " + LinkerSeq[i].getType() + " -i " + ReadsLenDisFile[i] + " -o " + Opts.LFStat.linkers[i].ReadLengthDisPng;
-            Opts.CommandOutFile.Append(ComLine + "\n");
-            CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+            try {
+                ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -t bar -y Count --title " + LinkerSeq[i].getType() + " -i " + ReadsLenDisFile[i] + " -o " + Opts.LFStat.linkers[i].ReadLengthDisPng;
+                int ExitValue = new CommandLineDhat().run(ComLine, null, new PrintWriter(System.err));
+                if (!(ExitValue == 0)) {
+                    throw new InterruptedException("can't draw figure by python");
+                }
+                Opts.CommandOutFile.Append(ComLine + "\n");
+            } catch (IOException | InterruptedException e) {
+                System.err.println(new Date() + "\tCan't draw reads length distribution by python, try to draw it by java");
+                BarChart barChart = new BarChart();
+                barChart.loadData(ReadsLenDisFile[i]);
+                barChart.YLabel = "Count";
+                barChart.drawing(Opts.LFStat.linkers[i].ReadLengthDisPng);
+            }
+
         }
         //==============================================================================================================
         LinkerFastqFileR1 = preprocess.getFastqR1File();
         LinkerFastqFileR2 = preprocess.getFastqR2File();
-//        Stat.ReadsLengthDisBase64 = new String[LinkerSeq.length];
         //==============================================================================================================
         for (int i = 0; i < ValidLinkerSeq.length; i++) {
             for (int j = 0; j < LinkerSeq.length; j++) {
@@ -287,10 +311,7 @@ public class Main {
             SeBedpeFile[i] = new BedpeFile(SeProcessDir + "/" + Prefix + "." + ValidLinkerSeq[i].getType() + ".bedpe");
             Opts.NRStat.linkers[i].InputFile = SeBedpeFile[i];
         }
-        if (Opts.Step.SeProcess.Execute) {
-            if (Opts.Step.FindEnzymeFragment.Execute) {
-                findenzy.start();
-            }
+        if (Opts.Step.Alignment.Execute) {
             if (Configure.Bwa.IndexPrefix == null || Configure.Bwa.IndexCheck == Opts.FileFormat.ErrorFormat) {
                 CreateIndex(Configure.Bwa.GenomeFile);
                 Configure.Bwa.IndexCheck = Opts.FileFormat.Valid;
@@ -311,10 +332,6 @@ public class Main {
                 System.out.println(new Date() + "\t" + R1SortBedFile[i].getName() + " " + R2SortBedFile[i].getName() + " to " + SeBedpeFile[i].getName());
                 SeBedpeFile[i].BedToBedpe(R1SortBedFile[i], R2SortBedFile[i]);//合并左右端bed文件，输出bedpe文件
                 Opts.ALStat.linkers[i].MergeNum = SeBedpeFile[i].getItemNum();
-            }
-            if (Opts.Step.FindEnzymeFragment.Execute) {
-                findenzy.join();
-                Opts.Step.FindEnzymeFragment.Execute = false;
             }
         }
         if (Opts.Step.Statistic.Execute) {
@@ -357,13 +374,11 @@ public class Main {
             bedpe[i] = new BedpeProcess(new File(BedpeProcessDir + "/" + ValidLinkerSeq[i].getType()), Prefix + "." + ValidLinkerSeq[i].getType(), Chromosomes, SeBedpeFile[i]);//bedpe文件处理类
             bedpe[i].Threads = Math.max(1, Threads / LinkerProcess.length);//设置线程数
         }
-        if (Opts.Step.BedPeProcess.Execute) {
+        if (Opts.Step.NoiseReduce.Execute) {
             //==========================================获取酶切片段和染色体大小==========================================
-            if (Opts.Step.FindEnzymeFragment.Execute) {
-                findenzy.start();
-                findenzy.join();
-                Opts.Step.FindEnzymeFragment.Execute = false;
-            }
+            findenzy.start();
+            findenzy.join();
+            Opts.Step.FindEnzymeFragment.Execute = false;
             //==============================================Noise reduce====bedpe 处理===================================
             for (int i = 0; i < LinkerProcess.length; i++) {
                 int finalI = i;
@@ -456,42 +471,43 @@ public class Main {
         CommonFile InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".all.interaction_distance_distribution.data");
         Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, Integer.MAX_VALUE), "1M", 2, 10);
         Opts.NRStat.InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
-        ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat.InteractionRangeDistributionPng;
+        ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat.InteractionRangeDistributionPng;
         Opts.CommandOutFile.Append(ComLine + "\n");
-        CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+        new CommandLineDhat().run(ComLine, null, new PrintWriter(System.err));
         //----------------------------------
         InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".50M.interaction_distance_distribution.data");
         Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, 50000000), "1M", 2, 10);
         Opts.NRStat._50M_InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
-        ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._50M_InteractionRangeDistributionPng;
+        ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._50M_InteractionRangeDistributionPng;
         Opts.CommandOutFile.Append(ComLine + "\n");
-        CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+        new CommandLineDhat().run(ComLine, null, new PrintWriter(System.err));
         //------------------------------------
         InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".10M.interaction_distance_distribution.data");
         Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, 10000000), "100k", 2, 10);
         Opts.NRStat._10M_InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
-        ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._10M_InteractionRangeDistributionPng;
+        ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._10M_InteractionRangeDistributionPng;
         Opts.CommandOutFile.Append(ComLine + "\n");
-        CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+        new CommandLineDhat().run(ComLine, null, new PrintWriter(System.err));
         //---------------------------------------
         InterDistanceDis = new CommonFile(Stat.getDataDir() + "/" + Prefix + ".2M.interaction_distance_distribution.data");
         Opts.NRStat.WriteInterRangeDis(InterDistanceDis, new Region(0, 2000000), "10k", 2, 10);
         Opts.NRStat._2M_InteractionRangeDistributionPng = new File(Stat.getImageDir() + "/" + InterDistanceDis.getName().replace(".data", ".png"));
-        ComLine = Configure.Python.Exe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._2M_InteractionRangeDistributionPng;
+        ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -t point --title Interaction_distance_distribution -i " + InterDistanceDis + " -o " + Opts.NRStat._2M_InteractionRangeDistributionPng;
         Opts.CommandOutFile.Append(ComLine + "\n");
-        CommandLineDhat.run(ComLine, null, new PrintWriter(System.err));
+        new CommandLineDhat().run(ComLine, null, new PrintWriter(System.err));
 
         //---------------------------------------
 
-        //=================================================Make Matrix==================================================
+        //=================================================Create Matrix==================================================
         Date matrixTime = new Date();
         System.err.println("Noise reducing: " + bedpeTime + " - " + matrixTime);
         Opts.NRStat.Time = matrixTime.getTime() - bedpeTime.getTime();
-        if (Opts.Step.MakeMatrix.Execute) {
+        if (Opts.Step.CreateMatrix.Execute) {
             for (Chromosome s : Chromosomes) {
                 if (s.Size == 0) {
                     findenzy.start();
                     findenzy.join();
+                    break;
                 }
             }
             Thread[] mmt = new Thread[Resolution.length];
@@ -523,33 +539,20 @@ public class Main {
                 }
                 Opts.CMStat.draw_resolutions[i].GenomeWildMatrixFile = matrix.getDenseMatrixFile();
                 Opts.CMStat.draw_resolutions[i].GenomeWildHeatMapPng = new File(OutDir + "/" + Prefix + ".interaction_" + Tools.UnitTrans(aDrawResolution, "B", "M") + "M.png");
-                if (Opts.CMStat.draw_resolutions[i].GenomeWildMatrixFile.PlotHeatMap(matrix.getBinSizeFile(), aDrawResolution, Opts.CMStat.draw_resolutions[i].GenomeWildHeatMapPng) != 0) {
-                    System.err.println("There are some worried in plot heatmap : " + matrix.getDenseMatrixFile());
-                }
+                //绘制全基因组热图
+                Opts.CMStat.draw_resolutions[i].GenomeWildMatrixFile.PlotHeatMap(matrix.getBinSizeList(), aDrawResolution, Opts.CMStat.draw_resolutions[i].GenomeWildHeatMapPng);
                 Opts.CMStat.draw_resolutions[i].ChromMatrixFile = matrix.getChrDenseMatrixFile();
                 for (int j = 0; j < Chromosomes.length; j++) {
                     Opts.CMStat.draw_resolutions[i].ChromHeatMapPng[j] = new File(OutDir + "/" + Prefix + "." + Chromosomes[j].Name + "." + Tools.UnitTrans(aDrawResolution, "B", "M") + "M.png");
-                    if (Opts.CMStat.draw_resolutions[i].ChromMatrixFile[j].PlotHeatMap(new String[]{Chromosomes[j].Name + ":0", Chromosomes[j].Name + ":0"}, aDrawResolution, Opts.CMStat.draw_resolutions[i].ChromHeatMapPng[j]) != 0) {
-                        System.err.println("There are some worried in plot heatmap : " + Opts.CMStat.draw_resolutions[i].ChromMatrixFile[j]);
-                    }
+                    Opts.CMStat.draw_resolutions[i].ChromMatrixFile[j].PlotHeatMap(new ChrRegion(Chromosomes[j].Name, 0, 0), new ChrRegion(Chromosomes[j].Name, 0, 0), aDrawResolution / 10, 0.98f, Opts.CMStat.draw_resolutions[i].ChromHeatMapPng[j]);
                 }
             }
         }
+        if (Opts.Step.Statistic.Execute) {
+            Opts.CMStat.Stat();
+        }
         Opts.StatisticFile.Append(Opts.CMStat.Show() + "\n");
         //==============================================================================================================
-        ST = new Thread(() -> {
-//            Stat.HeatMapInit(DrawResolution.length);
-//            for (int i = 0; i < DrawResolution.length; i++) {
-//                Stat.DrawHeatMap[i].Resolution = DrawResolution[i];
-//                try {
-//                    Stat.DrawHeatMap[i].Figure = Stat.GetBase64(new File(MakeMatrixDir + "/img_" + Tools.UnitTrans(DrawResolution[i], "B", "M") + "M/" + Prefix + ".interaction." + Tools.UnitTrans(DrawResolution[i], "B", "M") + "M.png"));
-//                } catch (IOException e) {
-//                    Stat.DrawHeatMap[i].Figure = "";
-//                }
-//            }
-        });
-        ST.start();
-        SThread.add(ST);
         //==============================================================================================================
         Date endTime = new Date();
         System.err.println("Create matrix: " + matrixTime + " - " + endTime);
@@ -560,13 +563,12 @@ public class Main {
         System.out.println("BedpeProcess:\t" + Tools.DateFormat((matrixTime.getTime() - bedpeTime.getTime()) / 1000));
         System.out.println("MakeMatrix:\t" + Tools.DateFormat((endTime.getTime() - matrixTime.getTime()) / 1000));
         System.out.println("Total:\t" + Tools.DateFormat((endTime.getTime() - preTime.getTime()) / 1000));
-        //===================================Report=====================================================================
+        //===================================Component.Statistic.Report=====================================================================
         for (Thread t : SThread) {
             t.join();
         }
         Opts.StatisticFile.Append(Opts.OVStat.Show() + "\n");
-//        Stat.Show();
-        Stat.ReportHtml(new File(ReportDir + "/Test.index.html"));
+        Stat.ReportHtml(new File(ReportDir + "/" + Prefix + ".report.html"));
         Tools.RemoveEmptyFile(OutPath);
         Opts.RSStat.Finish();
     }
@@ -684,7 +686,7 @@ public class Main {
         t4.start();
         Thread t3 = new Thread(() -> {
             try {
-                SortBedFile.MergeSortFile(SplitSortBedFile);
+                SortBedFile.MergeSortFile(SplitSortBedFile, new BedItem.TitleComparator());
                 for (File s : SplitSortBedFile) {
                     if (DeBugLevel < 1) {
                         AbstractFile.delete(s);
@@ -726,6 +728,7 @@ public class Main {
         String[] tempstrs;
         InputFile = Opts.OVStat.InputFile = Configure.InputFile;
         Configure.Bwa.GenomeFile = Opts.ALStat.GenomeFile = Configure.GenomeFile;
+        //-----------------------------------------可选参数赋值----------------------------------------------------------
         Restriction = Opts.LFStat.EnzymeCuttingSite = Configure.Restriction.toString();
         if (Configure.Restriction.getSequence().length() <= 4) {
             Opts.OVStat.RangeThreshold = 5000;
@@ -744,7 +747,6 @@ public class Main {
         } else {
             LinkerLength += LinkerA.length();
         }
-        //-----------------------------------------可选参数赋值----------------------------------------------------------
         OutPath = Opts.OVStat.OutDir = Configure.OutPath;
         Opts.CommandOutFile = new CommonFile(Configure.OutPath + "/" + Opts.CommandOutFile.getName());
         Opts.StatisticFile = new CommonFile(Configure.OutPath + "/" + Opts.StatisticFile.getName());
@@ -771,7 +773,6 @@ public class Main {
         ChrEnzyFile = new BedFile[Chromosomes.length];
 
         //-------------------------------------------高级参数赋值--------------------------------------------------------
-//        Python = Configure.Python;
         MatchScore = Configure.MatchScore;
         MisMatchScore = Configure.MisMatchScore;
         InDelScore = Configure.InDelScore;
@@ -862,6 +863,7 @@ public class Main {
 
     private void ShowParameter() {
         System.out.println(Configure.ShowParameter());
+        System.out.println(Configure.ShowExecution());
     }
 
 
