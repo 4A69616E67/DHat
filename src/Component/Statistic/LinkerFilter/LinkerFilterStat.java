@@ -2,16 +2,23 @@ package Component.Statistic.LinkerFilter;
 
 import Component.File.AbstractFile;
 import Component.File.CommonFile.CommonFile;
+import Component.File.FastQFile.FastqFile;
 import Component.File.FastQFile.FastqItem;
+import Component.File.FileTool;
 import Component.Statistic.AbstractStat;
+import Component.Statistic.Report;
 import Component.Statistic.StatUtil;
+import Component.SystemDhat.CommandLineDhat;
 import Component.tool.DivideLinker;
 import Component.tool.Tools;
 import Component.unit.*;
+import org.apache.commons.io.FileUtils;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -236,6 +243,23 @@ public class LinkerFilterStat extends AbstractStat {
                 outfile.close();
             }
         }
+    }
+
+    public String[] AdapterStat(FastqFile infile, Report out, String prefix, int subindex) throws IOException, InterruptedException {
+        //标记为自动识别Adapter
+        String[] AdapterSeq = new String[1];
+        CommonFile StatFile = new CommonFile(out.getDataDir() + "/" + prefix + ".adapter_detection.base.freq");
+        AdapterSeq[0] = FileTool.AdapterDetection(infile, new File(OutDir + "/" + prefix), subindex, StatFile);
+        AdapterBaseDisPng = new File(out.getImageDir() + "/" + StatFile.getName() + ".png");
+        String ComLine = Configure.Python.FullExe() + " " + Opts.StatisticPlotFile + " -t stackbar -y Percentage --title Base_Frequency" + " -i " + StatFile + " -o " + Opts.LFStat.AdapterBaseDisPng;
+        Opts.CommandOutFile.Append(ComLine + "\n");
+        new CommandLineDhat().run(ComLine, null, new PrintWriter(System.err));
+//        System.out.println(new Date() + "\tDetected adapter seq:\t" + AdapterSeq[0]);
+        //将Adapter序列输出到文件中
+//        FileUtils.write(AdapterFile, String.join("\n", AdapterSeq), StandardCharsets.UTF_8);
+        Adapters = AdapterSeq;
+        return AdapterSeq;
+
     }
 
 }

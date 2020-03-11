@@ -109,6 +109,7 @@ public class APAGenerator {
         matrix.UseCount = false;
         ArrayList<MatrixItem> MatrixList = matrix.Run(List);
         double[][] TotalMatrix = new double[BinNumber * 2 + 1][BinNumber * 2 + 1];
+        //计算一个求和矩阵
         for (MatrixItem aMatrix : MatrixList) {
             for (int i = 0; i < TotalMatrix.length; i++) {
                 for (int j = 0; j < TotalMatrix[i].length; j++) {

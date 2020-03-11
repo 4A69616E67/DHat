@@ -31,7 +31,7 @@ public class MAFFT extends AbstractSoftware {
     protected String getVersion() {
         try {
             StringWriter buffer = new StringWriter();
-            CommandLineDhat.run(FullExe() + " --version", null, new PrintWriter(buffer));
+            new CommandLineDhat().run(FullExe() + " --version", null, new PrintWriter(buffer));
             Version = buffer.toString().split("\\n")[0];
         } catch (IOException | InterruptedException e) {
             Valid = false;

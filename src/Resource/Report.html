@@ -373,8 +373,8 @@
                 <tr>
                     <td width="133" nowrap="nowrap">Input file:</td>
                     <td width="264" th:text="${InputFile}">&nbsp;</td>
-                    <td width="112" nowrap="nowrap">Min reads length:</td>
-                    <td width="163" th:text="${MinReadsLen}">&nbsp;</td>
+                    <td width="112" nowrap="nowrap">Min Linker length:</td>
+                    <td width="163" th:text="${MinLinkerLen}">&nbsp;</td>
                 </tr>
                 <tr>
                     <td nowrap="nowrap">Output folder:</td>
@@ -437,29 +437,36 @@
                 <tr>
                     <td nowrap="nowrap">Total reads:</td>
                     <td th:text="${#numbers.formatInteger(LinkerFilterStat.InputNum,1,'COMMA')}">&nbsp;</td>
-                    <td th:text="${#numbers.formatDecimal(LinkerFilterStat.InputNum*100/Tool.ToDouble(LinkerFilterStat.InputNum),1,2)}+'%'">
+                    <td th:text="${#numbers.formatDecimal(LinkerFilterStat.InputNum/Tool.ToDouble(LinkerFilterStat.InputNum)*100,1,2)}+'%'">
                         &nbsp;
 
                     </td>
                 </tr>
                 <tr th:each="Linker : ${LinkerFilterStat.linkers}">
                     <td nowrap="nowrap" th:text="${Linker.Linker.getType()}+':'">AA:</td>
-                    <td width="271" th:text="${#numbers.formatInteger(Linker.ValidPairNum,1,'COMMA')}">&nbsp;</td>
+                    <td width="271" th:text="${#numbers.formatInteger(Linker.MatchableNum,1,'COMMA')}">&nbsp;</td>
                     <td width="285"
-                        th:text="${#numbers.formatDecimal(Linker.ValidPairNum*100/Tool.ToDouble(LinkerFilterStat.InputNum),1,2)}+'%'">
+                        th:text="${#numbers.formatDecimal(Linker.MatchableNum/Tool.ToDouble(LinkerFilterStat.InputNum)*100,1,2)}+'%'">
                         &nbsp;
-
                     </td>
                 </tr>
 
                 <tr>
                     <td nowrap="nowrap">Ambiguous:</td>
                     <td th:text="${#numbers.formatInteger(LinkerFilterStat.LinkerUnmatchableNum,1,'COMMA')}">&nbsp;</td>
-                    <td th:text="${#numbers.formatDecimal(LinkerFilterStat.LinkerUnmatchableNum*100/Tool.ToDouble(LinkerFilterStat.InputNum),1,2)}+'%'">
+                    <td th:text="${#numbers.formatDecimal(LinkerFilterStat.LinkerUnmatchableNum/Tool.ToDouble(LinkerFilterStat.InputNum)*100,1,2)}+'%'">
+                        &nbsp;
+                    </td>
+                </tr>
+                <tr>
+                    <td nowrap="nowrap">Valid pair:</td>
+                    <td th:text="${#numbers.formatInteger(LinkerFilterStat.total.ValidPairNum,1,'COMMA')}">&nbsp;</td>
+                    <td th:text="${#numbers.formatDecimal(LinkerFilterStat.total.ValidPairNum/Tool.ToDouble(LinkerFilterStat.InputNum)*100,1,2)}+'%'">
                         &nbsp;
 
                     </td>
                 </tr>
+
                 <tr>
                     <td nowrap="nowrap">Output folder:</td>
                     <td colspan="2" th:text="${LinkerFilterStat.OutDir}">&nbsp;</td>

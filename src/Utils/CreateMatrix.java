@@ -124,11 +124,7 @@ public class CreateMatrix {
             System.err.println("Error! no -chr  argument");
             System.exit(1);
         }
-//        int[] ChrSize = new int[Chromosomes.length];
         System.out.println(new Date() + "\tBegin to create interaction matrix " + BedpeFile.getName() + " Resolution=" + Resolution + " Threads=" + Threads);
-//        for (int i = 0; i < Chromosomes.length; i++) {
-//            ChrSize[i] = Chromosomes[i].Size;
-//        }
         int SumBin = 0;
         Chromosome[] ChrBinSize = Statistic.CalculatorBinSize(Chromosomes, Resolution);
         Hashtable<String, Integer> IndexBias = new Hashtable<>();

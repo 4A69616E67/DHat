@@ -31,7 +31,7 @@ public class Python extends AbstractSoftware {
     protected String getVersion() {
         try {
             StringWriter buffer = new StringWriter();
-            CommandLineDhat.run(FullExe() + " -V", null, new PrintWriter(buffer));
+            new CommandLineDhat().run(FullExe() + " -V", null, new PrintWriter(buffer));
             Version = buffer.toString().split("\\n")[0].split("\\s+")[1];
         } catch (IOException | InterruptedException | IndexOutOfBoundsException e) {
             Valid = false;
@@ -49,7 +49,7 @@ public class Python extends AbstractSoftware {
         String commandLine = Path + "/Scripts/pip list";
         try {
             StringWriter buffer = new StringWriter();
-            CommandLineDhat.run(commandLine, new PrintWriter(buffer), null);
+            new CommandLineDhat().run(commandLine, new PrintWriter(buffer), null);
             for (String c : buffer.toString().split("\\n")) {
                 String[] p = c.split("\\s+");
                 if (p[0].equals(packageName)) {

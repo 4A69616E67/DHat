@@ -2,11 +2,13 @@ package Bin;
 
 import Component.File.FastQFile.FastqFile;
 import Component.Software.Bwa;
+import Component.Software.MAFFT;
 import Component.Software.Python;
 import Component.tool.Tools;
 import Component.unit.Chromosome;
 import Component.unit.Configure;
 import Component.FragmentDigested.RestrictionEnzyme;
+import Component.unit.Opts;
 
 import javax.swing.*;
 import java.awt.event.*;
@@ -36,7 +38,6 @@ class Config extends JDialog {
     private JTextField TextField_AdapterSeq;
     private JTextField TextField_Resolution;
     private JTextField TextField_DrawRes;
-    //    private JTextField TextField_DetectRes;
     private JTextField TextField_Thread;
     private JTextField TextField_MatchScore;
     private JTextField TextField_MisMatchScore;
@@ -45,7 +46,7 @@ class Config extends JDialog {
     private JTextField TextField_MinReadsLen;
     private JTextField TextField_MinLinkerLen;
     private JTextField TextField_AlignType;
-    private JTextField TextField_AlignThread;
+    //    private JTextField TextField_AlignThread;
     private JTextField TextField_AlignMisMatchNum;
     private JTextField TextField_MinMappingScore;
     private JTextField TextField_DebugLevel;
@@ -55,6 +56,17 @@ class Config extends JDialog {
     private JLabel bwa;
     private JTextField textField_python;
     private JLabel python;
+    private JTextField textField_mafft;
+    private JLabel mafft;
+    private JLabel step;
+    private JCheckBox checkBox_PreProcess;
+    private JCheckBox checkBox_Alignment;
+    private JCheckBox checkBox_NoiseReduce;
+    private JCheckBox checkBox_BedPe2Inter;
+    private JCheckBox checkBox_CreateMatrix;
+    private JCheckBox checkBox_All;
+    private JCheckBox checkBox_Stat;
+//    private JTextField textField_step;
 
     public Config() {
         setContentPane(contentPane);
@@ -113,7 +125,59 @@ class Config extends JDialog {
                 TextField_OutPath.setText(getDir().toString());
             }
         });
+        checkBox_All.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (checkBox_All.isSelected()) {
+                    checkBox_PreProcess.setSelected(false);
+                    checkBox_PreProcess.setEnabled(false);
+                    checkBox_Alignment.setSelected(false);
+                    checkBox_Alignment.setEnabled(false);
+                    checkBox_NoiseReduce.setSelected(false);
+                    checkBox_NoiseReduce.setEnabled(false);
+                    checkBox_BedPe2Inter.setSelected(false);
+                    checkBox_BedPe2Inter.setEnabled(false);
+                    checkBox_CreateMatrix.setSelected(false);
+                    checkBox_CreateMatrix.setEnabled(false);
+                    checkBox_Stat.setSelected(false);
+                    checkBox_Stat.setEnabled(false);
+                } else {
+                    checkBox_PreProcess.setEnabled(true);
+                    checkBox_Alignment.setEnabled(true);
+                    checkBox_NoiseReduce.setEnabled(true);
+                    checkBox_BedPe2Inter.setEnabled(true);
+                    checkBox_CreateMatrix.setEnabled(true);
+                    checkBox_Stat.setEnabled(true);
+                }
+            }
+        });
         Init();
+        checkBox_Stat.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (checkBox_Stat.isSelected()) {
+                    checkBox_PreProcess.setSelected(false);
+                    checkBox_PreProcess.setEnabled(false);
+                    checkBox_Alignment.setSelected(false);
+                    checkBox_Alignment.setEnabled(false);
+                    checkBox_NoiseReduce.setSelected(false);
+                    checkBox_NoiseReduce.setEnabled(false);
+                    checkBox_BedPe2Inter.setSelected(false);
+                    checkBox_BedPe2Inter.setEnabled(false);
+                    checkBox_CreateMatrix.setSelected(false);
+                    checkBox_CreateMatrix.setEnabled(false);
+                    checkBox_All.setSelected(false);
+                    checkBox_All.setEnabled(false);
+                } else {
+                    checkBox_PreProcess.setEnabled(true);
+                    checkBox_Alignment.setEnabled(true);
+                    checkBox_NoiseReduce.setEnabled(true);
+                    checkBox_BedPe2Inter.setEnabled(true);
+                    checkBox_CreateMatrix.setEnabled(true);
+                    checkBox_All.setEnabled(true);
+                }
+            }
+        });
     }
 
     private void Init() {
@@ -156,11 +220,16 @@ class Config extends JDialog {
         TextField_AlignType.setText(Configure.AlignType);
         TextField_AlignMisMatchNum.setText(String.valueOf(Configure.AlignMisMatch));
         TextField_MinMappingScore.setText(Configure.MinUniqueScore != 0 ? String.valueOf(Configure.MinUniqueScore) : "");
-        TextField_AlignThread.setText(String.valueOf(Configure.AlignThread));
+//        TextField_AlignThread.setText(String.valueOf(Configure.AlignThread));
         CheckBox_IterationAlign.setSelected(Configure.Iteration);
         TextField_DebugLevel.setText(String.valueOf(Configure.DeBugLevel));
         textField_bwa.setText(Configure.Bwa == null ? "" : Configure.Bwa.Exe());
         textField_python.setText(Configure.Python == null ? "" : Configure.Python.Exe());
+        textField_mafft.setText(Configure.Mafft == null ? "" : Configure.Mafft.FullExe().toString());
+        Step_String2CheckBox();
+//        textField_step.setText(Configure.Step == null ? "-" : Configure.Step);
+        //===========================================
+
     }
 
     private File getFile() {
@@ -182,7 +251,7 @@ class Config extends JDialog {
             Configure.InputFile = new FastqFile(TextField_InputFile.getText().trim());
             Configure.GenomeFile = new File(TextField_GenomeFile.getText().trim());
             Configure.Restriction = new RestrictionEnzyme(TextField_Restriction.getText().trim());
-            Configure.HalfLinker = String.join(" ", new String[]{TextField_HalfLinker1.getText().trim(), TextField_HalfLinker2.getText().trim()}).split("\\s+");
+            Configure.HalfLinker = new String[]{TextField_HalfLinker1.getText().trim(), TextField_HalfLinker2.getText().trim()};
             Configure.OutPath = new File(TextField_OutPath.getText().trim());
             Configure.Prefix = TextField_Prefix.getText().trim();
             Configure.Index = new File(TextField_Index.getText().trim());
@@ -208,11 +277,14 @@ class Config extends JDialog {
             Configure.AlignType = TextField_AlignType.getText().trim();
             Configure.AlignMisMatch = Configure.GetIntItem(TextField_AlignMisMatchNum.getText().trim(), Configure.AlignMisMatch);
             Configure.MinUniqueScore = Configure.GetIntItem(TextField_MinMappingScore.getText().trim(), Configure.MinUniqueScore);
-            Configure.AlignThread = Configure.GetIntItem(TextField_AlignThread.getText().trim(), Configure.AlignThread);
+//            Configure.AlignThread = Configure.GetIntItem(TextField_AlignThread.getText().trim(), Configure.AlignThread);
             Configure.Iteration = CheckBox_IterationAlign.isSelected();
             Configure.DeBugLevel = Configure.GetIntItem(TextField_DebugLevel.getText().trim(), Configure.DeBugLevel);
             Configure.Bwa = new Bwa(textField_bwa.getText().trim());
             Configure.Python = new Python(textField_python.getText().trim());
+            Configure.Mafft = new MAFFT(textField_mafft.getText().trim());
+            Configure.Step = Step_CheckBox2String();
+//            Configure.Step = textField_step.getText().trim();
         }
         Configure.Update();
     }
@@ -236,4 +308,27 @@ class Config extends JDialog {
         System.exit(0);
     }
 
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
+    }
+
+    private String Step_CheckBox2String() {
+        return (checkBox_PreProcess.isSelected() ? Opts.Step.PreProcess.name() : "") +
+                (checkBox_Alignment.isSelected() ? " " + Opts.Step.Alignment.name() : "") +
+                (checkBox_NoiseReduce.isSelected() ? " " + Opts.Step.NoiseReduce.name() : "") +
+                (checkBox_BedPe2Inter.isSelected() ? " " + Opts.Step.BedPe2Inter.name() : "") +
+                (checkBox_CreateMatrix.isSelected() ? " " + Opts.Step.CreateMatrix.name() : "") +
+                (checkBox_All.isSelected() ? "-" : "") +
+                (checkBox_Stat.isSelected() ? Opts.Step.Statistic.name() : "");
+    }
+
+    private void Step_String2CheckBox() {
+        Opts.StepCheck(Configure.Step);
+        checkBox_PreProcess.setSelected(Opts.Step.PreProcess.Execute);
+        checkBox_Alignment.setSelected(Opts.Step.Alignment.Execute);
+        checkBox_NoiseReduce.setSelected(Opts.Step.NoiseReduce.Execute);
+        checkBox_BedPe2Inter.setSelected(Opts.Step.BedPe2Inter.Execute);
+        checkBox_CreateMatrix.setSelected(Opts.Step.CreateMatrix.Execute);
+        checkBox_Stat.setSelected(Opts.Step.Statistic.Execute);
+    }
 }

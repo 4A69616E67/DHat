@@ -1,3 +1,5 @@
+package Component.Statistic;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
@@ -83,7 +85,7 @@ public class Report {
         map.put("HalfLinkerA", Configure.HalfLinker[0]);
         map.put("HalfLinkerB", Configure.HalfLinker.length >= 2 ? Configure.HalfLinker[1] : "");
         map.put("Restriction", Configure.Restriction.toString());
-        map.put("MinReadsLen", Configure.MinLinkerLen);
+        map.put("MinLinkerLen", Configure.MinLinkerLen);
         map.put("MaxReadsLen", Configure.MaxReadsLen);
         map.put("MatchScore", Configure.MatchScore);
         map.put("MisMatchScore", Configure.MisMatchScore);

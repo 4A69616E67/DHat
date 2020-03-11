@@ -10,13 +10,16 @@ import java.io.PrintWriter;
  */
 
 public class CommandLineDhat {
+    private Process P;
+    private Thread OutThread, ErrThread;
+    private int ExitValue;
+
     /**
      * close the io stream when you redirect to a file
      */
-    public static int run(String CommandStr, PrintWriter Out, PrintWriter Error) throws IOException, InterruptedException {
-        int ExitValue;
-        Process P = Runtime.getRuntime().exec(CommandStr);
-        Thread OutThread = new Thread(() -> {
+    public int run(String CommandStr, PrintWriter Out, PrintWriter Error) throws IOException, InterruptedException {
+        P = Runtime.getRuntime().exec(CommandStr);
+        OutThread = new Thread(() -> {
             try {
                 String line;
                 BufferedReader bufferedReaderIn = new BufferedReader(new InputStreamReader(P.getInputStream()));
@@ -36,7 +39,7 @@ public class CommandLineDhat {
                 e.printStackTrace();
             }
         });
-        Thread ErrThread = new Thread(() -> {
+        ErrThread = new Thread(() -> {
             try {
                 String line;
                 BufferedReader bufferedReaderIn = new BufferedReader(new InputStreamReader(P.getErrorStream()));
@@ -67,7 +70,11 @@ public class CommandLineDhat {
     /**
      * close the io stream when you redirect to a file
      */
-    public static int run(String CommandStr) throws IOException, InterruptedException {
+    public int run(String CommandStr) throws IOException, InterruptedException {
         return run(CommandStr, null, null);
+    }
+
+    public void interrupt() {
+        P.destroy();
     }
 }
