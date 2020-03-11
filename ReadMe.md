@@ -173,6 +173,7 @@ DeBugLevel          Int         0 means remain base output, 1 means more output,
 
 ## Other Script
 ```
+java -cp DHat.jar Bin.Guide  //use GUI
 java -cp DHat.jar Utils.BedToBedpe
 java -cp DHat.jar Utils.CalculateLineNumber
 java -cp DHat.jar Utils.CreateMatrix
