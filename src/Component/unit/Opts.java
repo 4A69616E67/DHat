@@ -180,7 +180,7 @@ public class Opts {
     public static final File ScriptJs = new File("/" + InterResourceDir + "/script.js");
     public static final File TemplateReportHtml = new File("/" + InterResourceDir + "/Report.html");
     public static final File ReadMeFile = new File("/" + InterResourceDir + "/ReadMe.txt");
-    public static final Float Version = 1.1F;
+    public static final Float Version = 1.2F;
     public static final String Author = "Snowflakes";
     public static final String Email = "john-jh@foxmail.com";
     public static final long MaxMemory = Runtime.getRuntime().maxMemory();//java能获取的最大内存
