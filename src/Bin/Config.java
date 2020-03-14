@@ -250,7 +250,7 @@ class Config extends JDialog {
         if (tabbedPane1.getSelectedIndex() == 0) {
             Configure.InputFile = new FastqFile(TextField_InputFile.getText().trim());
             Configure.GenomeFile = new File(TextField_GenomeFile.getText().trim());
-            Configure.Restriction = new RestrictionEnzyme(TextField_Restriction.getText().trim());
+            Configure.Restriction = TextField_Restriction.getText().trim().equals("") ? null : new RestrictionEnzyme(TextField_Restriction.getText().trim());
             Configure.HalfLinker = new String[]{TextField_HalfLinker1.getText().trim(), TextField_HalfLinker2.getText().trim()};
             Configure.OutPath = new File(TextField_OutPath.getText().trim());
             Configure.Prefix = TextField_Prefix.getText().trim();
