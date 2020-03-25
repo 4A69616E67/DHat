@@ -196,7 +196,7 @@ public class CreateMatrix {
         BufferedWriter outfile = new BufferedWriter(new FileWriter(BinSizeFile));
         BinSizeList = getBinSizeList();
         for (int i = 0; i < BinSizeList.size(); i++) {
-            outfile.write(BinSizeList.get(i).toString());
+            outfile.write(BinSizeList.get(i).toString() + "\n");
         }
         outfile.close();
         return InterMatrix;

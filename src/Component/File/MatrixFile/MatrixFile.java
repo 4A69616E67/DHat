@@ -98,20 +98,12 @@ public class MatrixFile extends AbstractFile<MatrixItem> {
         return Format.SparseMatrix;
     }
 
-    public void PlotHeatMap(ArrayList<ChrRegion> bin_size, int resolution, File outFile) throws IOException {
+    public void PlotHeatMap(ArrayList<ChrRegion> bin_size, int resolution, float threshold ,File outFile) throws IOException {
         ReadOpen();
         MatrixItem item = ReadItem();
         ReadClose();
-        BufferedImage image = item.DrawHeatMap(bin_size,resolution);
+        BufferedImage image = item.DrawHeatMap(bin_size,resolution,threshold);
         ImageIO.write(image, outFile.getName().substring(outFile.getName().lastIndexOf('.') + 1), outFile);
-        //=======================================================
-//        String ComLine = Configure.Python.Exe() + " " + Opts.PlotHeatMapScriptFile + " -m A -i " + getPath() + " -o " + outFile + " -r " + resolution + " -c " + binSizeFile + " -q 98";
-//        Opts.CommandOutFile.Append(ComLine + "\n");
-//        if (Configure.DeBugLevel < 1) {
-//            return new CommandLineDhat().run(ComLine);
-//        } else {
-//            return new CommandLineDhat().run(ComLine, null, new PrintWriter(System.err));
-//        }
     }
 
     public void PlotHeatMap(ChrRegion chr1, ChrRegion chr2, int resolution, float threshold, File outFile) throws IOException {

@@ -109,12 +109,12 @@ public class MatrixItem extends AbstractItem {
         return DrawHeatMap(Chr1.Chr, Chr1.region.Start, Chr2.Chr, Chr2.region.Start, resolution, threshold, reverse);
     }
 
-    public BufferedImage DrawHeatMap(ArrayList<ChrRegion> bin_size, int resolution) {
+    public BufferedImage DrawHeatMap(ArrayList<ChrRegion> bin_size, int resolution, float thresholdValue) {
         int High = item.getRowDimension();
         int Width = item.getColumnDimension();
         int interval = 30;
         Label = false;
-        BufferedImage image = DrawHeatMap(resolution, 0.99f, true);
+        BufferedImage image = DrawHeatMap(resolution, thresholdValue, true);
         Graphics2D g = image.createGraphics();
         int fold = getFold();
         int marginal = getMarginal();

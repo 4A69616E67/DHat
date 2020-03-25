@@ -59,7 +59,7 @@ public class PlotHeatMap {
                 binsize.add(Line.getLocation());
             }
             BinSizeFile.ReadClose();
-            image = item.DrawHeatMap(binsize, Resolution);
+            image = item.DrawHeatMap(binsize, Resolution, Threshold);
         } else {
             image = item.DrawHeatMap(Chr1, Chr1Site, Chr2, Chr2Site, Resolution, Threshold, true);
         }
