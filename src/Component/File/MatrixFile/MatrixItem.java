@@ -179,10 +179,10 @@ public class MatrixItem extends AbstractItem {
                         value = (float) (StartSite2 + i * interval * resolution);
                         break;
                     case KB:
-                        value = StartSite2 / 1000 + (float) resolution / 1000 * i * interval;
+                        value = (float) StartSite2 / 1000 + (float) resolution / 1000 * i * interval;
                         break;
                     case MB:
-                        value = StartSite2 / 1000000 + (float) resolution / 1000000 * i * interval;
+                        value = (float) StartSite2 / 1000000 + (float) resolution / 1000000 * i * interval;
                         break;
                 }
                 String value_str;
@@ -196,22 +196,33 @@ public class MatrixItem extends AbstractItem {
             }
             //draw sub y interval
             for (int i = 0; i <= MatrixHeight * 10 / interval; i++) {
-                int y1 = Marginal + MatrixHeight - i * interval / 10;
+                int y1;
+                if (reverse) {
+                    y1 = Marginal + MatrixHeight - i * interval / 10;
+                } else {
+                    y1 = Marginal + i * interval / 10;
+                }
                 graphics.drawLine(Marginal, y1, Marginal - extend_len / 2, y1);
             }
             //draw y interval
             for (int i = 0; i <= MatrixHeight / interval; i++) {
-                graphics.drawLine(Marginal, Marginal + MatrixHeight - i * interval, Marginal - extend_len, Marginal + MatrixHeight - i * interval);
-                float value = 0, index;
+                int High;
+                if (reverse) {
+                    High = Marginal + MatrixHeight - i * interval;
+                } else {
+                    High = Marginal + i * interval;
+                }
+                graphics.drawLine(Marginal, High, Marginal - extend_len, High);
+                float value = 0;
                 switch (unit) {
                     case BP:
                         value = (float) (StartSite1 + i * interval * resolution);
                         break;
                     case KB:
-                        value = StartSite1 / 1000 + (float) resolution / 1000 * i * interval;
+                        value = (float) StartSite1 / 1000 + (float) resolution / 1000 * i * interval;
                         break;
                     case MB:
-                        value = StartSite1 / 1000000 + (float) resolution / 1000000 * i * interval;
+                        value = (float) StartSite1 / 1000000 + (float) resolution / 1000000 * i * interval;
                         break;
                 }
                 String value_str;
@@ -220,13 +231,8 @@ public class MatrixItem extends AbstractItem {
                 } else {
                     value_str = String.format("%.2f", value);
                 }
-                if (reverse) {
-                    index = MatrixHeight / interval - i;
-                } else {
-                    index = i;
-                }
                 int h = FontDesignMetrics.getMetrics(t).getHeight();
-                Tools.DrawStringCenter(graphics, value_str, t, Marginal - extend_len - h / 2 - 2, Marginal + (int) index * interval, -Math.PI / 2);
+                Tools.DrawStringCenter(graphics, value_str, t, Marginal - extend_len - h / 2 - 2, High, -Math.PI / 2);
             }
         }
         //draw legend
