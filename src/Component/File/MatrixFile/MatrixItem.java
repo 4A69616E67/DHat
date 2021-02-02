@@ -7,6 +7,7 @@ import Component.unit.InterAction;
 import Component.unit.Region;
 import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.RealMatrix;
 import sun.font.FontDesignMetrics;
 
 import java.awt.*;
@@ -302,4 +303,17 @@ public class MatrixItem extends AbstractItem {
         return flag;
     }
 
+    public static RealMatrix Sparse2Dense(RealMatrix matrix,int resolution,int size){
+        Array2DRowRealMatrix matrix_new = new Array2DRowRealMatrix(size,size);
+        for (int i = 0; i <matrix.getRowDimension() ; i++) {
+            double[] item = matrix.getRow(i);
+            int row=(int)item[0]/resolution;
+            int col=(int)item[1]/resolution;
+            matrix_new.setEntry(row,col,item[2]);
+            if (matrix_new.getEntry(col,row)!=item[2]){
+                matrix_new.setEntry(col,row,item[2]);
+            }
+        }
+        return matrix_new;
+    }
 }

@@ -18,6 +18,10 @@ import java.io.File;
  * Created by snowf on 2019/2/17.
  */
 class Config extends JDialog {
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;

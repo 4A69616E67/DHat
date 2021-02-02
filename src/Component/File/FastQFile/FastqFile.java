@@ -99,10 +99,12 @@ public class FastqFile extends AbstractFile<FastqItem> {
                 FastqItem item;
                 try {
                     while ((item = ReadItem()) != null) {
-                        if (List.contains(item.Title)) {
+                        if (List.contains(item.Title) || List.contains(item.Title.split("\\s+")[0])) {
                             synchronized (this) {
                                 ResList.add(item);
-                                List.remove(item.Title);
+                                if (!List.remove(item.Title)) {
+                                    List.remove(item.Title.split("\\s+")[0]);
+                                }
                                 if (List.size() <= 0) {
                                     break;
                                 }

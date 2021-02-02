@@ -4,9 +4,11 @@ import Component.File.CommonFile.CommonFile;
 import Component.File.FastQFile.FastqFile;
 import Component.File.FastQFile.FastqItem;
 import Component.unit.Opts;
+import com.sun.deploy.uitoolkit.impl.fx.Utils;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 
+import javax.rmi.CORBA.Util;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.HashSet;
@@ -23,10 +25,9 @@ public class FastqExtract {
         Argument.addOption(Option.builder("n").hasArg().argName("int").desc("item number").build());//配置文件
         Argument.addOption(Option.builder("t").hasArg().argName("int").desc("thread").build());//配置文件
         Argument.addOption(Option.builder("f").hasArg().argName("file").desc("out file").build());//配置文件
-        final String helpFooter = "Note: use \"java -jar " + Opts.JarFile.getName() + " install\" when you first use!\n      JVM can get " + String.format("%.2f", Opts.MaxMemory / Math.pow(10, 9)) + "G memory";
         if (args.length == 0) {
             //没有参数时打印帮助信息
-            new HelpFormatter().printHelp("java -jar Path/" + Opts.JarFile.getName(), "", Argument, helpFooter, true);
+            new HelpFormatter().printHelp("java -cp " + Opts.JarFile +" "+ FastqExtract.class.getName(),  Argument,true);
             System.exit(1);
         }
         CommandLine ComLine = null;
@@ -35,7 +36,7 @@ public class FastqExtract {
         } catch (ParseException e) {
             //缺少参数时打印帮助信息
             System.err.println(e.getMessage());
-            new HelpFormatter().printHelp("java -jar Path/" + Opts.JarFile.getName(), "", Argument, helpFooter, true);
+            new HelpFormatter().printHelp("java -cp " + Opts.JarFile +" "+ FastqExtract.class.getName(), Argument, true);
             System.exit(1);
         }
         FastqFile inputFile = new FastqFile(Opts.GetStringOpt(ComLine, "i", null));
@@ -49,7 +50,11 @@ public class FastqExtract {
         if (listfile != null) {
             listfile.ReadOpen();
             while ((line = listfile.ReadItemLine()) != null) {
-                IDList.add(line[0]);
+                if (line[0].matches("^@.+")) {
+                    IDList.add(line[0]);
+                } else {
+                    IDList.add("@" + line[0]);
+                }
             }
             listfile.ReadClose();
         }

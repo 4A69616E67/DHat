@@ -5,6 +5,7 @@ import Component.File.BedFile.BedItem;
 import Component.SystemDhat.CommandLineDhat;
 import Component.tool.Tools;
 import Component.unit.*;
+import org.apache.commons.math3.linear.RealMatrix;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -19,7 +20,7 @@ import java.util.ArrayList;
  * Created by 浩 on 2019/2/1.
  */
 public class MatrixFile extends AbstractFile<MatrixItem> {
-    private enum Format {
+    public enum Format {
         DenseMatrix, SparseMatrix, EmptyFile, ErrorFormat
     }
 
@@ -88,7 +89,7 @@ public class MatrixFile extends AbstractFile<MatrixItem> {
         }
         String[] Str = Line.split("\\s+|,");
         try {
-            StringArrays.toInteger(Str);
+            StringArrays.toDouble(Str);
         } catch (NumberFormatException e) {
             return Format.ErrorFormat;
         }
@@ -113,12 +114,5 @@ public class MatrixFile extends AbstractFile<MatrixItem> {
         item.Chr1 = chr1;
         item.Chr2 = chr2;
         ImageIO.write(item.DrawHeatMap(resolution, threshold, true), outFile.getName().substring(outFile.getName().lastIndexOf('.') + 1), outFile);
-//        String ComLine = Configure.Python.Exe() + " " + Opts.PlotHeatMapScriptFile + " -t localGenome -m A -i " + getPath() + " -o " + outFile + " -r " + resolution + " -p " + String.join(":", Region) + " -q 95";
-//        Opts.CommandOutFile.Append(ComLine + "\n");
-//        if (Configure.DeBugLevel < 1) {
-//            return new CommandLineDhat().run(ComLine);
-//        } else {
-//            return new CommandLineDhat().run(ComLine, null, new PrintWriter(System.err));
-//        }
     }
 }
